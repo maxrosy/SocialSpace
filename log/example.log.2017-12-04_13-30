@@ -1,0 +1,3 @@
+[INFO - 2017/12/04 13:30:18 - SocialWechatAPI.py]:Calling getUserSummary API
+[INFO - 2017/12/04 13:30:18 - SocialWechatAPI.py]:Total records received:2
+[WARNING - 2017/12/04 13:30:18 - SocialBasicAPI.py]:File ./output/panda_output.xlsx is not found! Creating one
