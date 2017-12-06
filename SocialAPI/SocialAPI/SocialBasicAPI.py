@@ -14,7 +14,6 @@ class SocialBasicAPI(object):
 	def __init__(self):
 		self.__cfp = configparser.ConfigParser()
 		self.__cfp.read('./conf/social.conf')
-		self.apitoken = self.__cfp.get('api','token')
 		self.logger = Logger('./conf/logging.conf','simpleExample').createLogger()
 		self.username = self.__cfp.get('db','user')
 		self.password = self.__cfp.get('db','password')
@@ -23,11 +22,14 @@ class SocialBasicAPI(object):
 		self.table = self.__cfp.get('db','table')
 		
 	def postRequest(self,url, postData):
-		"""
+		
 		r = requests.post(url, data=postData)
 		return r
-		"""
-		pass
+		
+	def getRequest(self,url,paramsDict):
+		
+		r = request.get(url, params=paramsDict)
+		return r
 		
 	def cleanRecords(self,df,dedupColumns=[]):
 		try:
@@ -95,8 +97,9 @@ class SocialBasicAPI(object):
 		try:
 			df['created_time'] = datetime.now()
 			df['updated_time'] = datetime.now()
-			engine = create_engine('mysql+mysqldb://%s:%s@%s/%s' %(self.username,self.password,self.host,db))
-			#df.to_sql(table,engine,chunksize=1000,dtype={"Agency": String(50),"Platform":String(50),"Likes":Integer},index=False,if_exists='append')
+			dblink = 'mysql+mysqldb://{}:{}@{}/{}?charset=utf8'.format(self.username,self.password,self.host,db)
+			engine = create_engine(dblink,encoding='utf-8')
+			#df.to_sql(table,engine,chunksize=1000,dtype={"Agency": String(50),"Platform":String(50),"Likes":Integer},index=False,if_exists='append',encoding='utf-8')
 			df.to_sql(table,engine,chunksize=1000,index=False,if_exists='append')
 			
 			"""

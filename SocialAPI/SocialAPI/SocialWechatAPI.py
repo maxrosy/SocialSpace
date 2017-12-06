@@ -3,15 +3,20 @@ import requests
 import json
 from .SocialBasicAPI import SocialBasicAPI
 import sys
+import configparser
 
 class SocialWechatAPI(SocialBasicAPI):
 
 	def __init__(self):
 		super(SocialWechatAPI,self).__init__()
+		self.__cfp = configparser.ConfigParser()
+		self.__cfp.read('./conf/social.conf')
+		self.__apiToken = self.__cfp.get('api','wechat')
+		
 		
 	def getUserSummary(self, begin_date, end_date):
 		try:
-			url = 'https://api.weixin.qq.com/datacube/getusersummary?access_token=%s' %self.apitoken
+			url = 'https://api.weixin.qq.com/datacube/getusersummary?access_token=%s' %self.__apiToken
 			data = {'begin_date': begin_date,'end_date' : end_date}
 			postData = json.dumps(data)
 		
