@@ -9,9 +9,7 @@ class SocialWechatAPI(SocialBasicAPI):
 
 	def __init__(self):
 		super(SocialWechatAPI,self).__init__()
-		self.__cfp = configparser.ConfigParser()
-		self.__cfp.read('./conf/social.conf')
-		self.__apiToken = self.__cfp.get('api','wechat')
+		self.__apiToken = self.cfp.get('api','wechat')
 		
 		
 	def getUserSummary(self, begin_date, end_date):

@@ -9,9 +9,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 
 	def __init__(self):
 		super(SocialWeiboAPI,self).__init__()
-		self.__cfp = configparser.ConfigParser()
-		self.__cfp.read('./conf/social.conf')
-		self.__apiToken = self.__cfp.get('api','weibo')
+		self.__apiToken = self.cfp.get('api','weibo')
 	
 		
 	def getFriendshipsFollowers(self,**kwargs):

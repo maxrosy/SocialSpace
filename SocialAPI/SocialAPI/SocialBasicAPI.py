@@ -12,14 +12,14 @@ from SocialAPI.Logger.BasicLogger import Logger
 class SocialBasicAPI(object):
 	
 	def __init__(self):
-		self.__cfp = configparser.ConfigParser()
-		self.__cfp.read('./conf/social.conf')
+		self.cfp = configparser.ConfigParser()
+		self.cfp.read('./conf/social.conf')
 		self.logger = Logger('./conf/logging.conf','simpleExample').createLogger()
-		self.username = self.__cfp.get('db','user')
-		self.password = self.__cfp.get('db','password')
-		self.host = self.__cfp.get('db','host')
-		self.db = self.__cfp.get('db','db')
-		self.table = self.__cfp.get('db','table')
+		self.__username = self.cfp.get('db','user')
+		self.__password = self.cfp.get('db','password')
+		self.__host = self.cfp.get('db','host')
+		#self.__db = self.cfp.get('db','db')
+		#self.__table = self.cfp.get('db','table')
 		
 	def postRequest(self,url, postData):
 		
@@ -97,7 +97,7 @@ class SocialBasicAPI(object):
 		try:
 			df['created_time'] = datetime.now()
 			df['updated_time'] = datetime.now()
-			dblink = 'mysql+mysqldb://{}:{}@{}/{}?charset=utf8'.format(self.username,self.password,self.host,db)
+			dblink = 'mysql+mysqldb://{}:{}@{}/{}?charset=utf8'.format(self.__username,self.__password,self.__host,db)
 			engine = create_engine(dblink,encoding='utf-8')
 			#df.to_sql(table,engine,chunksize=1000,dtype={"Agency": String(50),"Platform":String(50),"Likes":Integer},index=False,if_exists='append',encoding='utf-8')
 			df.to_sql(table,engine,chunksize=1000,index=False,if_exists='append')
