@@ -44,10 +44,10 @@ class SocialBasicAPI(object):
 				isDuplicated = df.duplicated(dedupColumns)
 				df = df[~isDuplicated]
 			df.reset_index(drop=True,inplace=True)
-			self.logger.info('Totally %d records remained after ETL' %(len(df)))
+			self.logger.info('Totally {} records remained after ETL'.format(len(df)))
 			return df
 		except Exception as e:
-			self.logger.error('On line %d - %s' %(sys.exc_info()[2].tb_lineno,e))
+			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
 			
 	def writeDataFrameToCsv(self,df,wbname,sheetname):
@@ -57,7 +57,7 @@ class SocialBasicAPI(object):
 				wb = load_workbook(wbname)
 					
 			except FileNotFoundError:
-				self.logger.warn("File %s is not found! Creating one" %(wbname))
+				self.logger.warn("File {} is not found! Creating one".format(wbname))
 				wb = Workbook()
 				
 			writer.book = wb
@@ -67,7 +67,7 @@ class SocialBasicAPI(object):
 			writer.save()
 		
 		except Exception as e:
-			self.logger.error('On line %d - %s' %(sys.exc_info()[2].tb_lineno,e))
+			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
 			
 	def readCsvToDataFrame(filePath,sep=','):	
@@ -84,27 +84,27 @@ class SocialBasicAPI(object):
 					n+=1
 				except StopIteration:
 					loop = False
-					self.logger.info("Iteration is stopped. Totally, %d loops" %(n))
+					self.logger.info("Iteration is stopped. Totally, {} loops".format(n))
 			df = pd.concat(chunks, ignore_index=True)
-			self.logger.info("Totally %d records imported" %(len(df)))
+			self.logger.info("Totally {} records imported".format(len(df)))
 			#df.info()
 			return df
 		except Exception as e:
-			self.logger.error('On line %d - %s' %(sys.exc_info()[2].tb_lineno,e))
+			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
 			
-	def syncToDB(self,df,db,table):
+	def syncToDB(self,df,db,table,syncType='append'):
 		try:
 			df['created_time'] = datetime.now()
 			df['updated_time'] = datetime.now()
 			dblink = 'mysql+mysqldb://{}:{}@{}/{}?charset=utf8'.format(self.__username,self.__password,self.__host,db)
 			engine = create_engine(dblink,encoding='utf-8')
 			#df.to_sql(table,engine,chunksize=1000,dtype={"Agency": String(50),"Platform":String(50),"Likes":Integer},index=False,if_exists='append',encoding='utf-8')
-			df.to_sql(table,engine,chunksize=1000,index=False,if_exists='append')
+			df.to_sql(table,engine,chunksize=1000,index=False,if_exists=syncType)
 			
 			"""
 			# To upsert records to mysql if needed
-			conn=MySQLdb.connect(host='127.0.0.1',port=3306,user='root',passwd='Laconia1987',db='pandas',charset='utf8')
+			conn=MySQLdb.connect(host=self.__host,port=3306,user=self.__username,passwd=self.__password,db=db,charset='utf8')
 			cursor=conn.cursor()
 			cursor.execute("insert into social(tagID,Url) values(1,'http://test.com') on duplicate update Url='http://test.com'")
 			conn.commit()
@@ -113,7 +113,7 @@ class SocialBasicAPI(object):
 			"""
 			
 		except Exception as e:
-			self.logger.error('On line %d - %s' %(sys.exc_info()[2].tb_lineno,e))
+			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
 		
 	def __str__(self):

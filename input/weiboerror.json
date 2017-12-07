@@ -1,0 +1,5 @@
+{
+    "request": "/friendships/followers/biz.json",
+    "error_code": 404,
+    "error": "error message."
+}
