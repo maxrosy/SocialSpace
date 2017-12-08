@@ -7,13 +7,17 @@ if __name__ == '__main__':
 	wechat=SocialWechatAPI()
 	b=wechat.getUserSummary('a','b')
 	#c=a.cleanRecords(b)
-	wechat.writeDataFrameToCsv(b,'./output/panda_output.xlsx','Wechat')
+	wechat.writeDataFrameToExcel(b,'./output/wechat.xlsx','Wechat')
+	wechat.writeDataFrameToCsv(b,'./output/wechat.csv','|')
 	wechat.syncToDB(b,'pandas','wechat')
 	
 	weibo=SocialWeiboAPI()
 	c=weibo.getFriendshipsFollowers()
-	weibo.writeDataFrameToCsv(c,'./output/panda_output.xlsx','Weibo')
+	weibo.writeDataFrameToExcel(c,'./output/panda_output.xlsx','Weibo')
+	weibo.writeDataFrameToCsv(c,'./output/weibo.csv','|')
 	weibo.syncToDB(c,'pandas','weibo')
+	weibo.writeToS3('friso-test','./output/weibo.csv','share/weibo.csv')
+	
 	
 	
 	

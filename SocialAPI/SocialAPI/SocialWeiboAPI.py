@@ -13,13 +13,13 @@ class SocialWeiboAPI(SocialBasicAPI):
 	
 		
 	def getFriendshipsFollowers(self,**kwargs):
+		self.logger.info("Calling getFriendshipsFollowers function")
 		try:
 			paramsDict = kwargs
 			paramsDict['access_token'] = self.__apiToken
 			
 			url = 'https://c.api.weibo.com/2/friendships/followers/biz.json'
 			
-			self.logger.info('Calling getFriendshipsFollowers API')
 			"""
 			result = self.getRequest(url, paramsDict)
 			if result.get('error_code') != None:

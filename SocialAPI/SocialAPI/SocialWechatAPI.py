@@ -13,12 +13,11 @@ class SocialWechatAPI(SocialBasicAPI):
 		
 		
 	def getUserSummary(self, begin_date, end_date):
+		self.logger.info("Calling getUserSummary function")
 		try:
 			url = 'https://api.weixin.qq.com/datacube/getusersummary?access_token=%s' %self.__apiToken
 			data = {'begin_date': begin_date,'end_date' : end_date}
 			postData = json.dumps(data)
-		
-			self.logger.info('Calling getUserSummary API')
 			
 			#result = self.postRequest(url,postData)
 			
@@ -34,6 +33,7 @@ class SocialWechatAPI(SocialBasicAPI):
 			exit(1)
 		
 	def getUserCumulate(self, begin_date, end_date):
+		self.logger.info("Calling getUserCimulate function")
 		url = 'https://api.weixin.qq.com/datacube/getusercumulate?access_token={}'.format(self.apitoken)
 		data = {'begin_date': begin_date,'end_date' : end_date}
 		postData = json.dumps(data)

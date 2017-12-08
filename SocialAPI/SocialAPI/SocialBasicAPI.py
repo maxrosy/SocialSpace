@@ -3,6 +3,7 @@ import requests
 import json
 import sys
 import boto3
+import botocore
 from datetime import datetime
 import configparser
 from openpyxl import load_workbook, Workbook
@@ -33,6 +34,7 @@ class SocialBasicAPI(object):
 		return r
 		
 	def cleanRecords(self,df,dedupColumns=[]):
+		self.logger.info("Calling cleanRecords function")
 		try:
 			df=df.drop_duplicates()
 			df=df[df['Platform'] != 'TOTAL']
@@ -51,7 +53,17 @@ class SocialBasicAPI(object):
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
 			
-	def writeDataFrameToCsv(self,df,wbname,sheetname):
+	def writeDataFrameToCsv(self,df,filename,sep=','):
+		self.logger.info("Calling writeDataFrameToCsv function")
+		try:
+			df.to_csv(filename,sep=sep,header=True,index=False)
+		except Exception as e:
+			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
+			exit(1)	
+			
+			
+	def writeDataFrameToExcel(self,df,wbname,sheetname):
+		self.logger.info("Calling writeDataFrameToExcel function")
 		try:
 			try:
 				writer = pd.ExcelWriter(wbname)
@@ -72,6 +84,7 @@ class SocialBasicAPI(object):
 			exit(1)
 			
 	def readCsvToDataFrame(filePath,sep=','):	
+		self.logger.info("Calling readCsvToDataFrame function")
 		try:
 			reader = pd.read_csv(filePath,sep=sep,iterator=True)
 			loop = True
@@ -95,6 +108,7 @@ class SocialBasicAPI(object):
 			exit(1)
 			
 	def syncToDB(self,df,db,table,syncType='append'):
+		self.logger.info("Calling syncToDB function")
 		try:
 			df['created_time'] = datetime.now()
 			df['updated_time'] = datetime.now()
@@ -119,13 +133,23 @@ class SocialBasicAPI(object):
 	
 	
 	def readFromS3(self,bucketName,remoteFile,localFile):
+		self.logger.info("Calling readFromS3 function")
 		try:
 			s3 = boto3.resource('s3')
+			s3.Bucket(bucketName).download_file(remoteFile, localFile)
+		
+		except botocore.exceptions.ClientError as e:
+			if e.response['Error']['Code'] == "404":
+				self.logger.error("The object does not exist.")
+			else:
+				raise
+		
 		except Exception as e:
 				self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 				exit(1)
 				
 	def writeToS3(self,bucketName,localFile,remoteFile):
+		self.logger.info("Calling writeToS3 function")
 		try:
 			s3 = boto3.resource('s3')
 			data = open(localFile, 'rb')
