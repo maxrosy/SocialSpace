@@ -2,6 +2,7 @@ import pandas as pd
 import requests
 import json
 import sys
+import boto3
 from datetime import datetime
 import configparser
 from openpyxl import load_workbook, Workbook
@@ -115,7 +116,25 @@ class SocialBasicAPI(object):
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
-		
+	
+	
+	def readFromS3(self,bucketName,remoteFile,localFile):
+		try:
+			s3 = boto3.resource('s3')
+		except Exception as e:
+				self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
+				exit(1)
+				
+	def writeToS3(self,bucketName,localFile,remoteFile):
+		try:
+			s3 = boto3.resource('s3')
+			data = open(localFile, 'rb')
+			s3.Bucket(bucketName).put_object(Key=remoteFile, Body=data)
+			
+		except Exception as e:
+				self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
+				exit(1)
+				
 	def __str__(self):
 		return "Basic API of Social"
 		
