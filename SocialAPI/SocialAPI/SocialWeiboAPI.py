@@ -25,7 +25,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 			if result.get('error_code') != None:
 				raise KeyError(result)
 			"""
-			with open('./input/weiboerror.json', 'r') as f:
+			with open('./input/weibotest.json', 'r') as f:
 				result = json.load(f)
 			if result.get('erro_code') != None:
 				raise KeyError
