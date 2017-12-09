@@ -10,6 +10,7 @@ from openpyxl import load_workbook, Workbook
 from sqlalchemy import create_engine
 from sqlalchemy.types import *
 from SocialAPI.Logger.BasicLogger import Logger
+import MySQLdb
 
 class SocialBasicAPI(object):
 	
@@ -131,6 +132,9 @@ class SocialBasicAPI(object):
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
 	
+	def connectToDB(self,db):
+		conn=MySQLdb.connect(host=self.__host,port=3306,user=self.__username,passwd=self.__password,db=db,charset='utf8')
+		return conn
 	
 	def readFromS3(self,bucketName,remoteFile,localFile):
 		self.logger.info("Calling readFromS3 function")
