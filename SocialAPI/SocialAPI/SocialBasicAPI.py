@@ -21,6 +21,7 @@ class SocialBasicAPI(object):
 		self.__username = self.cfp.get('db','user')
 		self.__password = self.cfp.get('db','password')
 		self.__host = self.cfp.get('db','host')
+		self.__port = self.cfp.get('db','port')
 		#self.__db = self.cfp.get('db','db')
 		#self.__table = self.cfp.get('db','table')
 		
@@ -120,7 +121,7 @@ class SocialBasicAPI(object):
 			
 			"""
 			# To upsert records to mysql if needed
-			conn=MySQLdb.connect(host=self.__host,port=3306,user=self.__username,passwd=self.__password,db=db,charset='utf8')
+			conn=self.connectToDB(db)
 			cursor=conn.cursor()
 			cursor.execute("insert into social(tagID,Url) values(1,'http://test.com') on duplicate update Url='http://test.com'")
 			conn.commit()
@@ -133,7 +134,7 @@ class SocialBasicAPI(object):
 			exit(1)
 	
 	def connectToDB(self,db):
-		conn=MySQLdb.connect(host=self.__host,port=3306,user=self.__username,passwd=self.__password,db=db,charset='utf8')
+		conn=MySQLdb.connect(host=self.__host,port=self.__port,user=self.__username,passwd=self.__password,db=db,charset='utf8')
 		return conn
 	
 	def readFromS3(self,bucketName,remoteFile,localFile):
