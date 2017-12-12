@@ -28,11 +28,9 @@ class SocialWeiboAPI(SocialBasicAPI):
 			
 			url = 'https://c.api.weibo.com/2/search/statuses/historical/create.json'
 			
-			"""
-			result = self.postRequst(url,paramsDict)
-			if result.get('error_code') != None:
-				raise KeyError(result)
-			"""
+			
+			#result = self.postRequst(url,paramsDict)
+			
 			with open('./input/weibo_history_create.json', 'r') as f:
 				result = json.load(f)
 			if result.get('erro_code') != None:
@@ -65,7 +63,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 		self.logger.info("Calling searchStatusesHistoryCheck function")
 		try:
 			url = 'https://c.api.weibo.com/2/search/statuses/historical/check.json'
-			
+			finishTasks = []
 			conn = self.connectToDB('pandas')
 			cursor=conn.cursor()
 			cursor.execute("select task_id,user_id,secret_key from task_history where status =0")
@@ -82,12 +80,21 @@ class SocialWeiboAPI(SocialBasicAPI):
 				if result.get('erro_code') != None:
 					raise KeyError
 				if result.get('status') == True:
+					self.searchStatusesHistoryDownload(taskId,id,secretKey)
 					self.logger.info("Task {} is done and returns {} records".format(taskId,result.get('count')))
-					cursor.execute("update task_history set status=1 where task_id={}".format(taskId))
+					finishTasks.append(taskId)
+			if finishTasks != []:
+				try:
+					sql = 'update task_history set status=1 where task_id = %s'
+					cursor.executemany(sql,finishTasks)
+					#cursor.execute("update task_history set status=1 where task_id={}".format(taskId))
 					conn.commit()
-			
-			cursor.close()
-			conn.close()
+				except Exception as e:
+					conn.rollback()
+					self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
+				finally:
+					cursor.close()
+					conn.close()
 			
 		except KeyError:
 			self.logger.error('On line {} - Error Code: {}, Error Msg: {}'.format(sys.exc_info()[2].tb_lineno,result['error_code'],result['error']))
@@ -96,7 +103,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
 	
-	def searchStatusesHistoryDownload(self,id,taskId,secretKey):
+	def searchStatusesHistoryDownload(self,taskId,id,secretKey):
 		"""
 		Documentation
 		http://open.weibo.com/wiki/C/2/search/statuses/historical/download
@@ -105,7 +112,8 @@ class SocialWeiboAPI(SocialBasicAPI):
 		try:
 			url = 'https://c.api.weibo.com/2/search/statuses/historical/download.json'
 			timestamp = int(time.time())
-			paramsDict = {'access_token':self.__apiToken,'task_id':taskId,'timestamp':timestamp,'signature':hashlib.md5(id+secretKey+timestamp)}	
+			pw = id+secretKey+str(timestamp)
+			paramsDict = {'access_token':self.__apiToken,'task_id':taskId,'timestamp':timestamp,'signature':hashlib.md5(pw.encode('utf-8'))}	
 			
 			result = self.getRequest(url,paramsDict)
 			if result.get('erro_code') != None:
@@ -117,6 +125,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
+			
 	def getFriendshipsFollowers(self,**kwargs):
 		self.logger.info("Calling getFriendshipsFollowers function")
 		try:
@@ -125,11 +134,9 @@ class SocialWeiboAPI(SocialBasicAPI):
 			
 			url = 'https://c.api.weibo.com/2/friendships/followers/biz.json'
 			
-			"""
-			result = self.getRequest(url, paramsDict)
-			if result.get('error_code') != None:
-				raise KeyError(result)
-			"""
+			
+			#result = self.getRequest(url, paramsDict)
+			
 			with open('./input/weibotest.json', 'r') as f:
 				result = json.load(f)
 			if result.get('erro_code') != None:

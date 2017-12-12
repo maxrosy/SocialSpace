@@ -31,7 +31,7 @@ class SocialBasicAPI(object):
 		
 	def getRequest(self,url,paramsDict):
 		
-		r = request.get(url, params=paramsDict)
+		r = requests.get(url, params=paramsDict)
 		return r
 		
 	def cleanRecords(self,df,dedupColumns=[]):
@@ -53,7 +53,7 @@ class SocialBasicAPI(object):
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
-			
+	
 	def writeDataFrameToCsv(self,df,filename,sep=','):
 		self.logger.info("Calling writeDataFrameToCsv function")
 		try:
