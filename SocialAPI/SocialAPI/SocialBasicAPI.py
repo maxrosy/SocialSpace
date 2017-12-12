@@ -21,7 +21,7 @@ class SocialBasicAPI(object):
 		self.__username = self.cfp.get('db','user')
 		self.__password = self.cfp.get('db','password')
 		self.__host = self.cfp.get('db','host')
-		self.__port = self.cfp.get('db','port')
+		self.__port = int(self.cfp.get('db','port'))
 		#self.__db = self.cfp.get('db','db')
 		#self.__table = self.cfp.get('db','table')
 		
