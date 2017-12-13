@@ -3,8 +3,10 @@ from django.shortcuts import render,get_object_or_404
 # Create your views here.
 from .models import TaskHistory
 from django.views.decorators.cache import cache_page
+from django.contrib.auth.decorators import login_required
 
 @cache_page(60*15)
+@login_required()
 def index(request):
 	task_list = TaskHistory.objects.order_by('-created_time')
 	context = {
