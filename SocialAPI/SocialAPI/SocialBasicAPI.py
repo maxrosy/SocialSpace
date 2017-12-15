@@ -7,10 +7,11 @@ import botocore
 from datetime import datetime
 import configparser
 from openpyxl import load_workbook, Workbook
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.types import *
 from SocialAPI.Logger.BasicLogger import Logger
 import MySQLdb
+
 
 class SocialBasicAPI(object):
 	
@@ -133,9 +134,22 @@ class SocialBasicAPI(object):
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
 	
-	def connectToDB(self,db):
-		conn=MySQLdb.connect(host=self.__host,port=self.__port,user=self.__username,passwd=self.__password,db=db,charset='utf8')
-		return conn
+	def connectToDB(self,db,table):
+		
+		try:
+			dblink = 'mysql+mysqldb://{}:{}@{}/{}?charset=utf8'.format(self.__username,self.__password,self.__host,db)
+			engine = create_engine(dblink,encoding='utf-8',echo=True)
+			meta = MetaData(bind=engine,reflect=True)
+			table = Table(table,meta)
+			
+			return (engine, table)
+		
+		except Exception as e:
+			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
+			exit(1)
+		
+		#conn=MySQLdb.connect(host=self.__host,port=self.__port,user=self.__username,passwd=self.__password,db=db,charset='utf8')
+		#return conn
 	
 	def readFromS3(self,bucketName,remoteFile,localFile):
 		self.logger.info("Calling readFromS3 function")
