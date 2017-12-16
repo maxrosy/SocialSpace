@@ -7,10 +7,10 @@ import botocore
 from datetime import datetime
 import configparser
 from openpyxl import load_workbook, Workbook
-from sqlalchemy import create_engine, MetaData, Table
+from sqlalchemy import create_engine, MetaData
 from sqlalchemy.types import *
 from SocialAPI.Logger.BasicLogger import Logger
-import MySQLdb
+
 
 
 class SocialBasicAPI(object):
@@ -39,8 +39,9 @@ class SocialBasicAPI(object):
 	def cleanRecords(self,df,dedupColumns=[]):
 		self.logger.info("Calling cleanRecords function")
 		try:
-			df=df.drop_duplicates()
-			df=df[df['Platform'] != 'TOTAL']
+			df.drop_duplicates(inplace=True)
+			df.fillna('null',inplace=True)
+			#df=df[df['Platform'] != 'TOTAL']
 			#df.info()
 			
 			df.rename(columns={'Likes/Followers/Visits/Downloads':'Likes'}, inplace = True)
@@ -134,15 +135,14 @@ class SocialBasicAPI(object):
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
 	
-	def connectToDB(self,db,table):
+	def connectToDB(self,db):
 		
 		try:
 			dblink = 'mysql+mysqldb://{}:{}@{}/{}?charset=utf8'.format(self.__username,self.__password,self.__host,db)
 			engine = create_engine(dblink,encoding='utf-8',echo=True)
 			meta = MetaData(bind=engine,reflect=True)
-			table = Table(table,meta)
 			
-			return (engine, table)
+			return (engine, meta)
 		
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))

@@ -5,7 +5,7 @@ from .SocialBasicAPI import SocialBasicAPI
 import sys
 import time
 import hashlib
-from sqlalchemy import bindparam
+from sqlalchemy import bindparam,Table
 
 
 
@@ -41,7 +41,8 @@ class SocialWeiboAPI(SocialBasicAPI):
 			__secretKey = result.get('secret_key')
 			
 			# Insert new created task into DB
-			engine, Task = self.connectToDB('pandas','task_history')
+			engine, meta = self.connectToDB('pandas')
+			Task = Table('task_history',meta)
 			ins = Task.insert().values(task_id=__taskId, user_id=__id, secret_key=__secretKey)
 			conn = engine.connect()
 			result = conn.execute(ins)
@@ -68,7 +69,8 @@ class SocialWeiboAPI(SocialBasicAPI):
 			url = 'https://c.api.weibo.com/2/search/statuses/historical/check.json'
 			finishTasks = []
 			# Get task whose status is 0
-			engine, Task = self.connectToDB('pandas','task_history')
+			engine, meta = self.connectToDB('pandas')
+			Task = Table('task_history',meta)
 			stmt = Task.select().where(Task.c.status==0)
 			conn = engine.connect()
 			res = conn.execute(stmt)
@@ -153,6 +155,61 @@ class SocialWeiboAPI(SocialBasicAPI):
 			df = pd.read_json(newJson,orient='records')
 			self.logger.info('Total records received:{}'.format(len(df)))
 			return df
+		except KeyError:
+			self.logger.error('On line {} - Error Code: {}, Error Msg: {}'.format(sys.exc_info()[2].tb_lineno,result['error_code'],result['error']))
+			exit(1)
+		except Exception as e:
+			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
+			exit(1)
+	
+	def getStatusesShowBatch(self, **kwargs):
+		"""
+		Documentation
+		http://open.weibo.com/wiki/C/2/statuses/show_batch/biz
+		"""
+		
+		self.logger.info("Calling getStatusesShowBatch")
+		try:
+			paramsDict = kwargs
+			paramsDict['access_token'] = self.__apiToken
+			
+			url = 'https://c.api.weibo.com/2/statuses/show_batch/biz.json'
+			#result = self.getRequest(url, paramsDict)
+			
+			with open('./input/weibo_status_show_batch.json', 'r') as f:
+				result = json.load(f)
+			if result.get('erro_code') != None:
+				raise KeyError
+			posts = result.get('statuses')
+			df_post = pd.read_json(json.dumps(posts),orient='records')
+			users = df_post['user']
+			userList = [pd.DataFrame([user]) for user in users ]
+			df_user = pd.concat(userList,ignore_index=True)
+			df_post['user_id'] = df_user['id']
+			df_post['annotations'] = ''
+			df_post.fillna('null',inplace=True)
+			df_post.drop('user',axis=1,inplace=True)
+			try:
+				engine, meta = self.connectToDB('pandas')
+				conn = engine.connect()
+				
+				User = Table('weibo_user',meta)
+				stmt = User.insert()	
+				res = conn.execute(stmt,df_user.to_dict('records'))
+				self.logger.info('{} User record(s) have been inserted'.format(res.rowcount))
+				res.close()
+				
+				Post = Table('weibo_post',meta)
+				stmt = Post.insert()
+				res = conn.execute(stmt,df_post.to_dict('records'))
+				self.logger.info('{} Post record(s) have been inserted'.format(res.rowcount))
+				res.close()
+			except Exception as e:
+				self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
+			finally:
+				
+				conn.close()
+			
 		except KeyError:
 			self.logger.error('On line {} - Error Code: {}, Error Msg: {}'.format(sys.exc_info()[2].tb_lineno,result['error_code'],result['error']))
 			exit(1)
