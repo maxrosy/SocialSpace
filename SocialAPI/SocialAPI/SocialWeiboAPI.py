@@ -41,8 +41,8 @@ class SocialWeiboAPI(SocialBasicAPI):
 			__secretKey = result.get('secret_key')
 			
 			# Insert new created task into DB
-			engine, tasks = self.connectToDB('pandas','task_history')
-			ins = tasks.insert().values(task_id=__taskId, user_id=__id, secret_key=__secretKey)
+			engine, Task = self.connectToDB('pandas','task_history')
+			ins = Task.insert().values(task_id=__taskId, user_id=__id, secret_key=__secretKey)
 			conn = engine.connect()
 			result = conn.execute(ins)
 			
@@ -68,8 +68,8 @@ class SocialWeiboAPI(SocialBasicAPI):
 			url = 'https://c.api.weibo.com/2/search/statuses/historical/check.json'
 			finishTasks = []
 			# Get task whose status is 0
-			engine, tasks = self.connectToDB('pandas','task_history')
-			stmt = tasks.select().where(tasks.c.status==0)
+			engine, Task = self.connectToDB('pandas','task_history')
+			stmt = Task.select().where(Task.c.status==0)
 			conn = engine.connect()
 			res = conn.execute(stmt)
 			
@@ -89,11 +89,13 @@ class SocialWeiboAPI(SocialBasicAPI):
 					#self.searchStatusesHistoryDownload(taskId,id,secretKey)
 					self.logger.info("Task {} is done and returns {} records".format(taskId,result.get('count')))
 					finishTasks.append(taskId)
+			res.close()
+			
 			if finishTasks != []:
 				try:
 					# Update in executemany mode using bindparam
 					paramList = [{'task':task} for task in finishTasks]	
-					stmt = tasks.update().values(status=1).where(tasks.c.task_id==bindparam('task'))
+					stmt = Task.update().values(status=1).where(Task.c.task_id==bindparam('task'))
 					res = conn.execute(stmt,paramList)
 				
 				except Exception as e:
