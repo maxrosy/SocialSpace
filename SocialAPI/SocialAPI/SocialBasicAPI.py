@@ -7,7 +7,7 @@ import botocore
 from datetime import datetime
 import configparser
 from openpyxl import load_workbook, Workbook
-from sqlalchemy import create_engine, MetaData
+from sqlalchemy import create_engine, MetaData,Table
 from sqlalchemy.types import *
 from SocialAPI.Logger.BasicLogger import Logger
 
@@ -44,9 +44,9 @@ class SocialBasicAPI(object):
 			#df=df[df['Platform'] != 'TOTAL']
 			#df.info()
 			
-			df.rename(columns={'Likes/Followers/Visits/Downloads':'Likes'}, inplace = True)
-			df['Date Sampled'] = df['Date Sampled'].str.slice(0,10)
-			df['Date Sampled'] = pd.to_datetime(df['Date Sampled'],yearfirst=True)
+			#df.rename(columns={'Likes/Followers/Visits/Downloads':'Likes'}, inplace = True)
+			#df['Date Sampled'] = df['Date Sampled'].str.slice(0,10)
+			#df['Date Sampled'] = pd.to_datetime(df['Date Sampled'],yearfirst=True)
 			if dedupColumns != []:
 				isDuplicated = df.duplicated(dedupColumns)
 				df = df[~isDuplicated]
@@ -135,6 +135,22 @@ class SocialBasicAPI(object):
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
 	
+	def insertToDB(self,dbName,tableName,records):
+		try:
+			engine, meta = self.connectToDB(dbName)
+			conn = engine.connect()
+					
+			table = Table(tableName,meta)
+			stmt = table.insert()	
+			res = conn.execute(stmt,records.to_dict('records'))
+			self.logger.info('{} record(s) have been inserted into {}'.format(res.rowcount,tableName))
+			res.close()
+		except Exception as e:
+			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
+			exit(1)
+		finally:
+			conn.close()
+		
 	def connectToDB(self,db):
 		
 		try:

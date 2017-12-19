@@ -5,6 +5,7 @@ from .SocialBasicAPI import SocialBasicAPI
 import sys
 import time
 import hashlib
+from urllib import parse
 from sqlalchemy import bindparam,Table
 
 
@@ -41,15 +42,20 @@ class SocialWeiboAPI(SocialBasicAPI):
 			__secretKey = result.get('secret_key')
 			
 			# Insert new created task into DB
-			engine, meta = self.connectToDB('pandas')
-			Task = Table('task_history',meta)
-			ins = Task.insert().values(task_id=__taskId, user_id=__id, secret_key=__secretKey)
-			conn = engine.connect()
-			result = conn.execute(ins)
+			try:
+				engine, meta = self.connectToDB('pandas')
+				Task = Table('task_history',meta)
+				ins = Task.insert().values(task_id=__taskId, user_id=__id, secret_key=__secretKey)
+				conn = engine.connect()
+				result = conn.execute(ins)
+				
+				result.close()
+				self.logger.info("Task {} is created.".format(__taskId))
+			except Exception as e:
+				self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
+			finally:
+				conn.close()
 			
-			result.close()
-			conn.close()
-			self.logger.info("Task {} is created.".format(__taskId))
 			return
 			
 		except KeyError:
@@ -137,6 +143,10 @@ class SocialWeiboAPI(SocialBasicAPI):
 			exit(1)
 			
 	def getFriendshipsFollowers(self,**kwargs):
+		"""
+		Documentation
+		http://open.weibo.com/wiki/C/2/friendships/followers/biz
+		"""
 		self.logger.info("Calling getFriendshipsFollowers function")
 		try:
 			paramsDict = kwargs
@@ -189,26 +199,87 @@ class SocialWeiboAPI(SocialBasicAPI):
 			df_post['annotations'] = ''
 			df_post.fillna('null',inplace=True)
 			df_post.drop('user',axis=1,inplace=True)
-			try:
-				engine, meta = self.connectToDB('pandas')
-				conn = engine.connect()
-				
-				User = Table('weibo_user',meta)
-				stmt = User.insert()	
-				res = conn.execute(stmt,df_user.to_dict('records'))
-				self.logger.info('{} User record(s) have been inserted'.format(res.rowcount))
-				res.close()
-				
-				Post = Table('weibo_post',meta)
-				stmt = Post.insert()
-				res = conn.execute(stmt,df_post.to_dict('records'))
-				self.logger.info('{} Post record(s) have been inserted'.format(res.rowcount))
-				res.close()
-			except Exception as e:
-				self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
-			finally:
-				
-				conn.close()
+			
+			return (df_user,df_post)
+			
+		except KeyError:
+			self.logger.error('On line {} - Error Code: {}, Error Msg: {}'.format(sys.exc_info()[2].tb_lineno,result['error_code'],result['error']))
+			exit(1)
+		except Exception as e:
+			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
+			exit(1)
+			
+	def getSearchStatusesLimited(self,q,**kwargs):
+		"""
+		Documentation
+		http://open.weibo.com/wiki/C/2/search/statuses/limited
+		"""
+		self.logger.info("Calling getSearchStatusesLimited function")
+		try:
+			paramsDict = kwargs
+			paramsDict['access_token'] = self.__apiToken
+			paramList['q'] = parse.quote(q)
+			
+			url = 'https://c.api.weibo.com/2/statuses/show_batch/biz.json'
+			#result = self.getRequest(url, paramsDict)
+			
+			with open('./input/weibo_status_show_batch.json', 'r') as f:
+				result = json.load(f)
+			if result.get('erro_code') != None:
+				raise KeyError
+			posts = result.get('statuses')
+			df_post = pd.read_json(json.dumps(posts),orient='records')
+			users = df_post['user']
+			userList = [pd.DataFrame([user]) for user in users ]
+			df_user = pd.concat(userList,ignore_index=True)
+			df_post['user_id'] = df_user['id']
+			df_post['annotations'] = ''
+			df_post.fillna('null',inplace=True)
+			df_post.drop('user',axis=1,inplace=True)
+			return df_post
+			
+		except KeyError:
+			self.logger.error('On line {} - Error Code: {}, Error Msg: {}'.format(sys.exc_info()[2].tb_lineno,result['error_code'],result['error']))
+			exit(1)
+		except Exception as e:
+			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
+			exit(1)
+	
+	def getCommentsShow(self,id,**kwargs):
+		"""
+		Documentation
+		http://open.weibo.com/wiki/C/2/comments/show/all
+		"""
+		self.logger.info("Calling getCommentsShow function")
+		try:
+			paramsDict = kwargs
+			paramsDict['access_token'] = self.__apiToken
+			paramsDict['id'] = id
+			url = 'https://c.api.weibo.com/2/comments/show/all.json'
+			#result = self.getRequest(url, paramsDict)
+			
+			with open('./input/weibo_comments_show.json', 'r') as f:
+				result = json.load(f)
+			if result.get('erro_code') != None:
+				raise KeyError
+			comments = result.get('comments')
+			df_comments = pd.read_json(json.dumps(comments),orient='records')
+			
+			# Extract user_id 
+			comment_users = df_comments['user']
+			comment_users_list = [pd.DataFrame([comment_user]) for comment_user in comment_users]
+			df_comment_user = pd.concat(comment_users_list,ignore_index=True)
+			df_comments['user_id'] = df_comment_user['id']
+			df_comments.drop('user',axis=1,inplace=True)
+			
+			# Extract post_id
+			comment_posts = df_comments['status']
+			comment_posts_list = [pd.DataFrame([comment_post]) for comment_post in comment_posts]
+			df_comment_post = pd.concat(comment_posts_list,ignore_index=True)
+			df_comments['post_id'] = df_comment_post['id']
+			df_comments.drop('status',axis=1,inplace=True)
+			
+			return df_comments
 			
 		except KeyError:
 			self.logger.error('On line {} - Error Code: {}, Error Msg: {}'.format(sys.exc_info()[2].tb_lineno,result['error_code'],result['error']))
