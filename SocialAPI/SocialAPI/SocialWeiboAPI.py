@@ -35,7 +35,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 			
 			with open('./input/weibo_history_create.json', 'r') as f:
 				result = json.load(f)
-			if result.get('erro_code') != None:
+			if result.get('error_code') != None:
 				raise KeyError
 			__id = result.get('id')
 			__taskId = int(result.get('task_id'))
@@ -91,7 +91,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 				#result = self.getRequest(url,paramsDict)
 				with open('./input/weibo_history_check.json', 'r') as f:
 					result = json.load(f)
-				if result.get('erro_code') != None:
+				if result.get('error_code') != None:
 					raise KeyError
 				if result.get('status') == True:
 					#self.searchStatusesHistoryDownload(taskId,id,secretKey)
@@ -132,7 +132,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 			paramsDict = {'access_token':self.__apiToken,'task_id':taskId,'timestamp':timestamp,'signature':hashlib.md5(pw.encode('utf-8'))}	
 			
 			result = self.getRequest(url,paramsDict)
-			if result.get('erro_code') != None:
+			if result.get('error_code') != None:
 				raise KeyError
 			
 		except KeyError:
@@ -159,10 +159,10 @@ class SocialWeiboAPI(SocialBasicAPI):
 			
 			with open('./input/weibotest.json', 'r') as f:
 				result = json.load(f)
-			if result.get('erro_code') != None:
+			if result.get('error_code') != None:
 				raise KeyError
 			newJson = json.dumps(result['users'])
-			df = pd.read_json(newJson,orient='records')
+			df = pd.read_json(newJson,orient='records',dtype=object)
 			self.logger.info('Total records received:{}'.format(len(df)))
 			return df
 		except KeyError:
@@ -188,10 +188,10 @@ class SocialWeiboAPI(SocialBasicAPI):
 			
 			with open('./input/weibo_status_show_batch.json', 'r') as f:
 				result = json.load(f)
-			if result.get('erro_code') != None:
+			if result.get('error_code') != None:
 				raise KeyError
 			posts = result.get('statuses')
-			df_post = pd.read_json(json.dumps(posts),orient='records')
+			df_post = pd.read_json(json.dumps(posts),orient='records',dtype=object)
 			users = df_post['user']
 			userList = [pd.DataFrame([user]) for user in users ]
 			df_user = pd.concat(userList,ignore_index=True)
@@ -225,10 +225,10 @@ class SocialWeiboAPI(SocialBasicAPI):
 			
 			with open('./input/weibo_status_show_batch.json', 'r') as f:
 				result = json.load(f)
-			if result.get('erro_code') != None:
+			if result.get('error_code') != None:
 				raise KeyError
 			posts = result.get('statuses')
-			df_post = pd.read_json(json.dumps(posts),orient='records')
+			df_post = pd.read_json(json.dumps(posts),orient='records',dtype=object)
 			users = df_post['user']
 			userList = [pd.DataFrame([user]) for user in users ]
 			df_user = pd.concat(userList,ignore_index=True)
@@ -260,10 +260,10 @@ class SocialWeiboAPI(SocialBasicAPI):
 			
 			with open('./input/weibo_comments_show.json', 'r') as f:
 				result = json.load(f)
-			if result.get('erro_code') != None:
+			if result.get('error_code') != None:
 				raise KeyError
 			comments = result.get('comments')
-			df_comments = pd.read_json(json.dumps(comments),orient='records')
+			df_comments = pd.read_json(json.dumps(comments),orient='records',dtype=object)
 			
 			# Extract user_id 
 			comment_users = df_comments['user']
