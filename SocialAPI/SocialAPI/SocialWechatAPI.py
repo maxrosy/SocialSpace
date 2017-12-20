@@ -24,7 +24,7 @@ class SocialWechatAPI(SocialBasicAPI):
 			with open('./input/wechattest.json', 'r') as f:
 				result = json.load(f)
 			newJson = json.dumps(result['list'])
-			df = pd.read_json(newJson,orient='records')
+			df = pd.read_json(newJson,orient='records',dtype=object)
 			self.logger.info('Total records received:{}'.format(len(df)))
 			return df
 			

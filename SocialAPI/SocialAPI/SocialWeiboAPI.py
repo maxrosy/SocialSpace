@@ -43,18 +43,12 @@ class SocialWeiboAPI(SocialBasicAPI):
 			
 			# Insert new created task into DB
 			try:
-				engine, meta = self.connectToDB('pandas')
-				Task = Table('task_history',meta)
-				ins = Task.insert().values(task_id=__taskId, user_id=__id, secret_key=__secretKey)
-				conn = engine.connect()
-				result = conn.execute(ins)
+				records = {'task_id':__taskId,'user_id':__id,'secret_key':__secretKey}
+				self.insertToDB('pandas','task_history',records,type='dict')
 				
-				result.close()
 				self.logger.info("Task {} is created.".format(__taskId))
 			except Exception as e:
 				self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
-			finally:
-				conn.close()
 			
 			return
 			
