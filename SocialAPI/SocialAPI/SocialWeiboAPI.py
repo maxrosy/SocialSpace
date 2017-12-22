@@ -49,6 +49,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 				self.logger.info("Task {} is created.".format(__taskId))
 			except Exception as e:
 				self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
+				exit(1)
 			
 			return
 			
@@ -105,6 +106,8 @@ class SocialWeiboAPI(SocialBasicAPI):
 				finally:
 					res.close()
 					conn.close()
+			
+			return finishTasks
 			
 		except KeyError:
 			self.logger.error('On line {} - Error Code: {}, Error Msg: {}'.format(sys.exc_info()[2].tb_lineno,result['error_code'],result['error']))
