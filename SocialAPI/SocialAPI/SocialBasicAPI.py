@@ -164,7 +164,7 @@ class SocialBasicAPI(object):
 		
 		try:
 			dblink = 'mysql+mysqldb://{}:{}@{}/{}?charset=utf8'.format(self.__username,self.__password,self.__host,db)
-			engine = create_engine(dblink,encoding='utf-8',echo=True)
+			engine = create_engine(dblink,encoding='utf-8',echo=False)
 			meta = MetaData(bind=engine,reflect=True)
 			
 			return (engine, meta)
