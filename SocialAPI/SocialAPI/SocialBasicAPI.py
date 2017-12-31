@@ -47,11 +47,13 @@ class SocialBasicAPI(object):
 			#df.rename(columns={'Likes/Followers/Visits/Downloads':'Likes'}, inplace = True)
 			#df['Date Sampled'] = df['Date Sampled'].str.slice(0,10)
 			#df['Date Sampled'] = pd.to_datetime(df['Date Sampled'],yearfirst=True)
+			beforeETL = len(df)
 			if dedupColumns != []:
 				isDuplicated = df.duplicated(dedupColumns)
 				df = df[~isDuplicated]
 			df.reset_index(drop=True,inplace=True)
-			self.logger.info('Totally {} records remained after ETL'.format(len(df)))
+			afterETL = len(df)
+			self.logger.info('Totally {} our of {} records remained after ETL'.format(afterETL, beforeETL))
 			return df
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
