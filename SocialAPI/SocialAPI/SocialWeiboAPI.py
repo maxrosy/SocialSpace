@@ -116,7 +116,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
 	
-	def searchStatusesHistoryDownload(self,taskId,id,secretKey):
+	def searchStatusesHistoryDownload(self,taskId,id,secretKey,chunkSize=1024):
 		"""
 		Documentation
 		http://open.weibo.com/wiki/C/2/search/statuses/historical/download
@@ -127,11 +127,17 @@ class SocialWeiboAPI(SocialBasicAPI):
 			timestamp = int(time.time())
 			pw = id+secretKey+str(timestamp)
 			paramsDict = {'access_token':self.__apiToken,'task_id':taskId,'timestamp':timestamp,'signature':hashlib.md5(pw.encode('utf-8'))}	
-			
-			result = self.getRequest(url,paramsDict)
+			"""
+			Needs testing
+			result = self.getRequest(url,paramsDict,stream=True)
+
 			if result.get('error_code') != None:
 				raise KeyError
 			
+			with open("./output/taskId.json",'rb') as localFile:
+                                for chunk in result.iter_content(chunk_size=chunkSize):
+                                        localFile.write(chunk)
+			"""
 		except KeyError:
 			self.logger.error('On line {} - Error Code: {}, Error Msg: {}'.format(sys.exc_info()[2].tb_lineno,result['error_code'],result['error']))
 			exit(1)

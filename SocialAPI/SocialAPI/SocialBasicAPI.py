@@ -31,9 +31,9 @@ class SocialBasicAPI(object):
 		r = requests.post(url, data=postData)
 		return r
 		
-	def getRequest(self,url,paramsDict):
+	def getRequest(self,url,paramsDict,stream=False):
 		
-		r = requests.get(url, params=paramsDict)
+		r = requests.get(url, params=paramsDict, stream=stream)
 		return r
 		
 	def cleanRecords(self,df,dedupColumns=[]):
