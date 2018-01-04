@@ -2,7 +2,7 @@ import pandas as pd
 import requests
 import json
 from .SocialBasicAPI import SocialBasicAPI
-import sys
+import sys, os
 import time
 import hashlib
 from urllib import parse
@@ -133,10 +133,14 @@ class SocialWeiboAPI(SocialBasicAPI):
 
 			if result.get('error_code') != None:
 				raise KeyError
-			
-			with open("./output/taskId.json",'rb') as localFile:
+
+			localFile = './output/taskId.json'
+			with open("./output/taskId.json",'wb') as f:
                                 for chunk in result.iter_content(chunk_size=chunkSize):
-                                        localFile.write(chunk)
+                                        f.write(chunk)
+			
+			fileInfo = os.stat(localFile)
+			self.logger.info('{} is downloaded with {} bytes'.format(localFile, fileInfo.st_size))
 			"""
 		except KeyError:
 			self.logger.error('On line {} - Error Code: {}, Error Msg: {}'.format(sys.exc_info()[2].tb_lineno,result['error_code'],result['error']))
