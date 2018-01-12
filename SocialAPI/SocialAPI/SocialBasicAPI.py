@@ -137,7 +137,7 @@ class SocialBasicAPI(object):
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
 	
-	def insertToDB(self,dbName,tableName,records,type='dataframe'):
+	def insertToDB(self,dbName,tableName,records,dataFormat='dataframe'):
 		"""
 		type can be dict or dataframe, default is dataframe
 		"""
@@ -147,17 +147,18 @@ class SocialBasicAPI(object):
 					
 			table = Table(tableName,meta)
 			stmt = table.insert()
-			if type == 'dataframe':
+			if dataFormat == 'dataframe':
 				res = conn.execute(stmt,records.to_dict('records'))
-			elif type == 'dict':
+			elif dataFormat == 'dict':
 				res = conn.execute(stmt,records)
 			else:
-				raise Exception("Record Type {} is wrong".format(type))
+				raise Exception("Record Type {} is wrong".format(dataFormat))
 				
 			self.logger.info('{} record(s) have been inserted into {}'.format(res.rowcount,tableName))
 			res.close()
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
+			res.close()
 			exit(1)
 		finally:
 			conn.close()
