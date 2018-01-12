@@ -1,12 +1,12 @@
 import pandas as pd
-import requests
 import json
 from .SocialBasicAPI import SocialBasicAPI
 import sys, os
-import time
+import time, datetime
 import hashlib
 from urllib import parse
 from sqlalchemy import bindparam,Table
+from zipfile import ZipFile
 
 
 
@@ -15,28 +15,109 @@ class SocialWeiboAPI(SocialBasicAPI):
 	def __init__(self):
 		super(SocialWeiboAPI,self).__init__()
 		self.__apiToken = self.cfp.get('api','weibo')
-	
+
+	def getStatusesUserTimelineBatch(self, uids, **kwargs):
+		"""
+		Documentation
+		http://open.weibo.com/wiki/C/2/statuses/user_timeline_batch
+
+		:param kwargs:
+		:return:
+		"""
+		self.logger.info("Calling getStatusesUserTimelineBatch")
+		try:
+			params_dict = kwargs
+			params_dict['access_token'] = self.__apiToken
+			params_dict['uids'] = uids
+
+			url = 'https://c.api.weibo.com/2/statuses/user_timeline_batch.json'
+
+			result = self.getRequest(url, params_dict)
+			result = result.json()
+
+			if result.get('error_code') is not None:
+				raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
+
+			statuses = result.get('statuses')
+			df_post = pd.DataFrame(statuses)
+			users = df_post['user']
+			user_list = [pd.DataFrame([user]) for user in users]
+			df_user = pd.concat(user_list, ignore_index=True)
+			df_post['user_id'] = df_user['id']
+			df_post['annotations'] = ''
+			df_post.drop('user', axis=1, inplace=True)
+			df_post_cleaned = df_post
+
+			return df_post_cleaned
+
+		except Exception as e:
+			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
+			exit(1)
+
+	def getStatusesUserTimelineOther(self, **kwargs):
+		"""
+		Documentation
+		http://open.weibo.com/wiki/C/2/statuses/user_timeline/other
+
+		:param kwargs:
+		:return:
+		"""
+		self.logger.info("Calling getStatusesUserTimelineOther")
+		try:
+			params_dict = kwargs
+			params_dict['access_token'] = self.__apiToken
+			#start_time = params_dict.get('start_time',self.getStrTime(1))
+			#params_dict['start_time'] = self.getTimeStamp(start_time)
+
+			url = 'https://c.api.weibo.com/2/statuses/user_timeline/other.json'
+
+			result = self.getRequest(url, params_dict)
+			result = result.json()
+
+			if result.get('error_code') is not None:
+				raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'),result.get('error')))
+
+			statuses = result.get('statuses')
+			df_post = pd.DataFrame(statuses)
+
+			if params_dict.get('trim_user',0) != 1: # 1 means return uid only
+				users = df_post['user']
+				user_list = [pd.DataFrame([user]) for user in users]
+				df_user = pd.concat(user_list, ignore_index=True)
+				df_post['uid'] = df_user['id']
+				df_post.drop('user', axis=1, inplace=True)
+
+			df_post_cleaned = df_post #self.cleanRecords(df_post)
+
+			return df_post_cleaned
+
+		except Exception as e:
+			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
+			exit(1)
+
 	def searchStatusesHistoryCreate(self,starttime,endtime, **kwargs):
 		"""
 		Documentation
 		http://open.weibo.com/wiki/C/2/search/statuses/historical/create
+
+		In kwargs, q, province and ids at least on of the three is required
 		"""
 		self.logger.info("Calling searchStatusesHistoryCreate function")
 		try:
 			paramsDict = kwargs
 			paramsDict['access_token'] = self.__apiToken
-			paramsDict['starttime'] = starttime
-			paramsDict['endtime'] = endtime
+			paramsDict['starttime'] = self.getTimeStamp(starttime)
+			paramsDict['endtime'] = self.getTimeStamp(endtime)
 			
 			url = 'https://c.api.weibo.com/2/search/statuses/historical/create.json'
 			
 			
-			#result = self.postRequst(url,paramsDict)
-			
-			with open('./input/weibo_history_create.json', 'r') as f:
-				result = json.load(f)
-			if result.get('error_code') != None:
-				raise KeyError
+			result = self.postRequest(url,paramsDict)
+			result = result.json()
+
+			if result.get('error_code') is not None:
+				raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
+
 			__id = result.get('id')
 			__taskId = int(result.get('task_id'))
 			__secretKey = result.get('secret_key')
@@ -52,10 +133,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 				exit(1)
 			
 			return
-			
-		except KeyError:
-			self.logger.error('On line {} - Error Code: {}, Error Msg: {}'.format(sys.exc_info()[2].tb_lineno,result['error_code'],result['error']))
-			exit(1)
+
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
@@ -77,19 +155,19 @@ class SocialWeiboAPI(SocialBasicAPI):
 			res = conn.execute(stmt)
 			
 			for record in res.fetchall():
-				timestamp = int(time.time())
+				timestamp = int(time.time()*1000)
 				taskId = record.task_id
 				id = record.user_id
 				secretKey = record.secret_key
 				pw = id+secretKey+str(timestamp)
-				paramsDict = {'access_token':self.__apiToken,'task_id':taskId,'timestamp':timestamp,'signature':hashlib.md5(pw.encode('utf-8'))}
-				#result = self.getRequest(url,paramsDict)
-				with open('./input/weibo_history_check.json', 'r') as f:
-					result = json.load(f)
-				if result.get('error_code') != None:
-					raise KeyError
-				if result.get('status') == True:
-					#self.searchStatusesHistoryDownload(taskId,id,secretKey)
+				paramsDict = {'access_token':self.__apiToken,'task_id':taskId,'timestamp':timestamp,'signature':hashlib.md5(pw.encode('utf-8')).hexdigest()}
+				result = self.getRequest(url,paramsDict)
+				result = result.json()
+
+				if result.get('error_code') is not None:
+					raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
+				if result.get('status') is True:
+					self.searchStatusesHistoryDownload(taskId,id,secretKey)
 					self.logger.info("Task {} is done and returns {} records".format(taskId,result.get('count')))
 					finishTasks.append(taskId)
 			res.close()
@@ -108,10 +186,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 					conn.close()
 			
 			return finishTasks
-			
-		except KeyError:
-			self.logger.error('On line {} - Error Code: {}, Error Msg: {}'.format(sys.exc_info()[2].tb_lineno,result['error_code'],result['error']))
-			exit(1)
+
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
@@ -124,27 +199,37 @@ class SocialWeiboAPI(SocialBasicAPI):
 		self.logger.info("Calling searchStatusesHistoryDownload function")
 		try:
 			url = 'https://c.api.weibo.com/2/search/statuses/historical/download.json'
-			timestamp = int(time.time())
+			timestamp = int(time.time()*1000)
 			pw = id+secretKey+str(timestamp)
-			paramsDict = {'access_token':self.__apiToken,'task_id':taskId,'timestamp':timestamp,'signature':hashlib.md5(pw.encode('utf-8'))}	
+			paramsDict = {'access_token':self.__apiToken,'task_id':taskId,'timestamp':timestamp,'signature':hashlib.md5(pw.encode('utf-8')).hexdigest()}
+
+			result = self.getRequest(url,paramsDict)
 			"""
-			Needs testing
-			result = self.getRequest(url,paramsDict,stream=True)
+			if result.get('status_code') is not  None:
+				raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
+			"""
+			downloadUrl = result.url
 
-			if result.get('error_code') != None:
-				raise KeyError
+			r = self.getRequest(downloadUrl)
 
-			localFile = './output/taskId.json'
-			with open("./output/taskId.json",'wb') as f:
-                                for chunk in result.iter_content(chunk_size=chunkSize):
-                                        f.write(chunk)
+			localzipFile = './output/{}.zip'.format(taskId)
+			with open(localzipFile,'wb') as f:
+				for chunk in r.iter_content(chunk_size=chunkSize):
+					f.write(chunk)
 			
-			fileInfo = os.stat(localFile)
-			self.logger.info('{} is downloaded with {} bytes'.format(localFile, fileInfo.st_size))
-			"""
-		except KeyError:
-			self.logger.error('On line {} - Error Code: {}, Error Msg: {}'.format(sys.exc_info()[2].tb_lineno,result['error_code'],result['error']))
-			exit(1)
+			fileInfo = os.stat(localzipFile)
+			self.logger.info('{} is downloaded with {} bytes'.format(localzipFile, fileInfo.st_size))
+
+			extractFile = '{}.log'.format(taskId)
+			with ZipFile(localzipFile) as myzip:
+				pwd = str(taskId)+secretKey
+				with myzip.open(extractFile, pwd=pwd.encode('utf-8')) as myfile:
+					post_lists = myfile.read().splitlines()
+					post_lists = [eval(post_list.decode()) for post_list in post_lists]
+					df_post = pd.DataFrame(post_lists)
+			print(df_post)
+			return df_post
+
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)

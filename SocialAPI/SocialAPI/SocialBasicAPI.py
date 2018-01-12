@@ -1,10 +1,10 @@
 import pandas as pd
 import requests
-import json
 import sys
 import boto3
 import botocore
-from datetime import datetime
+import datetime
+import time
 import configparser
 from openpyxl import load_workbook, Workbook
 from sqlalchemy import create_engine, MetaData,Table
@@ -31,7 +31,7 @@ class SocialBasicAPI(object):
 		r = requests.post(url, data=postData)
 		return r
 		
-	def getRequest(self,url,paramsDict,stream=False):
+	def getRequest(self,url,paramsDict={},stream=False):
 		
 		r = requests.get(url, params=paramsDict, stream=stream)
 		return r
@@ -116,8 +116,8 @@ class SocialBasicAPI(object):
 	def syncToDB(self,df,db,table,syncType='append'):
 		self.logger.info("Calling syncToDB function")
 		try:
-			df['created_time'] = datetime.now()
-			df['updated_time'] = datetime.now()
+			df['created_time'] = datetime.datetime.now()
+			df['updated_time'] = datetime.datetime.now()
 			dblink = 'mysql+mysqldb://{}:{}@{}/{}?charset=utf8'.format(self.__username,self.__password,self.__host,db)
 			engine = create_engine(dblink,encoding='utf-8')
 			#df.to_sql(table,engine,chunksize=1000,dtype={"Agency": String(50),"Platform":String(50),"Likes":Integer},index=False,if_exists='append',encoding='utf-8')
@@ -204,7 +204,18 @@ class SocialBasicAPI(object):
 		except Exception as e:
 				self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 				exit(1)
-				
+
+	def getStrTime(self, delta=0):
+		date_time = datetime.date.today() - datetime.timedelta(days=delta)
+
+		return date_time.strftime("%Y-%m-%d %H:%M:%S")
+
+	def getTimeStamp(self, datestr):
+		date_time = datetime.datetime.strptime(datestr, '%Y-%m-%d %H:%M:%S')
+
+		return round(time.mktime(date_time.timetuple())*1000)
+
+
 	def __str__(self):
 		return "Basic API of Social"
 		
