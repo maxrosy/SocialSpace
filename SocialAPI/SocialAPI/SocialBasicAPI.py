@@ -10,6 +10,7 @@ from openpyxl import load_workbook, Workbook
 from sqlalchemy import create_engine, MetaData,Table
 from sqlalchemy.types import *
 from SocialAPI.Logger.BasicLogger import Logger
+import re
 
 
 
@@ -48,7 +49,7 @@ class SocialBasicAPI(object):
 			#df['Date Sampled'] = df['Date Sampled'].str.slice(0,10)
 			#df['Date Sampled'] = pd.to_datetime(df['Date Sampled'],yearfirst=True)
 			beforeETL = len(df)
-			if dedupColumns != []:
+			if dedupColumns:
 				isDuplicated = df.duplicated(dedupColumns)
 				df = df[~isDuplicated]
 			df.reset_index(drop=True,inplace=True)
@@ -137,7 +138,7 @@ class SocialBasicAPI(object):
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
 	
-	def insertToDB(self,dbName,tableName,records,dataFormat='dataframe'):
+	def insertToDB(self,dbName,tableName,records,datatype='dataframe'):
 		"""
 		type can be dict or dataframe, default is dataframe
 		"""
@@ -147,23 +148,22 @@ class SocialBasicAPI(object):
 					
 			table = Table(tableName,meta)
 			stmt = table.insert()
-			if dataFormat == 'dataframe':
+			if datatype == 'dataframe':
 				res = conn.execute(stmt,records.to_dict('records'))
-			elif dataFormat == 'dict':
+			elif datatype == 'dict':
 				res = conn.execute(stmt,records)
 			else:
-				raise Exception("Record Type {} is wrong".format(dataFormat))
+				raise Exception("Record Type {} is wrong".format(datatype))
 				
 			self.logger.info('{} record(s) have been inserted into {}'.format(res.rowcount,tableName))
 			res.close()
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
-			res.close()
 			exit(1)
 		finally:
 			conn.close()
-		
-	def connectToDB(self,db):
+
+	def connectToDB(self, db):
 		
 		try:
 			dblink = 'mysql+mysqldb://{}:{}@{}/{}?charset=utf8'.format(self.__username,self.__password,self.__host,db)
@@ -216,6 +216,12 @@ class SocialBasicAPI(object):
 
 		return round(time.mktime(date_time.timetuple())*1000)
 
+	def matchPostSource(self,text):
+		matchObj = re.search(r'^<a.*>(.*)</a>$', text)
+		if matchObj:
+			return matchObj.group(1)
+		else:
+			return text
 
 	def __str__(self):
 		return "Basic API of Social"
