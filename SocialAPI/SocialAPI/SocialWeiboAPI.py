@@ -61,34 +61,6 @@ class SocialWeiboAPI(SocialBasicAPI):
 			exit(1)
 
 	def getRepostTimelineAll(self, pid, count=200, **kwargs):
-		self.logger.info("Calling getRepostTimelineAll")
-		try:
-			params_dict = kwargs
-			params_dict['access_token'] = self.__apiToken
-			params_dict['id'] = pid
-			params_dict['count'] = count
-
-			url = 'https://c.api.weibo.com/2/statuses/repost_timeline/all.json'
-
-			result = self.getRequest(url, params_dict)
-			result = result.json()
-
-			if result.get('error_code') is not None:
-				raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
-
-			total_number = result.get('total_number')
-			pages = int(math.ceil(total_number/count))
-			repost_list = [self.getRepostTimelineByPage(pid, count, page=page+1)for page in range(pages)]
-			df_repost = pd.concat(repost_list, ignore_index=True)
-			self.logger.info("Totally {} records in {} pages".format(len(df_repost),pages))
-
-			return df_repost
-
-		except Exception as e:
-			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
-			exit(1)
-
-	def getRepostTimelineByPage(self, pid, count=200, **kwargs):
 		"""
 		Documentation
 		http://open.weibo.com/wiki/C/2/statuses/repost_timeline/all
@@ -107,86 +79,117 @@ class SocialWeiboAPI(SocialBasicAPI):
 			params_dict['count'] = count
 
 			url = 'https://c.api.weibo.com/2/statuses/repost_timeline/all.json'
+			page = 0
+			df_list = []
+			loop = True
 
-			result = self.getRequest(url, params_dict)
-			result = result.json()
+			while loop:
+				try:
+					page += 1
+					params_dict['page'] = page
+					result = self.getRequest(url, params_dict)
+					result = result.json()
 
-			if result.get('error_code') is not None:
-				raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
+					if result.get('error_code') is not None:
+						raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
 
-			reposts = result.get('reposts')
-			total_number = result.get('total_number')
+					reposts = result.get('reposts')
 
-			df_repost = pd.DataFrame(reposts)
+					if not reposts:
+						raise StopIteration
 
-			# Get original post id
-			posts = df_repost['retweeted_status']
-			post_list = [pd.DataFrame([post]) for post in posts]
-			df_post = pd.concat(post_list, ignore_index=True)
-			df_repost['original_pid'] = df_post['mid']
-			df_repost.drop('retweeted_status',axis=1,inplace=True)
+					df_repost = pd.DataFrame(reposts)
 
-			# Get repost uid
-			users = df_repost['user']
-			user_list = [pd.DataFrame([user]) for user in users]
-			df_user = pd.concat(user_list, ignore_index=True)
-			df_repost['uid'] = df_user['id']
-			df_repost.drop('user', axis=1, inplace=True)
+					# Get original post id
+					posts = df_repost['retweeted_status']
+					post_list = [pd.DataFrame([post]) for post in posts]
+					df_post = pd.concat(post_list, ignore_index=True)
+					df_repost['original_pid'] = df_post['mid']
+					df_repost.drop('retweeted_status',axis=1,inplace=True)
 
-			# Get retweet source match
-			df_repost['source'] = df_repost['source'].apply(self.matchPostSource)
+					# Get repost uid
+					users = df_repost['user']
+					user_list = [pd.DataFrame([user]) for user in users]
+					df_user = pd.concat(user_list, ignore_index=True)
+					df_repost['uid'] = df_user['id']
+					df_repost.drop('user', axis=1, inplace=True)
 
-			df_repost_cleaned = df_repost
+					# Get retweet source match
+					df_repost['source'] = df_repost['source'].apply(self.matchPostSource)
 
+					df_list.append(df_repost)
 
-			self.logger.info("Totally {} records".format(len(df_repost_cleaned)))
+					self.logger.debug("Totally {} records in page {}".format(len(df_repost), page))
+
+				except StopIteration as e:
+					self.logger.debug("Totally {} page(s)".format(page-1))
+					loop = False
+
+			df_repost_cleaned = pd.concat(df_list, ignore_index=True)
+			self.logger.info("Totally {} records in {} page(s)".format(len(df_repost_cleaned), page-1))
 			return df_repost_cleaned
-
 
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
 			exit(1)
 
-	def getUserTimelineBatch(self, uids, **kwargs):
+	def getUserTimelineBatch(self, uids, count=200, **kwargs):
 		"""
 		Documentation
 		http://open.weibo.com/wiki/C/2/statuses/user_timeline_batch
 
-		:param uids:
+		:param uids: seperated by ',', max 20
 		:param kwargs:
-		:return:
+		:return: return at maxium 200 records for each uid
 		"""
 		self.logger.info("Calling getUserTimelineBatch")
 		try:
 			params_dict = kwargs
 			params_dict['access_token'] = self.__apiToken
 			params_dict['uids'] = uids
+			params_dict['count'] = count
 
 			url = 'https://c.api.weibo.com/2/statuses/user_timeline_batch.json'
 
-			result = self.getRequest(url, params_dict)
-			result = result.json()
+			page = 0
+			df_list = []
+			loop = True
 
-			if result.get('error_code') is not None:
-				raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
+			while loop:
+				try:
+					page += 1
+					params_dict['page'] = page
+					result = self.getRequest(url, params_dict)
+					result = result.json()
 
-			statuses = result.get('statuses')
-			df_post = pd.DataFrame(statuses)
-			users = df_post['user']
-			user_list = [pd.DataFrame([user]) for user in users]
-			df_user = pd.concat(user_list, ignore_index=True)
-			df_post['user_id'] = df_user['id']
-			df_post['annotations'] = ''
-			df_post.drop('user', axis=1, inplace=True)
-			df_post_cleaned = df_post
+					if result.get('error_code') is not None:
+						raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
 
+					statuses = result.get('statuses')
+					if not statuses:
+						raise StopIteration
+					df_post = pd.DataFrame(statuses)
+					users = df_post['user']
+					user_list = [pd.DataFrame([user]) for user in users]
+					df_user = pd.concat(user_list, ignore_index=True)
+					df_post['user_id'] = df_user['id']
+					df_post.drop('user', axis=1, inplace=True)
+					df_post['source'] = df_post['source'].apply(self.matchPostSource)
+
+					df_list.append(df_post)
+					self.logger.debug("Totally {} records in page {}".format(len(df_post), page))
+				except StopIteration:
+					self.logger.debug("Totally {} page(s)".format(page-1))
+					loop = False
+			df_post_cleaned = pd.concat(df_list, ignore_index=True)
+			self.logger.info("Totally {} records in {} page(s)".format(len(df_post_cleaned), page-1))
 			return df_post_cleaned
 
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
 			exit(1)
 
-	def getUserTimelineOther(self, trim_user=1,**kwargs):
+	def getUserTimelineOther(self, uid, trim_user=1,**kwargs):
 		"""
 		Documentation
 		http://open.weibo.com/wiki/C/2/statuses/user_timeline/other
@@ -198,30 +201,46 @@ class SocialWeiboAPI(SocialBasicAPI):
 		try:
 			params_dict = kwargs
 			params_dict['access_token'] = self.__apiToken
+			params_dict['uid'] = uid
 			params_dict['trim_user'] = trim_user
 			#start_time = params_dict.get('start_time',self.getStrTime(1))
 			#params_dict['start_time'] = self.getTimeStamp(start_time)
 
 			url = 'https://c.api.weibo.com/2/statuses/user_timeline/other.json'
+			page = 0
+			df_list = []
+			loop = True
 
-			result = self.getRequest(url, params_dict)
-			result = result.json()
+			while loop:
+				try:
+					page += 1
+					params_dict['page'] = page
+					result = self.getRequest(url, params_dict)
+					result = result.json()
 
-			if result.get('error_code') is not None:
-				raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'),result.get('error')))
+					if result.get('error_code') is not None:
+						raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'),result.get('error')))
 
-			statuses = result.get('statuses')
-			df_post = pd.DataFrame(statuses)
+					statuses = result.get('statuses')
+					if not statuses:
+						raise StopIteration
 
-			if params_dict.get('trim_user',0) != 1: # 1 means return uid only
-				users = df_post['user']
-				user_list = [pd.DataFrame([user]) for user in users]
-				df_user = pd.concat(user_list, ignore_index=True)
-				df_post['uid'] = df_user['id']
-				df_post.drop('user', axis=1, inplace=True)
+					df_post = pd.DataFrame(statuses)
 
-			df_post_cleaned = df_post #self.cleanRecords(df_post)
+					if params_dict.get('trim_user',0) != 1: # 1 means return uid only
+						users = df_post['user']
+						user_list = [pd.DataFrame([user]) for user in users]
+						df_user = pd.concat(user_list, ignore_index=True)
+						df_post['uid'] = df_user['id']
+						df_post.drop('user', axis=1, inplace=True)
 
+					df_list.append(df_post)
+					self.logger.debug("Totally {} records in page {}".format(len(df_post), page))
+				except StopIteration:
+					self.logger.debug("Totally {} page(s)".format(page-1))
+					loop = False
+			df_post_cleaned = pd.concat(df_list, ignore_index=True)
+			self.logger.info("Totally {} records in {} page(s)".format(len(df_post_cleaned), page - 1))
 			return df_post_cleaned
 
 		except Exception as e:
@@ -474,24 +493,39 @@ class SocialWeiboAPI(SocialBasicAPI):
 			
 			url = 'https://c.api.weibo.com/2/statuses/show_batch/biz.json'
 
-			result = self.getRequest(url, paramsDict)
-			result = result.json()
+			page = 0
+			df_list = []
+			loop = True
 
-			if result.get('error_code') is not None:
-				raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
+			while loop:
+				try:
+					page += 1
+					paramsDict['page'] = page
+					result = self.getRequest(url, paramsDict)
+					result = result.json()
 
-			posts = result.get('statuses')
+					if result.get('error_code') is not None:
+						raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
 
-			df_post = pd.DataFrame(posts)
+					posts = result.get('statuses')
+					if not posts:
+						raise StopIteration
+					df_post = pd.DataFrame(posts)
 
-			users = df_post['user']
-			userList = [pd.DataFrame([user]) for user in users ]
-			df_user = pd.concat(userList,ignore_index=True)
-			df_post['user_id'] = df_user['id']
-			df_post.fillna('null',inplace=True)
-			df_post.drop('user',axis=1,inplace=True)
+					users = df_post['user']
+					userList = [pd.DataFrame([user]) for user in users ]
+					df_user = pd.concat(userList,ignore_index=True)
+					df_post['user_id'] = df_user['id']
+					df_post.fillna('null',inplace=True)
+					df_post.drop('user',axis=1,inplace=True)
 
-			df_post_cleaned = df_post
+					df_list.append(df_post)
+					self.logger.debug("Totally {} records in page {}".format(len(df_post), page))
+				except StopIteration:
+					self.logger.debug("Totally {} page(s)".format(page - 1))
+					loop = False
+			df_post_cleaned = pd.concat(df_list, ignore_index=True)
+			self.logger.info("Totally {} records in {} page(s)".format(len(df_post_cleaned), page-1))
 			return df_post_cleaned
 
 		except Exception as e:
@@ -514,34 +548,51 @@ class SocialWeiboAPI(SocialBasicAPI):
 			paramsDict['id'] = mid
 
 			url = 'https://c.api.weibo.com/2/comments/show/all.json'
+			page = 0
+			df_list = []
+			loop = True
 
-			result = self.getRequest(url, paramsDict)
-			result = result.json()
+			while loop:
+				try:
+					page += 1
+					paramsDict['page'] = page
+					result = self.getRequest(url, paramsDict)
+					result = result.json()
 
-			if result.get('error_code') is not None:
-				raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
+					if result.get('error_code') is not None:
+						raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
 
-			comments = result.get('comments')
-			df_comments = pd.DataFrame(comments)
-			
-			# Extract comment user_id
-			comment_users = df_comments['user']
-			comment_users_list = [pd.DataFrame([comment_user]) for comment_user in comment_users]
-			df_comment_user = pd.concat(comment_users_list,ignore_index=True)
-			df_comments['user_id'] = df_comment_user['id']
-			df_comments.drop('user',axis=1,inplace=True)
-			
-			# Extract post_id
-			comment_posts = df_comments['status']
-			comment_posts_list = [pd.DataFrame([comment_post]) for comment_post in comment_posts]
-			df_comment_post = pd.concat(comment_posts_list,ignore_index=True)
-			df_comments['post_id'] = df_comment_post['id']
-			df_comments.drop('status',axis=1,inplace=True)
+					comments = result.get('comments')
+					if not comments:
+						raise StopIteration
 
-			# get comment source match
-			df_comments['source'] = df_comments['source'].apply(self.matchPostSource)
+					df_comments = pd.DataFrame(comments)
 
-			return df_comments
+					# Extract comment user_id
+					comment_users = df_comments['user']
+					comment_users_list = [pd.DataFrame([comment_user]) for comment_user in comment_users]
+					df_comment_user = pd.concat(comment_users_list,ignore_index=True)
+					df_comments['user_id'] = df_comment_user['id']
+					df_comments.drop('user',axis=1,inplace=True)
+
+					# Extract post_id
+					comment_posts = df_comments['status']
+					comment_posts_list = [pd.DataFrame([comment_post]) for comment_post in comment_posts]
+					df_comment_post = pd.concat(comment_posts_list,ignore_index=True)
+					df_comments['post_id'] = df_comment_post['id']
+					df_comments.drop('status',axis=1,inplace=True)
+
+					# get comment source match
+					df_comments['source'] = df_comments['source'].apply(self.matchPostSource)
+
+					df_list.append(df_comments)
+					self.logger.debug("Totally {} records in page {}".format(len(df_comments), page))
+				except StopIteration:
+					self.logger.debug("Totally {} page(s)".format(page - 1))
+					loop = False
+			df_comment_cleaned = pd.concat(df_list, ignore_index=True)
+			self.logger.info("Totally {} records in {} page(s)".format(len(df_comment_cleaned), page - 1))
+			return df_comment_cleaned
 
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
