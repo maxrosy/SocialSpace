@@ -7,7 +7,9 @@ import datetime
 import time
 import configparser
 from openpyxl import load_workbook, Workbook
+from openpyxl.utils.dataframe import dataframe_to_rows
 from sqlalchemy import create_engine, MetaData,Table
+from sqlalchemy.dialects.mysql import insert
 from sqlalchemy.types import *
 from SocialAPI.Logger.BasicLogger import Logger
 import re
@@ -36,25 +38,32 @@ class SocialBasicAPI(object):
 		
 		r = requests.get(url, params=paramsDict, stream=stream)
 		return r
-		
-	def cleanRecords(self,df,dedupColumns=[]):
+
+	def encodeElement(self,text):
+
+		if isinstance(text,dict) or isinstance(text,list):
+			return str(text).encode('utf8')
+		else:
+			return text
+
+	def cleanRecords(self,df,dropColumns=[],dedupColumns=[]):
 		self.logger.info("Calling cleanRecords function")
 		try:
+			len_before_etl = len(df)
+
+			if dropColumns:
+				df.drop(columns=dropColumns, inplace=True)
+
+			df=df.applymap(self.encodeElement)
 			df.drop_duplicates(inplace=True)
 			df.fillna('null',inplace=True)
-			#df=df[df['Platform'] != 'TOTAL']
-			#df.info()
-			
-			#df.rename(columns={'Likes/Followers/Visits/Downloads':'Likes'}, inplace = True)
-			#df['Date Sampled'] = df['Date Sampled'].str.slice(0,10)
-			#df['Date Sampled'] = pd.to_datetime(df['Date Sampled'],yearfirst=True)
-			beforeETL = len(df)
+
 			if dedupColumns:
 				isDuplicated = df.duplicated(dedupColumns)
 				df = df[~isDuplicated]
 			df.reset_index(drop=True,inplace=True)
-			afterETL = len(df)
-			self.logger.info('Totally {} our of {} records remained after ETL'.format(afterETL, beforeETL))
+			len_after_etl = len(df)
+			self.logger.info('Totally {} out of {} records remained after ETL'.format(len_after_etl, len_before_etl))
 			return df
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
@@ -71,6 +80,7 @@ class SocialBasicAPI(object):
 			
 	def writeDataFrameToExcel(self,df,wbname,sheetname):
 		self.logger.info("Calling writeDataFrameToExcel function")
+
 		try:
 			try:
 				writer = pd.ExcelWriter(wbname)
@@ -81,7 +91,7 @@ class SocialBasicAPI(object):
 				wb = Workbook()
 				
 			writer.book = wb
-			writer.sheets = dict((ws.title, ws) for ws in wb.worksheets)  
+			writer.sheets = dict((ws.title, ws) for ws in wb.worksheets)
 					
 			df.to_excel(writer,sheetname,index=False)
 			writer.save()
@@ -90,6 +100,29 @@ class SocialBasicAPI(object):
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
 			
+		"""
+		try:
+			try:
+				wb = load_workbook(wbname)
+				ws = wb.create_sheet(sheetname, 0)
+
+			except FileNotFoundError:
+				self.logger.warn("File {} is not found! Creating one".format(wbname))
+				wb = Workbook()
+				ws = wb.active
+				ws.title = sheetname
+
+			df = df.replace([True,False],[1,0],inplace=True)
+			for row in dataframe_to_rows(df, index=False, header=True):
+				ws.append(row)
+			wb.save(wbname)
+		
+		except Exception as e:
+			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
+			exit(1)
+		"""
+
+			
 	def readCsvToDataFrame(filePath,sep=','):	
 		self.logger.info("Calling readCsvToDataFrame function")
 		try:
@@ -97,15 +130,15 @@ class SocialBasicAPI(object):
 			loop = True
 			chunkSize = 1000
 			chunks = []
-			n=0
+			n = 1
 			while loop:
 				try:
 					chunk = reader.get_chunk(chunkSize)
 					chunks.append(chunk)
-					n+=1
+					n += 1
 				except StopIteration:
 					loop = False
-					self.logger.info("Iteration is stopped. Totally, {} loops".format(n))
+					self.logger.info("Iteration is stopped. Totally, {} loop(s)".format(n))
 			df = pd.concat(chunks, ignore_index=True)
 			self.logger.info("Totally {} records imported".format(len(df)))
 			#df.info()
@@ -114,60 +147,107 @@ class SocialBasicAPI(object):
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
 			
-	def syncToDB(self,df,db,table,syncType='append'):
-		self.logger.info("Calling syncToDB function")
+	def syncToDBUsingPandas(self,df,db,table,syncType='append'):
+		"""
+		Call this function with caution, it will overwrite table schema, if syncType is replace
+		:param df:
+		:param db:
+		:param table:
+		:param syncType: append/replace
+		:return:
+		"""
+		self.logger.info("Calling syncToDBUsingPandas function")
 		try:
-			df['created_time'] = datetime.datetime.now()
-			df['updated_time'] = datetime.datetime.now()
+			#df['created_time'] = datetime.datetime.now()
+			#df['updated_time'] = datetime.datetime.now()
 			dblink = 'mysql+mysqldb://{}:{}@{}/{}?charset=utf8'.format(self.__username,self.__password,self.__host,db)
 			engine = create_engine(dblink,encoding='utf-8')
 			#df.to_sql(table,engine,chunksize=1000,dtype={"Agency": String(50),"Platform":String(50),"Likes":Integer},index=False,if_exists='append',encoding='utf-8')
 			df.to_sql(table,engine,chunksize=1000,index=False,if_exists=syncType)
-			
-			"""
-			# To upsert records to mysql if needed
-			conn=self.connectToDB(db)
-			cursor=conn.cursor()
-			cursor.execute("insert into social(tagID,Url) values(1,'http://test.com') on duplicate update Url='http://test.com'")
-			conn.commit()
-			cursor.close()
-			conn.close()
-			"""
-			
+
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
-	
-	def insertToDB(self,dbName,tableName,records,datatype='dataframe'):
+
+	def readFromDBUsingPandas(self, db, table):
+		self.logger.info("Calling readFromDBUsingPandas")
+		try:
+			dblink = 'mysql+mysqldb://{}:{}@{}/{}?charset=utf8'.format(self.__username, self.__password, self.__host,db)
+			engine = create_engine(dblink, encoding='utf-8')
+			records = pd.read_sql_table(table,engine)
+
+			return records
+
+		except Exception as e:
+			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
+			exit(1)
+
+	def upsertToDB(self,dbName,tableName,records):
 		"""
-		type can be dict or dataframe, default is dataframe
+		New feature in SQLAlchemy 1.2
+		:param dbName:
+		:param tableName:
+		:param records:
+		:param pk: primary key
+		:return:
 		"""
+		try:
+			engine, meta = self.connectToDB(dbName)
+			conn = engine.connect()
+			table = Table(tableName, meta)
+
+			# Check data type of records
+			if isinstance(records, pd.DataFrame):
+				records = records.to_dict('records')
+			elif isinstance(records, dict):
+				pass
+			else:
+				raise Exception("Record Type {} is wrong".format(type(records)))
+
+			# To do, check if batch upsert is possible
+			for record in records:
+				insert_stmt = insert(table).values(record)
+				#record.pop(pk)
+				upsert_stmt = insert_stmt.on_duplicate_key_update(**record)
+				res = conn.execute(upsert_stmt)
+
+			res.close()
+			conn.close()
+		except Exception as e:
+			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
+			exit(1)
+
+	def insertToDB(self,dbName,tableName,records):
+
 		try:
 			engine, meta = self.connectToDB(dbName)
 			conn = engine.connect()
 					
 			table = Table(tableName,meta)
 			stmt = table.insert()
-			if datatype == 'dataframe':
+
+			# Check data type of records
+			if isinstance(records, pd.DataFrame):
 				res = conn.execute(stmt,records.to_dict('records'))
-			elif datatype == 'dict':
+			elif isinstance(records,dict):
 				res = conn.execute(stmt,records)
 			else:
-				raise Exception("Record Type {} is wrong".format(datatype))
+				raise Exception("Record Type {} is wrong".format(type(records)))
 				
 			self.logger.info('{} record(s) have been inserted into {}'.format(res.rowcount,tableName))
+
 			res.close()
+			conn.close()
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
-		finally:
-			conn.close()
+
 
 	def connectToDB(self, db):
 		
 		try:
-			dblink = 'mysql+mysqldb://{}:{}@{}/{}?charset=utf8'.format(self.__username,self.__password,self.__host,db)
-			engine = create_engine(dblink,encoding='utf-8',echo=False)
+			dblink = 'mysql+mysqldb://{}:{}@{}/{}?charset=utf8mb4'.format(self.__username,self.__password,self.__host,db)
+			engine = create_engine(dblink,echo=False)
 			meta = MetaData(bind=engine,reflect=True)
 			
 			return (engine, meta)
@@ -192,8 +272,8 @@ class SocialBasicAPI(object):
 				raise
 		
 		except Exception as e:
-				self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
-				exit(1)
+			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
+			exit(1)
 				
 	def writeToS3(self,bucketName,localFile,remoteFile):
 		self.logger.info("Calling writeToS3 function")
@@ -203,8 +283,8 @@ class SocialBasicAPI(object):
 			s3.Bucket(bucketName).put_object(Key=remoteFile, Body=data)
 			
 		except Exception as e:
-				self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
-				exit(1)
+			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
+			exit(1)
 
 	def getStrTime(self, delta=0):
 		date_time = datetime.date.today() - datetime.timedelta(days=delta)

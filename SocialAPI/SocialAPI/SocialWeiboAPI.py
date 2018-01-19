@@ -6,7 +6,7 @@ import hashlib
 from urllib import parse
 from sqlalchemy import bindparam,Table
 from zipfile import ZipFile
-import math
+import uuid
 
 
 
@@ -15,6 +15,39 @@ class SocialWeiboAPI(SocialBasicAPI):
 	def __init__(self):
 		super(SocialWeiboAPI,self).__init__()
 		self.__apiToken = self.cfp.get('api','weibo')
+
+	def getUserShowBatchOther(self,uids):
+		"""
+		Documentation
+		http://open.weibo.com/wiki/C/2/users/show_batch/other
+
+		:param uids: seperated by ',', max 50
+		:return:
+		"""
+		self.logger.info("Calling getUserShowBatchOther")
+		try:
+			params_dict = {'access_token': self.__apiToken, 'uids': uids}
+			url = 'https://c.api.weibo.com/2/users/show_batch/other.json'
+
+			result = self.getRequest(url, params_dict)
+			result = result.json()
+			if result.get('error_code') is not None:
+				raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
+			users = result.get('users')
+			if not users:
+				raise Exception("No data returned")
+			df_user = pd.DataFrame(users)
+			df_user.rename(columns={'id': 'uid'}, inplace=True)
+
+
+			df_user_cleaned = self.cleanRecords(df_user, dropColumns=['status'])
+			self.upsertToDB('pandas','weibo_user_info',df_user_cleaned)
+
+			return df_user
+		except Exception as e:
+			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
+			exit(1)
+
 
 	def getUsersCountBatch(self,uids):
 		"""
@@ -41,26 +74,20 @@ class SocialWeiboAPI(SocialBasicAPI):
 
 			# Add update_date column
 			users['update_date'] = time.strftime("%Y-%m-%d", time.localtime())
-
+			users['year'] = datetime.datetime.now().year
+			users['month'] = datetime.datetime.now().month
+			users['day'] = datetime.datetime.now().day
 			#match column name in table
 			users.rename(columns={'id': 'uid'}, inplace=True)
-			# Remove previous inserted records for the day
-			engine, meta = self.connectToDB('pandas')
-			table = Table('weibo_user_growth', meta)
-			stmt = table.delete().where(table.c.update_date == time.strftime("%Y-%m-%d", time.localtime()))
-			conn = engine.connect()
-			res = conn.execute(stmt)
 
-			res.close()
-			conn.close()
-
-			self.insertToDB('pandas', 'weibo_user_growth', users, type='dataframe')
+			df_user_cleaned = self.cleanRecords(df_post, dropColumns=['users'])
+			self.upsertToDB('pandas','weibo_user_growth_daily',users)
 
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
 			exit(1)
 
-	def getRepostTimelineAll(self, pid, count=200, **kwargs):
+	def getRepostTimelineAll(self, pid, **kwargs):
 		"""
 		Documentation
 		http://open.weibo.com/wiki/C/2/statuses/repost_timeline/all
@@ -76,7 +103,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 			params_dict = kwargs
 			params_dict['access_token'] = self.__apiToken
 			params_dict['id'] = pid
-			params_dict['count'] = count
+			params_dict['count'] = params_dict.get('count',200)
 
 			url = 'https://c.api.weibo.com/2/statuses/repost_timeline/all.json'
 			page = 0
@@ -133,7 +160,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
 			exit(1)
 
-	def getUserTimelineBatch(self, uids, count=200, **kwargs):
+	def getUserTimelineBatch(self, uids, **kwargs):
 		"""
 		Documentation
 		http://open.weibo.com/wiki/C/2/statuses/user_timeline_batch
@@ -147,7 +174,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 			params_dict = kwargs
 			params_dict['access_token'] = self.__apiToken
 			params_dict['uids'] = uids
-			params_dict['count'] = count
+			params_dict['count'] = params_dict.get('count',200)
 
 			url = 'https://c.api.weibo.com/2/statuses/user_timeline_batch.json'
 
@@ -172,8 +199,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 					users = df_post['user']
 					user_list = [pd.DataFrame([user]) for user in users]
 					df_user = pd.concat(user_list, ignore_index=True)
-					df_post['user_id'] = df_user['id']
-					df_post.drop('user', axis=1, inplace=True)
+					df_post['uid'] = df_user['id']
 					df_post['source'] = df_post['source'].apply(self.matchPostSource)
 
 					df_list.append(df_post)
@@ -181,15 +207,20 @@ class SocialWeiboAPI(SocialBasicAPI):
 				except StopIteration:
 					self.logger.debug("Totally {} page(s)".format(page-1))
 					loop = False
-			df_post_cleaned = pd.concat(df_list, ignore_index=True)
+
+			df_post = pd.concat(df_list, ignore_index=True)
+
+			df_post_cleaned = self.cleanRecords(df_post,dropColumns=['user'])
+
 			self.logger.info("Totally {} records in {} page(s)".format(len(df_post_cleaned), page-1))
+			self.upsertToDB('pandas','weibo_post_status',df_post_cleaned)
 			return df_post_cleaned
 
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
 			exit(1)
 
-	def getUserTimelineOther(self, uid, trim_user=1,**kwargs):
+	def getUserTimelineOther(self, uid,**kwargs):
 		"""
 		Documentation
 		http://open.weibo.com/wiki/C/2/statuses/user_timeline/other
@@ -202,7 +233,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 			params_dict = kwargs
 			params_dict['access_token'] = self.__apiToken
 			params_dict['uid'] = uid
-			params_dict['trim_user'] = trim_user
+			params_dict['trim_user'] = params_dict.get('trim_user',1)
 			#start_time = params_dict.get('start_time',self.getStrTime(1))
 			#params_dict['start_time'] = self.getTimeStamp(start_time)
 
@@ -232,15 +263,21 @@ class SocialWeiboAPI(SocialBasicAPI):
 						user_list = [pd.DataFrame([user]) for user in users]
 						df_user = pd.concat(user_list, ignore_index=True)
 						df_post['uid'] = df_user['id']
-						df_post.drop('user', axis=1, inplace=True)
 
+					df_post['source'] = df_post['source'].apply(self.matchPostSource)
 					df_list.append(df_post)
 					self.logger.debug("Totally {} records in page {}".format(len(df_post), page))
 				except StopIteration:
 					self.logger.debug("Totally {} page(s)".format(page-1))
 					loop = False
-			df_post_cleaned = pd.concat(df_list, ignore_index=True)
+			df_post = pd.concat(df_list, ignore_index=True)
+			if params_dict.get('trim_user', 0) != 1:
+				df_post_cleaned = self.cleanRecords(df_post,dropColumns=['user'])
+			else:
+				df_post_cleaned = self.cleanRecords(df_post)
 			self.logger.info("Totally {} records in {} page(s)".format(len(df_post_cleaned), page - 1))
+			self.upsertToDB('pandas', 'weibo_post_status', df_post_cleaned)
+
 			return df_post_cleaned
 
 		except Exception as e:
@@ -287,10 +324,10 @@ class SocialWeiboAPI(SocialBasicAPI):
 			onlynum = result.get('onlynum')
 
 			#Insert new created task into DB
-			records = {'task_id': __taskId, 'user_id': __id, 'secret_key': __secretKey, 'starttime': starttime,
+			records = {'uuid': uuid.uuid1(),'task_id': __taskId, 'user_id': __id, 'secret_key': __secretKey, 'starttime': starttime,
 						'endtime': endtime, 'type': type, 'hasv': hasv, 'onlynum': onlynum, 'query': q,
 						'province': provinceId, 'city': cityId, 'ids': ids}
-			self.insertToDB('pandas', 'task_history', records, type='dict')
+			self.insertToDB('pandas', 'task_history', records)
 
 			self.logger.info("Task {} is created.".format(__taskId))
 
