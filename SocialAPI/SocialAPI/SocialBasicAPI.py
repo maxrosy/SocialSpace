@@ -56,7 +56,6 @@ class SocialBasicAPI(object):
 
 			df=df.applymap(self.encodeElement)
 			df.drop_duplicates(inplace=True)
-			#df.fillna(None,inplace=True)
 
 			if dedupColumns:
 				isDuplicated = df.duplicated(dedupColumns)

@@ -276,6 +276,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 			df_post['retweeted_id'] = df_post['retweeted_status'].apply(lambda x: x['id'] if x else None)
 
 
+
 			df_post_cleaned = self.cleanRecords(df_post, dropColumns=['retweeted_status'])
 			self.logger.info("Totally {} records in {} page(s)".format(len(df_post_cleaned), page - 1))
 			self.upsertToDB('pandas', 'weibo_post_status', df_post_cleaned)
@@ -605,32 +606,42 @@ class SocialWeiboAPI(SocialBasicAPI):
 					if not comments:
 						raise StopIteration
 
-					df_comments = pd.DataFrame(comments)
+					df_comment = pd.DataFrame(comments)
 
 					# Extract comment user_id
-					comment_users = df_comments['user']
+					comment_users = df_comment['user']
 					comment_users_list = [pd.DataFrame([comment_user]) for comment_user in comment_users]
 					df_comment_user = pd.concat(comment_users_list,ignore_index=True)
-					df_comments['user_id'] = df_comment_user['id']
-					df_comments.drop('user',axis=1,inplace=True)
+					df_comment['uid'] = df_comment_user['id']
 
 					# Extract post_id
-					comment_posts = df_comments['status']
+					comment_posts = df_comment['status']
 					comment_posts_list = [pd.DataFrame([comment_post]) for comment_post in comment_posts]
 					df_comment_post = pd.concat(comment_posts_list,ignore_index=True)
-					df_comments['post_id'] = df_comment_post['id']
-					df_comments.drop('status',axis=1,inplace=True)
+					df_comment['pid'] = df_comment_post['id']
 
 					# get comment source match
-					df_comments['source'] = df_comments['source'].apply(self.matchPostSource)
+					df_comment['source'] = df_comment['source'].apply(self.matchPostSource)
 
-					df_list.append(df_comments)
-					self.logger.debug("Totally {} records in page {}".format(len(df_comments), page))
+					df_list.append(df_comment)
+					self.logger.info("Totally {} records in page {}".format(len(df_comment), page))
+
 				except StopIteration:
-					self.logger.debug("Totally {} page(s)".format(page - 1))
+					self.logger.info("Totally {} page(s)".format(page - 1))
 					loop = False
-			df_comment_cleaned = pd.concat(df_list, ignore_index=True)
-			self.logger.info("Totally {} records in {} page(s)".format(len(df_comment_cleaned), page - 1))
+
+			df_comment = pd.concat(df_list, ignore_index=True)
+			# Upsert users before comments
+			df_user_list = [user for user in df_comment['user']]
+			df_user = pd.DataFrame(df_user_list)
+			df_user.rename(columns={'id': 'uid'}, inplace=True)
+			df_user_cleaned = self.cleanRecords(df_user)
+			self.upsertToDB('pandas','weibo_user_info',df_user_cleaned)
+
+			df_comment_cleaned = self.cleanRecords(df_comment,dropColumns=['status','user'])
+			self.upsertToDB('pandas','weibo_comment',df_comment_cleaned)
+
+			self.logger.info("Totally {} records in {} page(s)".format(len(df_comment_cleaned), page-1))
 			return df_comment_cleaned
 
 		except Exception as e:
