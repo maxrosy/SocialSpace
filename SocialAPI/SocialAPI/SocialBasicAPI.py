@@ -7,12 +7,12 @@ import datetime
 import time
 import configparser
 from openpyxl import load_workbook, Workbook
-from openpyxl.utils.dataframe import dataframe_to_rows
 from sqlalchemy import create_engine, MetaData,Table
 from sqlalchemy.dialects.mysql import insert
 from sqlalchemy.types import *
 from SocialAPI.Logger.BasicLogger import Logger
 import re
+
 
 
 
@@ -56,12 +56,13 @@ class SocialBasicAPI(object):
 
 			df=df.applymap(self.encodeElement)
 			df.drop_duplicates(inplace=True)
-			df.fillna('null',inplace=True)
+			#df.fillna(None,inplace=True)
 
 			if dedupColumns:
 				isDuplicated = df.duplicated(dedupColumns)
 				df = df[~isDuplicated]
 			df.reset_index(drop=True,inplace=True)
+			df = df.where(pd.notnull(df),None)
 			len_after_etl = len(df)
 			self.logger.info('Totally {} out of {} records remained after ETL'.format(len_after_etl, len_before_etl))
 			return df

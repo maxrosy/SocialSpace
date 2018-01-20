@@ -257,13 +257,13 @@ class SocialWeiboAPI(SocialBasicAPI):
 						raise StopIteration
 
 					df_post = pd.DataFrame(statuses)
-
+					"""
 					if params_dict.get('trim_user',0) != 1: # 1 means return uid only
 						users = df_post['user']
 						user_list = [pd.DataFrame([user]) for user in users]
 						df_user = pd.concat(user_list, ignore_index=True)
 						df_post['uid'] = df_user['id']
-
+					"""
 					df_post['source'] = df_post['source'].apply(self.matchPostSource)
 					df_list.append(df_post)
 					self.logger.debug("Totally {} records in page {}".format(len(df_post), page))
@@ -271,10 +271,12 @@ class SocialWeiboAPI(SocialBasicAPI):
 					self.logger.debug("Totally {} page(s)".format(page-1))
 					loop = False
 			df_post = pd.concat(df_list, ignore_index=True)
-			if params_dict.get('trim_user', 0) != 1:
-				df_post_cleaned = self.cleanRecords(df_post,dropColumns=['user'])
-			else:
-				df_post_cleaned = self.cleanRecords(df_post)
+			df_post['is_retweeted'] = ~df_post['retweeted_status'].isnull()
+			df_post['retweeted_status'].where(df_post['retweeted_status'].notnull(), None, inplace=True)
+			df_post['retweeted_id'] = df_post['retweeted_status'].apply(lambda x: x['id'] if x else None)
+
+
+			df_post_cleaned = self.cleanRecords(df_post, dropColumns=['retweeted_status'])
 			self.logger.info("Totally {} records in {} page(s)".format(len(df_post_cleaned), page - 1))
 			self.upsertToDB('pandas', 'weibo_post_status', df_post_cleaned)
 
