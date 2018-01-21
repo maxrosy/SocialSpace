@@ -46,7 +46,7 @@ class SocialBasicAPI(object):
 		else:
 			return text
 
-	def cleanRecords(self,df,dropColumns=[],dedupColumns=[]):
+	def cleanRecords(self,df,dropColumns=[],dedupColumns=[],renameColumns={},utcTimeCovert=True):
 		self.logger.info("Calling cleanRecords function")
 		try:
 			len_before_etl = len(df)
@@ -60,6 +60,10 @@ class SocialBasicAPI(object):
 			if dedupColumns:
 				isDuplicated = df.duplicated(dedupColumns)
 				df = df[~isDuplicated]
+			if renameColumns:
+				df.rename(columns=renameColumns, inplace=True)
+			if utcTimeCovert:
+				df['created_at'] = df['created_at'].apply(lambda x: datetime.datetime.strptime(x,"%a %b %d %H:%M:%S %z %Y"))
 			df.reset_index(drop=True,inplace=True)
 			df = df.where(pd.notnull(df),None)
 			len_after_etl = len(df)
