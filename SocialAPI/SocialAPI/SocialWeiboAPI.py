@@ -7,6 +7,7 @@ from urllib import parse
 from sqlalchemy import bindparam,Table
 from zipfile import ZipFile
 import uuid
+from functools import reduce
 
 
 
@@ -37,10 +38,8 @@ class SocialWeiboAPI(SocialBasicAPI):
 			if not users:
 				raise Exception("No data returned")
 			df_user = pd.DataFrame(users)
-			df_user.rename(columns={'id': 'uid'}, inplace=True)
 
-
-			df_user_cleaned = self.cleanRecords(df_user, dropColumns=['status'])
+			df_user_cleaned = self.cleanRecords(df_user, renameColumns={'id': 'uid'},dropColumns=['status'])
 			self.upsertToDB('pandas','weibo_user_info',df_user_cleaned)
 
 			return df_user
@@ -78,10 +77,9 @@ class SocialWeiboAPI(SocialBasicAPI):
 			users['month'] = datetime.datetime.now().month
 			users['day'] = datetime.datetime.now().day
 			#match column name in table
-			users.rename(columns={'id': 'uid'}, inplace=True)
 
-			df_user_cleaned = self.cleanRecords(df_post, dropColumns=['users'])
-			self.upsertToDB('pandas','weibo_user_growth_daily',users)
+			df_user_cleaned = self.cleanRecords(users,renameColumns={'id': 'uid'},utcTimeCovert=False)
+			self.upsertToDB('pandas','weibo_user_growth_daily',df_user_cleaned)
 
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
@@ -634,11 +632,11 @@ class SocialWeiboAPI(SocialBasicAPI):
 			# Upsert users before comments
 			df_user_list = [user for user in df_comment['user']]
 			df_user = pd.DataFrame(df_user_list)
-			df_user.rename(columns={'id': 'uid'}, inplace=True)
+
 			df_user_cleaned = self.cleanRecords(df_user)
 			self.upsertToDB('pandas','weibo_user_info',df_user_cleaned)
 
-			df_comment_cleaned = self.cleanRecords(df_comment,dropColumns=['status','user'])
+			df_comment_cleaned = self.cleanRecords(df_comment,dropColumns=['status','user'],renameColumns={'id': 'uid'})
 			self.upsertToDB('pandas','weibo_comment',df_comment_cleaned)
 
 			self.logger.info("Totally {} records in {} page(s)".format(len(df_comment_cleaned), page-1))
@@ -646,4 +644,57 @@ class SocialWeiboAPI(SocialBasicAPI):
 
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
+			exit(1)
+
+	def getTagsBatchOther(self,uids):
+		"""
+		Documentation
+		http://open.weibo.com/wiki/C/2/tags/tags_batch/other
+
+		:param uids:
+		:return:
+		"""
+
+		def f(x):
+			"""
+		    :param x:{'id': 17, 'tags': [{'291511': 'Ree', 'weight': '52', 'flag': '0'},...]}
+		    :return:[{'tag_id': '291511','tag_name': 'Ree', 'weight': '52', 'flag': '0','id':17},...]
+		    """
+			tagId = x.pop('id')
+			tagList = []
+
+			for tag in x['tags']:
+				tag['id'] = tagId
+				dictTuple = list(tag.items())
+				tagTuple = dictTuple.pop(0)
+				tag_id = tagTuple[0]
+				tag_name = tagTuple[1]
+				dictTuple.append(('tag_id', tag_id))
+				dictTuple.append(('tag_name', tag_name))
+				tagList.append(dict(dictTuple))
+			return tagList
+
+		def combineNestedList(x,y):
+			return x+y
+
+		self.logger.info("Calling getTagsBatchOther function")
+		try:
+			paramsDict = {}
+			paramsDict['uids'] = uids
+			paramsDict['access_token'] = self.__apiToken
+			url = 'https://c.api.weibo.com/2/tags/tags_batch/other.json'
+
+			result = self.getRequest(url, paramsDict)
+			result = result.json()
+
+			"""
+			if result.get('error_code') is not None:
+				raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
+			"""
+			data = reduce(combineNestedList,map(f,result))
+			df_tag = pd.DataFrame(data)
+			df_tag_cleaned = self.cleanRecords(df_tag,renameColumns={'id':'uid'},utcTimeCovert=False)
+			self.upsertToDB('pandas','weibo_tag',df_tag_cleaned)
+		except Exception as e:
+			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
 			exit(1)
