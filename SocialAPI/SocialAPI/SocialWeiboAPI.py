@@ -226,18 +226,23 @@ class SocialWeiboAPI(SocialBasicAPI):
 		:param kwargs:
 		:return:
 		"""
+		def f(url_objects):
+			for url_object in url_objects:
+				if url_object['isActionType']:
+
 		self.logger.info("Calling getStatusesUserTimelineOther")
 		try:
 			params_dict = kwargs
 			params_dict['access_token'] = self.__apiToken
 			params_dict['uid'] = uid
 			params_dict['trim_user'] = params_dict.get('trim_user',1)
-			#start_time = params_dict.get('start_time',self.getStrTime(1))
-			#params_dict['start_time'] = self.getTimeStamp(start_time)
+			#params_dict['start_time'] = self.getTimeStamp('2018-01-14 00:00:00')
+			#params_dict['end_time'] = self.getTimeStamp('2018-01-15 00:00:00')
 
 			url = 'https://c.api.weibo.com/2/statuses/user_timeline/other.json'
 			page = 0
 			df_list = []
+			dropColumns = []
 			loop = True
 
 			while loop:
@@ -269,13 +274,15 @@ class SocialWeiboAPI(SocialBasicAPI):
 					self.logger.debug("Totally {} page(s)".format(page-1))
 					loop = False
 			df_post = pd.concat(df_list, ignore_index=True)
-			df_post['is_retweeted'] = ~df_post['retweeted_status'].isnull()
-			df_post['retweeted_status'].where(df_post['retweeted_status'].notnull(), None, inplace=True)
-			df_post['retweeted_id'] = df_post['retweeted_status'].apply(lambda x: x['id'] if x else None)
 
+			if 'retweeted_status' in df_post.columns:
+				dropColumns.append('retweeted_status')
+				df_post['is_retweeted'] = ~df_post['retweeted_status'].isnull()
+				df_post['retweeted_status'].where(df_post['retweeted_status'].notnull(), None, inplace=True)
+				df_post['retweeted_id'] = df_post['retweeted_status'].apply(lambda x: x['id'] if x else None)
 
+			df_post_cleaned = self.cleanRecords(df_post,dropColumns=dropColumns)
 
-			df_post_cleaned = self.cleanRecords(df_post, dropColumns=['retweeted_status'])
 			self.logger.info("Totally {} records in {} page(s)".format(len(df_post_cleaned), page - 1))
 			self.upsertToDB('pandas', 'weibo_post_status', df_post_cleaned)
 
@@ -299,8 +306,8 @@ class SocialWeiboAPI(SocialBasicAPI):
 		try:
 			paramsDict = kwargs
 			paramsDict['access_token'] = self.__apiToken
-			paramsDict['starttime'] = self.getTimeStamp(starttime)
-			paramsDict['endtime'] = self.getTimeStamp(endtime)
+			paramsDict['starttime'] = self.getTimeStamp(starttime,'ms')
+			paramsDict['endtime'] = self.getTimeStamp(endtime,'ms')
 			
 			url = 'https://c.api.weibo.com/2/search/statuses/historical/create.json'
 			
@@ -674,9 +681,6 @@ class SocialWeiboAPI(SocialBasicAPI):
 				tagList.append(dict(dictTuple))
 			return tagList
 
-		def combineNestedList(x,y):
-			return x+y
-
 		self.logger.info("Calling getTagsBatchOther function")
 		try:
 			paramsDict = {}
@@ -691,7 +695,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 			if result.get('error_code') is not None:
 				raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
 			"""
-			data = reduce(combineNestedList,map(f,result))
+			data = reduce(lambda x,y: x+y, map(f,result))
 			df_tag = pd.DataFrame(data)
 			df_tag_cleaned = self.cleanRecords(df_tag,renameColumns={'id':'uid'},utcTimeCovert=False)
 			self.upsertToDB('pandas','weibo_tag',df_tag_cleaned)
