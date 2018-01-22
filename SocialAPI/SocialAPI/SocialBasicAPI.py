@@ -295,10 +295,14 @@ class SocialBasicAPI(object):
 
 		return date_time.strftime("%Y-%m-%d %H:%M:%S")
 
-	def getTimeStamp(self, datestr):
+	def getTimeStamp(self, datestr,level='s'):
 		date_time = datetime.datetime.strptime(datestr, '%Y-%m-%d %H:%M:%S')
-
-		return round(time.mktime(date_time.timetuple())*1000)
+		if level == 's':
+			return int(time.mktime(date_time.timetuple()))
+		elif level =='ms':
+			return round(time.mktime(date_time.timetuple())*1000)
+		else:
+			raise Exception('Time level is either s or ms')
 
 	def matchPostSource(self,text):
 		matchObj = re.search(r'^<a.*>(.*)</a>$', text)
