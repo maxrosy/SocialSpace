@@ -226,10 +226,6 @@ class SocialWeiboAPI(SocialBasicAPI):
 		:param kwargs:
 		:return:
 		"""
-		def f(url_objects):
-			for url_object in url_objects:
-				if url_object['isActionType']:
-
 		self.logger.info("Calling getStatusesUserTimelineOther")
 		try:
 			params_dict = kwargs
@@ -280,6 +276,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 				df_post['is_retweeted'] = ~df_post['retweeted_status'].isnull()
 				df_post['retweeted_status'].where(df_post['retweeted_status'].notnull(), None, inplace=True)
 				df_post['retweeted_id'] = df_post['retweeted_status'].apply(lambda x: x['id'] if x else None)
+
 
 			df_post_cleaned = self.cleanRecords(df_post,dropColumns=dropColumns)
 

@@ -226,7 +226,7 @@ class SocialBasicAPI(object):
 		try:
 			engine, meta = self.connectToDB(dbName)
 			conn = engine.connect()
-					
+
 			table = Table(tableName,meta)
 			stmt = table.insert()
 
