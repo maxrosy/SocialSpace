@@ -8,6 +8,7 @@ from sqlalchemy import bindparam,Table
 from zipfile import ZipFile
 import uuid
 from functools import reduce
+from pandas.io.json import json_normalize
 
 
 
@@ -172,7 +173,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 			params_dict = kwargs
 			params_dict['access_token'] = self.__apiToken
 			params_dict['uids'] = uids
-			params_dict['count'] = params_dict.get('count',200)
+			#params_dict['count'] = params_dict.get('count',200)
 
 			url = 'https://c.api.weibo.com/2/statuses/user_timeline_batch.json'
 
@@ -226,6 +227,16 @@ class SocialWeiboAPI(SocialBasicAPI):
 		:param kwargs:
 		:return:
 		"""
+		def f(x):
+			"""
+			:param x:[id,{},{}...]
+			:return: [{'pid':id,},{'pid':id,}...]
+			"""
+			pid = x.pop(0)
+			for item in x:
+				item['pid'] = pid
+			return x
+
 		self.logger.info("Calling getStatusesUserTimelineOther")
 		try:
 			params_dict = kwargs
@@ -271,19 +282,31 @@ class SocialWeiboAPI(SocialBasicAPI):
 					loop = False
 			df_post = pd.concat(df_list, ignore_index=True)
 
+			df_post['has_url_objects'] = False
+			df_post['is_retweeted'] = False
+
 			if 'retweeted_status' in df_post.columns:
 				dropColumns.append('retweeted_status')
 				df_post['is_retweeted'] = ~df_post['retweeted_status'].isnull()
 				df_post['retweeted_status'].where(df_post['retweeted_status'].notnull(), None, inplace=True)
 				df_post['retweeted_id'] = df_post['retweeted_status'].apply(lambda x: x['id'] if x else None)
+			if 'url_objects' in df_post.columns:
+				dropColumns.append('url_objects')
+				df_post['has_url_objects'] = df_post['url_objects'].apply(lambda x: True if x else False)
+				df_post['url_objects'] = df_post['id'].apply(lambda x: [x])+df_post['url_objects']
+				df_post['url_objects'] = df_post['url_objects'].apply(f)
+				df_url_objects_list = reduce(lambda x,y: x+y, df_post['url_objects'])
+				df_url_objects = pd.DataFrame(df_url_objects_list)
+				df_url_objects['uuid'] = [uuid.uuid1() for i in range(len(df_url_objects))]
 
 
 			df_post_cleaned = self.cleanRecords(df_post,dropColumns=dropColumns)
-
+			df_url_objects_cleaned = self.cleanRecords(df_url_objects,utcTimeCovert=False)
 			self.logger.info("Totally {} records in {} page(s)".format(len(df_post_cleaned), page - 1))
 			self.upsertToDB('pandas', 'weibo_post_status', df_post_cleaned)
+			self.upsertToDB('pandas','weibo_media',df_url_objects_cleaned)
 
-			return df_post_cleaned
+			return df_post_cleaned, df_url_objects_cleaned
 
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
