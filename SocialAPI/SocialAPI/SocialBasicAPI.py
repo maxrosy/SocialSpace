@@ -12,7 +12,8 @@ from sqlalchemy.dialects.mysql import insert
 from sqlalchemy.types import *
 from SocialAPI.Logger.BasicLogger import Logger
 import re
-
+from ..Model import engine
+from sqlalchemy.orm import sessionmaker
 
 
 
@@ -185,6 +186,10 @@ class SocialBasicAPI(object):
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
 			exit(1)
+
+	def createSession(self):
+		Session = sessionmaker(bind=engine)
+		return Session()
 
 	def upsertToDB(self,dbName,tableName,records):
 		"""
