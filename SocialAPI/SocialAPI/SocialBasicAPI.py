@@ -14,15 +14,17 @@ from SocialAPI.Logger.BasicLogger import Logger
 import re
 from ..Model import engine
 from sqlalchemy.orm import sessionmaker
+from SocialAPI.Helper import Helper
 
 
 
 class SocialBasicAPI(object):
 	
 	def __init__(self):
+		self.__rootPath = Helper().getRootPath()
 		self.cfp = configparser.ConfigParser()
-		self.cfp.read('./conf/social.conf')
-		self.logger = Logger('./conf/logging.conf','simpleExample').createLogger()
+		self.cfp.read(self.__rootPath + '/conf/social.conf')
+		self.logger = Logger(self.__rootPath + '/conf/logging.conf','simpleExample').createLogger()
 		self.__username = self.cfp.get('db','user')
 		self.__password = self.cfp.get('db','password')
 		self.__host = self.cfp.get('db','host')
