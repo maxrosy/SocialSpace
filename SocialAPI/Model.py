@@ -15,7 +15,7 @@ db = cfp.get('db','db')
 dblink = "mysql+mysqldb://{}:{}@{}:{}/{}?charset=utf8mb4".format(username,password,host,port,db)
 
 Base = declarative_base()
-engine = create_engine(dblink,echo=True)
+engine = create_engine(dblink,echo=False)
 metadata = MetaData(bind=engine)
 
 
