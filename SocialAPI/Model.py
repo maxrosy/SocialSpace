@@ -1,11 +1,11 @@
 from sqlalchemy import *
-from sqlalchemy.orm import create_session
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 import configparser
+from sqlalchemy.dialects.mysql import insert
 
 cfp = configparser.ConfigParser()
-cfp.read('../conf/social.conf')
+cfp.read('./conf/social.conf')
 username = cfp.get('db','user')
 password = cfp.get('db','password')
 host = cfp.get('db','host')
@@ -18,11 +18,13 @@ Base = declarative_base()
 engine = create_engine(dblink,echo=True)
 metadata = MetaData(bind=engine)
 
+
 class User(Base):
     __table__ = Table('weibo_user_info',metadata,autoload=True)
     post = relationship('PostStatus',backref='user')
     user_growth = relationship('UserGrowth',backref='user')
     user_tag = relationship('UserTag', backref='user')
+
 
 class PostStatus(Base):
     __table__ = Table('weibo_post_status',metadata,autoload=True)
@@ -40,3 +42,6 @@ class Media(Base):
 
 class UserTag(Base):
     __table__ = Table('weibo_user_tag',metadata,autoload=True)
+
+class TaskHistory(Base):
+    __table__ = Table('task_history',metadata,autoload=True)

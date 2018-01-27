@@ -81,8 +81,7 @@ class SocialBasicAPI(object):
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)	
-			
-			
+
 	def writeDataFrameToExcel(self,df,wbname,sheetname):
 		self.logger.info("Calling writeDataFrameToExcel function")
 
@@ -127,7 +126,6 @@ class SocialBasicAPI(object):
 			exit(1)
 		"""
 
-			
 	def readCsvToDataFrame(filePath,sep=','):	
 		self.logger.info("Calling readCsvToDataFrame function")
 		try:
@@ -187,23 +185,22 @@ class SocialBasicAPI(object):
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
 			exit(1)
 
-	def createSession(self):
+	def createSession(self, engine=engine):
 		Session = sessionmaker(bind=engine)
-		return Session()
+		session = Session()
+		return session
 
-	def upsertToDB(self,dbName,tableName,records):
+	def upsertToDB(self,table,records):
 		"""
 		New feature in SQLAlchemy 1.2
-		:param dbName:
-		:param tableName:
-		:param records:
-		:param pk: primary key
+		:param table: table model
+		:param records: either in the type of dict or dataframe
 		:return:
 		"""
 		try:
-			engine, meta = self.connectToDB(dbName)
+			#engine, meta = self.connectToDB(dbName)
 			conn = engine.connect()
-			table = Table(tableName, meta)
+			#table = Table(tableName, meta)
 
 			# Check data type of records
 			if isinstance(records, pd.DataFrame):
