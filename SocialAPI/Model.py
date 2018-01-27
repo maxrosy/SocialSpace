@@ -2,10 +2,12 @@ from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 import configparser
-from sqlalchemy.dialects.mysql import insert
+from SocialAPI.Helper import Helper
 
+
+rootPath = Helper().getRootPath()
 cfp = configparser.ConfigParser()
-cfp.read('./conf/social.conf')
+cfp.read(rootPath + '/conf/social.conf')
 username = cfp.get('db','user')
 password = cfp.get('db','password')
 host = cfp.get('db','host')
