@@ -221,6 +221,7 @@ class SocialBasicAPI(object):
 
 			res.close()
 			conn.close()
+			self.logger.info("{} reocrds have been upsert into table {}".format(len(records),table.__table__))
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
 			exit(1)

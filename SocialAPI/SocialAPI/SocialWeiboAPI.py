@@ -4,11 +4,11 @@ import sys, os
 import time, datetime
 import hashlib
 from urllib import parse
-from sqlalchemy import bindparam,Table
 from zipfile import ZipFile
 import uuid
 from functools import reduce
 from ..Model import User,UserGrowth,UserTag,Comment,PostStatus,TaskHistory,Media
+from sqlalchemy import func
 
 
 class SocialWeiboAPI(SocialBasicAPI):
@@ -217,6 +217,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 				df_post['retweeted_id'] = df_post['retweeted_status'].apply(lambda x: x['id'] if x else None)
 
 			df_post_cleaned = self.cleanRecords(df_post,dropColumns=dropColumns)
+
 
 			self.logger.info("Totally {} records in {} page(s)".format(len(df_post_cleaned), page-1))
 			self.upsertToDB(PostStatus,df_post_cleaned)
@@ -620,7 +621,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
 	
-	def getCommentsShow(self,mid,**kwargs):
+	def getCommentsShow(self,mid,latest=True,**kwargs):
 		"""
 		Documentation
 		http://open.weibo.com/wiki/C/2/comments/show/all
@@ -634,7 +635,11 @@ class SocialWeiboAPI(SocialBasicAPI):
 			paramsDict = kwargs
 			paramsDict['access_token'] = self.__apiToken
 			paramsDict['id'] = mid
-
+			if latest:
+				session = self.createSession()
+				since_id = session.query(func.max(Comment.id)).filter_by(pid = mid).scalar()
+				paramsDict['since_id'] = since_id
+				session.close()
 			url = 'https://c.api.weibo.com/2/comments/show/all.json'
 			page = 0
 			df_list = []
@@ -677,7 +682,9 @@ class SocialWeiboAPI(SocialBasicAPI):
 				except StopIteration:
 					self.logger.info("Totally {} page(s)".format(page - 1))
 					loop = False
-
+			if not df_list:
+				self.logger.warning("No data to update")
+				return
 			df_comment = pd.concat(df_list, ignore_index=True)
 			# Upsert users before comments
 			df_user_list = [user for user in df_comment['user']]
