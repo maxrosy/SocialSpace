@@ -1,0 +1,4 @@
+# start.job
+type=command
+command=echo "Done!"
+dependencies=weibo_user_tag,weibo_user_growth_daily,weibo_comment

@@ -1,0 +1,4 @@
+#weibo_comment.job
+type=command
+command = /home/max/SocialSpace/venv/bin/python /home/max/SocialSpace/jobs/weibo_comment.py
+dependencies=weibo_post_daily

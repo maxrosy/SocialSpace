@@ -1,0 +1,4 @@
+#weibo_user_info.job
+type=command
+command = /home/max/SocialSpace/venv/bin/python /home/max/SocialSpace/jobs/weibo_user_info.py
+dependencies=start

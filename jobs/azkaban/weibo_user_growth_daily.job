@@ -1,0 +1,4 @@
+#weibo_user_growth_daily.job
+type=command
+command = /home/max/SocialSpace/venv/bin/python /home/max/SocialSpace/jobs/weibo_user_growth_daily.py
+dependencies=weibo_user_info
