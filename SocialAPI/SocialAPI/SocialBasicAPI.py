@@ -15,6 +15,7 @@ import re
 from ..Model import engine
 from sqlalchemy.orm import sessionmaker
 from SocialAPI.Helper import Helper
+import aiohttp
 
 
 
@@ -41,6 +42,11 @@ class SocialBasicAPI(object):
 		
 		r = requests.get(url, params=paramsDict, stream=stream)
 		return r
+
+	async def getAsyncRequest(self,url, paramsDict={}):
+		async with aiohttp.ClientSession() as session:
+			async with session.get(url, params=paramsDict) as r:
+				return  await r.json()
 
 	def encodeElement(self,text):
 
@@ -251,7 +257,6 @@ class SocialBasicAPI(object):
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
 
-
 	def connectToDB(self, db):
 		
 		try:
@@ -264,10 +269,7 @@ class SocialBasicAPI(object):
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
-		
-		#conn=MySQLdb.connect(host=self.__host,port=self.__port,user=self.__username,passwd=self.__password,db=db,charset='utf8')
-		#return conn
-	
+
 	def readFromS3(self,bucketName,remoteFile,localFile):
 		self.logger.info("Calling readFromS3 function")
 		try:

@@ -9,6 +9,7 @@ import uuid
 from functools import reduce
 from ..Model import User,UserGrowth,UserTag,Comment,PostStatus,TaskHistory,Media
 from sqlalchemy import func
+import aiohttp
 
 
 class SocialWeiboAPI(SocialBasicAPI):
@@ -392,7 +393,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 			"""
 			#New solution using ORM
 			session = self.createSession()
-			for record in session.query(TaskHistory).filter(TaskHistory.status == 0):
+			for record in session.query(TaskHistory).filter(TaskHistory.status == 0).all():
 			#for record in res.fetchall():
 				timestamp = int(time.time()*1000)
 				uuid = record.uuid
@@ -638,7 +639,8 @@ class SocialWeiboAPI(SocialBasicAPI):
 			if latest:
 				session = self.createSession()
 				since_id = session.query(func.max(Comment.id)).filter_by(pid = mid).scalar()
-				paramsDict['since_id'] = since_id
+				if since_id:
+					paramsDict['since_id'] = since_id
 				session.close()
 			url = 'https://c.api.weibo.com/2/comments/show/all.json'
 			page = 0
@@ -702,7 +704,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
 
-	def getTagsBatchOther(self,uids):
+	async def getTagsBatchOther(self,uids):
 		"""
 		Documentation
 		http://open.weibo.com/wiki/C/2/tags/tags_batch/other
@@ -730,6 +732,9 @@ class SocialWeiboAPI(SocialBasicAPI):
 				tagList.append(dict(dictTuple))
 			return tagList
 
+		async def t(url,paramsDict):
+			return await self.getAsyncRequest(url, paramsDict)
+
 		self.logger.info("Calling getTagsBatchOther function")
 		try:
 			paramsDict = {}
@@ -737,8 +742,8 @@ class SocialWeiboAPI(SocialBasicAPI):
 			paramsDict['access_token'] = self.__apiToken
 			url = 'https://c.api.weibo.com/2/tags/tags_batch/other.json'
 
-			result = self.getRequest(url, paramsDict)
-			result = result.json()
+			result = await t(url,paramsDict)
+			#result = result.json()
 
 			"""
 			if result.get('error_code') is not None:
