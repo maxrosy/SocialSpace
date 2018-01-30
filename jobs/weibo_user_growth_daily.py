@@ -8,7 +8,8 @@ if __name__ == '__main__':
     rootPath = Helper().getRootPath()
     df = pd.read_csv(rootPath + '/input/uid.csv',';')
     uidList = list(df['uid'].apply(str))
-    uidGroup = [','.join(uidList[i:i+100]) for i in range(0,103,100)]
+    n = 101 #len(df)
+    uidGroup = [','.join(uidList[i:i+100]) for i in range(0,n,100)]
 
     weibo = SocialWeiboAPI()
     for uids in uidGroup:
