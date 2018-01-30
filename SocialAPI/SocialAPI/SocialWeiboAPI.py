@@ -359,7 +359,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 			onlynum = result.get('onlynum')
 
 			#Insert new created task into DB
-			records = {'uuid': uuid.uuid1(),'task_id': __taskId, 'user_id': __id, 'secret_key': __secretKey, 'starttime': starttime,
+			records = {'task_id': __taskId, 'user_id': __id, 'secret_key': __secretKey, 'starttime': starttime,
 						'endtime': endtime, 'type': type, 'hasv': hasv, 'onlynum': onlynum, 'query': q,
 						'province': provinceId, 'city': cityId, 'ids': ids}
 			self.insertToDB(TaskHistory, records)
@@ -394,7 +394,6 @@ class SocialWeiboAPI(SocialBasicAPI):
 			for record in session.query(TaskHistory).filter(TaskHistory.status == 0).all():
 			#for record in res.fetchall():
 				timestamp = int(time.time()*1000)
-				uuid = record.uuid
 				taskId = record.task_id
 				id = record.user_id
 				secretKey = record.secret_key
@@ -412,7 +411,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 					# To do - play with df_post
 					self.logger.info("Task {} is done and returns {} records".format(taskId,result.get('count')))
 					#finishTasks.append(taskId)
-					finishTasks.append({'uuid':uuid,'status':1})
+					finishTasks.append({'task_id':taskId,'status':1})
 			#res.close()
 			
 			if finishTasks:
@@ -557,7 +556,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 				dropColumns.append('user')
 
 			df_post_cleaned = self.cleanRecords(df_post,dropColumns=dropColumns)
-
+			self.upsertToDB(PostStatus, df_post_cleaned)
 			return df_post_cleaned
 
 		except Exception as e:
