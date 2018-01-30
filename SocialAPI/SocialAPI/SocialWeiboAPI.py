@@ -48,7 +48,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
 			exit(1)
 
-	def getUsersCountBatch(self,uids):
+	async def getUsersCountBatch(self,uids):
 		"""
 		Documentation
 		http://open.weibo.com/wiki/C/2/users/counts_batch/other
@@ -62,8 +62,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 
 			url = 'https://c.api.weibo.com/2/users/counts_batch/other.json'
 
-			result = self.getRequest(url, params_dict)
-			result = result.json()
+			result = await self.getAsyncRequest(url,params_dict)
 
 			"""
 			if result.get('error_code') is not None:
@@ -76,7 +75,6 @@ class SocialWeiboAPI(SocialBasicAPI):
 			users['year'] = datetime.datetime.now().year
 			users['month'] = datetime.datetime.now().month
 			users['day'] = datetime.datetime.now().day
-			#match column name in table
 
 			df_user_cleaned = self.cleanRecords(users,renameColumns={'id': 'uid'},utcTimeCovert=False)
 			self.upsertToDB(UserGrowth,df_user_cleaned)
@@ -732,9 +730,6 @@ class SocialWeiboAPI(SocialBasicAPI):
 				tagList.append(dict(dictTuple))
 			return tagList
 
-		async def t(url,paramsDict):
-			return await self.getAsyncRequest(url, paramsDict)
-
 		self.logger.info("Calling getTagsBatchOther function")
 		try:
 			paramsDict = {}
@@ -742,13 +737,11 @@ class SocialWeiboAPI(SocialBasicAPI):
 			paramsDict['access_token'] = self.__apiToken
 			url = 'https://c.api.weibo.com/2/tags/tags_batch/other.json'
 
-			result = await t(url,paramsDict)
-			#result = result.json()
+			result = await self.getAsyncRequest(url, paramsDict)
 
-			"""
-			if result.get('error_code') is not None:
-				raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
-			"""
+			if not result:
+				raise Exception("No data return!")
+
 			data = reduce(lambda x,y: x+y, map(f,result))
 			df_tag = pd.DataFrame(data)
 			df_tag_cleaned = self.cleanRecords(df_tag,renameColumns={'id':'uid'},utcTimeCovert=False)

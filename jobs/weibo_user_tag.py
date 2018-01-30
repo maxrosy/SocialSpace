@@ -12,9 +12,6 @@ if __name__ == '__main__':
     uidGroup = [','.join(uidList[i:i+20]) for i in range(0,n,20)]
 
     weibo = SocialWeiboAPI()
-    #for uids in uidGroup:
-    #    weibo.getTagsBatchOther(uids)
-
 
     tasks = [weibo.getTagsBatchOther(uids) for uids in uidGroup]
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
