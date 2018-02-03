@@ -1,6 +1,4 @@
-import sys
 import pandas as pd
-sys.path.append('/home/max/SocialSpace')
 from SocialAPI.SocialAPI.SocialWeiboAPI import SocialWeiboAPI
 from SocialAPI.Helper import Helper
 import asyncio
