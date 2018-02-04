@@ -63,6 +63,9 @@ class SocialBasicAPI(object):
 			if dropColumns:
 				df.drop(columns=dropColumns, inplace=True)
 
+			# Change [] to None before encoding
+			df = df.where(df.applymap(lambda x: False if not x else True), None)
+
 			df=df.applymap(self.encodeElement)
 			df.drop_duplicates(inplace=True)
 
@@ -74,7 +77,11 @@ class SocialBasicAPI(object):
 			if utcTimeCovert:
 				df['created_at'] = df['created_at'].apply(lambda x: datetime.datetime.strptime(x,"%a %b %d %H:%M:%S %z %Y"))
 			df.reset_index(drop=True,inplace=True)
+
+			# Change NaN to None
 			df = df.where(pd.notnull(df),None)
+
+
 			len_after_etl = len(df)
 			self.logger.info('Totally {} out of {} records remained after ETL'.format(len_after_etl, len_before_etl))
 			return df
