@@ -9,6 +9,7 @@ import uuid
 from functools import reduce
 from ..Model import User,UserGrowth,UserTag,Comment,PostStatus,TaskHistory,Media
 from sqlalchemy import func
+from SocialAPI.Helper import Helper
 
 
 class SocialWeiboAPI(SocialBasicAPI):
@@ -16,8 +17,9 @@ class SocialWeiboAPI(SocialBasicAPI):
 	def __init__(self):
 		super(SocialWeiboAPI,self).__init__()
 		self.__apiToken = self.cfp.get('api','weibo')
+		self.__rootPath = Helper().getRootPath()
 
-	def getUserShowBatchOther(self,uids):
+	async def getUserShowBatchOther(self,uids):
 		"""
 		Documentation
 		http://open.weibo.com/wiki/C/2/users/show_batch/other
@@ -30,8 +32,8 @@ class SocialWeiboAPI(SocialBasicAPI):
 			params_dict = {'access_token': self.__apiToken, 'uids': uids}
 			url = 'https://c.api.weibo.com/2/users/show_batch/other.json'
 
-			result = self.getRequest(url, params_dict)
-			result = result.json()
+			result = await self.getAsyncRequest(url, params_dict)
+
 			if result.get('error_code') is not None:
 				raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
 			users = result.get('users')
@@ -47,7 +49,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
 			exit(1)
 
-	def getUsersCountBatch(self,uids):
+	async def getUsersCountBatch(self,uids):
 		"""
 		Documentation
 		http://open.weibo.com/wiki/C/2/users/counts_batch/other
@@ -61,8 +63,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 
 			url = 'https://c.api.weibo.com/2/users/counts_batch/other.json'
 
-			result = self.getRequest(url, params_dict)
-			result = result.json()
+			result = await self.getAsyncRequest(url,params_dict)
 
 			"""
 			if result.get('error_code') is not None:
@@ -75,7 +76,6 @@ class SocialWeiboAPI(SocialBasicAPI):
 			users['year'] = datetime.datetime.now().year
 			users['month'] = datetime.datetime.now().month
 			users['day'] = datetime.datetime.now().day
-			#match column name in table
 
 			df_user_cleaned = self.cleanRecords(users,renameColumns={'id': 'uid'},utcTimeCovert=False)
 			self.upsertToDB(UserGrowth,df_user_cleaned)
@@ -166,6 +166,16 @@ class SocialWeiboAPI(SocialBasicAPI):
 		:param kwargs:
 		:return: return at maxium 200 records for each uid
 		"""
+		def f(x):
+			"""
+			:param x:[id,{},{}...]
+			:return: [{'pid':id,},{'pid':id,}...]
+			"""
+			pid = x.pop(0)
+			for item in x:
+				item['pid'] = pid
+			return x
+
 		self.logger.info("Calling getUserTimelineBatch")
 		try:
 			params_dict = kwargs
@@ -215,13 +225,22 @@ class SocialWeiboAPI(SocialBasicAPI):
 				df_post['is_retweeted'] = ~df_post['retweeted_status'].isnull()
 				df_post['retweeted_status'].where(df_post['retweeted_status'].notnull(), None, inplace=True)
 				df_post['retweeted_id'] = df_post['retweeted_status'].apply(lambda x: x['id'] if x else None)
+			if 'url_objects' in df_post.columns:
+				dropColumns.append('url_objects')
+				df_post['has_url_objects'] = df_post['url_objects'].apply(lambda x: True if x else False)
+				df_post['url_objects'] = df_post['id'].apply(lambda x: [x])+df_post['url_objects']
+				df_post['url_objects'] = df_post['url_objects'].apply(f)
+				df_url_objects_list = reduce(lambda x,y: x+y, df_post['url_objects'])
+				df_url_objects = pd.DataFrame(df_url_objects_list)
 
 			df_post_cleaned = self.cleanRecords(df_post,dropColumns=dropColumns)
-
+			df_url_objects_cleaned = self.cleanRecords(df_url_objects, utcTimeCovert=False)
 
 			self.logger.info("Totally {} records in {} page(s)".format(len(df_post_cleaned), page-1))
 			self.upsertToDB(PostStatus,df_post_cleaned)
-			return df_post_cleaned
+			self.upsertToDB(Media, df_url_objects_cleaned)
+
+			return df_post_cleaned, df_url_objects_cleaned
 
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
@@ -305,8 +324,6 @@ class SocialWeiboAPI(SocialBasicAPI):
 				df_post['url_objects'] = df_post['url_objects'].apply(f)
 				df_url_objects_list = reduce(lambda x,y: x+y, df_post['url_objects'])
 				df_url_objects = pd.DataFrame(df_url_objects_list)
-				df_url_objects['uuid'] = [uuid.uuid1() for i in range(len(df_url_objects))]
-
 
 			df_post_cleaned = self.cleanRecords(df_post,dropColumns=dropColumns)
 			df_url_objects_cleaned = self.cleanRecords(df_url_objects,utcTimeCovert=False)
@@ -360,7 +377,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 			onlynum = result.get('onlynum')
 
 			#Insert new created task into DB
-			records = {'uuid': uuid.uuid1(),'task_id': __taskId, 'user_id': __id, 'secret_key': __secretKey, 'starttime': starttime,
+			records = {'task_id': __taskId, 'user_id': __id, 'secret_key': __secretKey, 'starttime': starttime,
 						'endtime': endtime, 'type': type, 'hasv': hasv, 'onlynum': onlynum, 'query': q,
 						'province': provinceId, 'city': cityId, 'ids': ids}
 			self.insertToDB(TaskHistory, records)
@@ -392,10 +409,9 @@ class SocialWeiboAPI(SocialBasicAPI):
 			"""
 			#New solution using ORM
 			session = self.createSession()
-			for record in session.query(TaskHistory).filter(TaskHistory.status == 0):
+			for record in session.query(TaskHistory).filter(TaskHistory.status == 0).all():
 			#for record in res.fetchall():
 				timestamp = int(time.time()*1000)
-				uuid = record.uuid
 				taskId = record.task_id
 				id = record.user_id
 				secretKey = record.secret_key
@@ -413,7 +429,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 					# To do - play with df_post
 					self.logger.info("Task {} is done and returns {} records".format(taskId,result.get('count')))
 					#finishTasks.append(taskId)
-					finishTasks.append({'uuid':uuid,'status':1})
+					finishTasks.append({'task_id':taskId,'status':1})
 			#res.close()
 			
 			if finishTasks:
@@ -466,7 +482,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 			r = self.getRequest(downloadUrl)
 
 			# Download zip file
-			localzipFile = './output/{}.zip'.format(taskId)
+			localzipFile = self.__rootPath + '/output/{}.zip'.format(taskId)
 			with open(localzipFile,'wb') as f:
 				for chunk in r.iter_content(chunk_size=chunkSize):
 					f.write(chunk)
@@ -474,8 +490,8 @@ class SocialWeiboAPI(SocialBasicAPI):
 			fileInfo = os.stat(localzipFile)
 			self.logger.info('{} is downloaded with {} bytes'.format(localzipFile, fileInfo.st_size))
 
-			# Read lof file and create dataframe
-			extractFile = '{}.log'.format(taskId)
+			# Read log file and create dataframe
+			extractFile = self.__rootPath + '{}.log'.format(taskId)
 			with ZipFile(localzipFile) as myzip:
 				pwd = str(taskId)+secretKey
 				with myzip.open(extractFile, pwd=pwd.encode('utf-8')) as myfile:
@@ -532,6 +548,16 @@ class SocialWeiboAPI(SocialBasicAPI):
 		:param kwargs:
 		:return:
 		"""
+		def f(x):
+			"""
+			:param x:[id,{},{}...]
+			:return: [{'pid':id,},{'pid':id,}...]
+			"""
+			pid = x.pop(0)
+			for item in x:
+				item['pid'] = pid
+			return x
+
 		dropColumns =[]
 		self.logger.info("Calling getStatusesShowBatch")
 		try:
@@ -542,7 +568,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 			url = 'https://c.api.weibo.com/2/statuses/show_batch/biz.json'
 
 			result = self.getRequest(url, paramsDict)
-			result.json()
+			result = result.json()
 
 			if result.get('error_code') is not None:
 				raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
@@ -557,9 +583,29 @@ class SocialWeiboAPI(SocialBasicAPI):
 				df_post['uid'] = df_user['id']
 				dropColumns.append('user')
 
-			df_post_cleaned = self.cleanRecords(df_post,dropColumns=dropColumns)
+			df_post['has_url_objects'] = False
+			df_post['is_retweeted'] = False
 
-			return df_post_cleaned
+			if 'retweeted_status' in df_post.columns:
+				dropColumns.append('retweeted_status')
+				df_post['is_retweeted'] = ~df_post['retweeted_status'].isnull()
+				df_post['retweeted_status'].where(df_post['retweeted_status'].notnull(), None, inplace=True)
+				df_post['retweeted_id'] = df_post['retweeted_status'].apply(lambda x: x['id'] if x else None)
+
+			if 'url_objects' in df_post.columns:
+				dropColumns.append('url_objects')
+				df_post['has_url_objects'] = df_post['url_objects'].apply(lambda x: True if x else False)
+				df_post['url_objects'] = df_post['id'].apply(lambda x: [x])+df_post['url_objects']
+				df_post['url_objects'] = df_post['url_objects'].apply(f)
+				df_url_objects_list = reduce(lambda x,y: x+y, df_post['url_objects'])
+				df_url_objects = pd.DataFrame(df_url_objects_list)
+				#df_url_objects['uuid'] = [uuid.uuid1() for i in range(len(df_url_objects))]
+
+			df_post_cleaned = self.cleanRecords(df_post,dropColumns=dropColumns)
+			df_url_objects_cleaned = self.cleanRecords(df_url_objects, utcTimeCovert=False)
+			self.upsertToDB(PostStatus, df_post_cleaned)
+			self.upsertToDB(Media, df_url_objects_cleaned)
+			return df_post_cleaned, df_url_objects_cleaned
 
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
@@ -638,7 +684,8 @@ class SocialWeiboAPI(SocialBasicAPI):
 			if latest:
 				session = self.createSession()
 				since_id = session.query(func.max(Comment.id)).filter_by(pid = mid).scalar()
-				paramsDict['since_id'] = since_id
+				if since_id:
+					paramsDict['since_id'] = since_id
 				session.close()
 			url = 'https://c.api.weibo.com/2/comments/show/all.json'
 			page = 0
@@ -656,7 +703,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 						raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
 
 					comments = result.get('comments')
-					if not comments:
+					if not comments or page == 11: # Since there are too many comments, stop after 10 pages to call DB upsert
 						raise StopIteration
 
 					df_comment = pd.DataFrame(comments)
@@ -702,7 +749,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
 
-	def getTagsBatchOther(self,uids):
+	async def getTagsBatchOther(self,uids):
 		"""
 		Documentation
 		http://open.weibo.com/wiki/C/2/tags/tags_batch/other
@@ -737,13 +784,11 @@ class SocialWeiboAPI(SocialBasicAPI):
 			paramsDict['access_token'] = self.__apiToken
 			url = 'https://c.api.weibo.com/2/tags/tags_batch/other.json'
 
-			result = self.getRequest(url, paramsDict)
-			result = result.json()
+			result = await self.getAsyncRequest(url, paramsDict)
 
-			"""
-			if result.get('error_code') is not None:
-				raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
-			"""
+			if not result:
+				raise Exception("No data return!")
+
 			data = reduce(lambda x,y: x+y, map(f,result))
 			df_tag = pd.DataFrame(data)
 			df_tag_cleaned = self.cleanRecords(df_tag,renameColumns={'id':'uid'},utcTimeCovert=False)

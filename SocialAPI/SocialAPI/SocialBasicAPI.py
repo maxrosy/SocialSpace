@@ -9,12 +9,12 @@ import configparser
 from openpyxl import load_workbook, Workbook
 from sqlalchemy import create_engine, MetaData,Table
 from sqlalchemy.dialects.mysql import insert
-from sqlalchemy.types import *
 from SocialAPI.Logger.BasicLogger import Logger
 import re
 from ..Model import engine
 from sqlalchemy.orm import sessionmaker
 from SocialAPI.Helper import Helper
+import aiohttp
 
 
 
@@ -42,6 +42,11 @@ class SocialBasicAPI(object):
 		r = requests.get(url, params=paramsDict, stream=stream)
 		return r
 
+	async def getAsyncRequest(self,url, paramsDict={}):
+		async with aiohttp.ClientSession() as session:
+			async with session.get(url, params=paramsDict) as r:
+				return await r.json()
+
 	def encodeElement(self,text):
 
 		if isinstance(text,dict) or isinstance(text,list):
@@ -57,6 +62,9 @@ class SocialBasicAPI(object):
 			if dropColumns:
 				df.drop(columns=dropColumns, inplace=True)
 
+			# Change [] to None before encoding
+			df = df.where(df.applymap(lambda x: False if not x else True), None)
+
 			df=df.applymap(self.encodeElement)
 			df.drop_duplicates(inplace=True)
 
@@ -68,7 +76,11 @@ class SocialBasicAPI(object):
 			if utcTimeCovert:
 				df['created_at'] = df['created_at'].apply(lambda x: datetime.datetime.strptime(x,"%a %b %d %H:%M:%S %z %Y"))
 			df.reset_index(drop=True,inplace=True)
+
+			# Change NaN to None
 			df = df.where(pd.notnull(df),None)
+
+
 			len_after_etl = len(df)
 			self.logger.info('Totally {} out of {} records remained after ETL'.format(len_after_etl, len_before_etl))
 			return df
@@ -251,7 +263,6 @@ class SocialBasicAPI(object):
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
 
-
 	def connectToDB(self, db):
 		
 		try:
@@ -264,10 +275,7 @@ class SocialBasicAPI(object):
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
-		
-		#conn=MySQLdb.connect(host=self.__host,port=self.__port,user=self.__username,passwd=self.__password,db=db,charset='utf8')
-		#return conn
-	
+
 	def readFromS3(self,bucketName,remoteFile,localFile):
 		self.logger.info("Calling readFromS3 function")
 		try:
