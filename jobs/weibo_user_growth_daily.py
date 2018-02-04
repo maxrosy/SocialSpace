@@ -9,8 +9,8 @@ if __name__ == '__main__':
     df = pd.read_csv(rootPath + '/input/uid.csv',';')
     uidList = list(df['uid'].apply(str))
     n = 103 # len(df)
-    uidGroup = [','.join(uidList[i:i+100]) for i in range(0,n,100)]
-
+    #uidGroup = [','.join(uidList[i:i+100]) for i in range(0,n,100)]
+    uidGroup = ['1609648201,5934019851,1768660152']
     weibo = SocialWeiboAPI()
 
     tasks = [weibo.getUsersCountBatch(uids) for uids in uidGroup]
