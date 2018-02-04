@@ -9,7 +9,6 @@ import configparser
 from openpyxl import load_workbook, Workbook
 from sqlalchemy import create_engine, MetaData,Table
 from sqlalchemy.dialects.mysql import insert
-from sqlalchemy.types import *
 from SocialAPI.Logger.BasicLogger import Logger
 import re
 from ..Model import engine
@@ -46,7 +45,7 @@ class SocialBasicAPI(object):
 	async def getAsyncRequest(self,url, paramsDict={}):
 		async with aiohttp.ClientSession() as session:
 			async with session.get(url, params=paramsDict) as r:
-				return  await r.json()
+				return await r.json()
 
 	def encodeElement(self,text):
 
