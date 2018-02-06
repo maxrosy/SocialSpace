@@ -13,10 +13,17 @@ if __name__ == '__main__':
     uidGroup = [','.join(uidList[i:i+50]) for i in range(0,n,50)]
 
     weibo = SocialWeiboAPI()
-    tasks = [weibo.getUserShowBatchOther(uids) for uids in uidGroup]
+
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     loop = asyncio.new_event_loop()
+    tasks = [asyncio.ensure_future(weibo.getUserShowBatchOther(uids), loop=loop) for uids in uidGroup]
     loop.run_until_complete(asyncio.wait(tasks))
+    result = [task.result() for task in tasks]
+    df = pd.concat(result, ignore_index=True)
+    filePath = rootPath + '/output/weibo_user_info'
+    os.makedirs(filePath, exist_ok=True)
+    fileName = '/weibo_user_info_' + datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + '.csv'
+    weibo.writeDataFrameToCsv(df, filePath + fileName, sep="|")
     loop.close()
 
 

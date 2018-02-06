@@ -5,7 +5,6 @@ import time, datetime
 import hashlib
 from urllib import parse
 from zipfile import ZipFile
-import uuid
 from functools import reduce
 from ..Model import User,UserGrowth,UserTag,Comment,PostStatus,TaskHistory,Media
 from sqlalchemy import func
@@ -43,8 +42,8 @@ class SocialWeiboAPI(SocialBasicAPI):
 
 			df_user_cleaned = self.cleanRecords(df_user, renameColumns={'id': 'uid'},dropColumns=['status'])
 			self.upsertToDB(User,df_user_cleaned)
+			return df_user_cleaned
 
-			return df_user
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
 			exit(1)
@@ -79,6 +78,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 
 			df_user_cleaned = self.cleanRecords(users,renameColumns={'id': 'uid'},utcTimeCovert=False)
 			self.upsertToDB(UserGrowth,df_user_cleaned)
+			return df_user_cleaned
 
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
@@ -410,7 +410,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 			#New solution using ORM
 			session = self.createSession()
 			for record in session.query(TaskHistory).filter(TaskHistory.status == 0).all():
-			#for record in res.fetchall():
+
 				timestamp = int(time.time()*1000)
 				taskId = record.task_id
 				id = record.user_id
@@ -428,9 +428,8 @@ class SocialWeiboAPI(SocialBasicAPI):
 
 					# To do - play with df_post
 					self.logger.info("Task {} is done and returns {} records".format(taskId,result.get('count')))
-					#finishTasks.append(taskId)
+
 					finishTasks.append({'task_id':taskId,'status':1})
-			#res.close()
 			
 			if finishTasks:
 				try:
@@ -450,8 +449,6 @@ class SocialWeiboAPI(SocialBasicAPI):
 					exit(1)
 				finally:
 					session.close()
-					#res.close()
-					#conn.close()
 			
 			return finishTasks
 
@@ -760,9 +757,9 @@ class SocialWeiboAPI(SocialBasicAPI):
 
 		def f(x):
 			"""
-		    :param x:{'id': 17, 'tags': [{'291511': 'Ree', 'weight': '52', 'flag': '0'},...]}
-		    :return:[{'tag_id': '291511','tag_name': 'Ree', 'weight': '52', 'flag': '0','id':17},...]
-		    """
+			:param x:{'id': 17, 'tags': [{'291511': 'Ree', 'weight': '52', 'flag': '0'},...]}
+			:return:[{'tag_id': '291511','tag_name': 'Ree', 'weight': '52', 'flag': '0','id':17},...]
+			"""
 			tagId = x.pop('id')
 			tagList = []
 
@@ -793,6 +790,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 			df_tag = pd.DataFrame(data)
 			df_tag_cleaned = self.cleanRecords(df_tag,renameColumns={'id':'uid'},utcTimeCovert=False)
 			self.upsertToDB(UserTag,df_tag_cleaned)
+			return df_tag_cleaned
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
 			exit(1)
