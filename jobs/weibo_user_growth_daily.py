@@ -3,6 +3,8 @@ from SocialAPI.SocialAPI.SocialWeiboAPI import SocialWeiboAPI
 from SocialAPI.Helper import Helper
 import asyncio
 import uvloop
+from datetime import datetime
+import os
 
 if __name__ == '__main__':
     rootPath = Helper().getRootPath()
@@ -23,6 +25,6 @@ if __name__ == '__main__':
     df = pd.concat(result, ignore_index=True)
     filePath = rootPath + '/output/weibo_user_growth_daily'
     os.makedirs(filePath, exist_ok=True)
-    fileName = '/weibo_user_growth_daily_' + datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + '.csv'
-    weibo.writeDataFrameToCsv(df, filePath + fileName, sep="|")
+    fileName = 'weibo_user_growth_daily_' + datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + '.csv'
+    weibo.writeDataFrameToCsv(df, filePath + '/' + fileName, sep="|")
     loop.close()
