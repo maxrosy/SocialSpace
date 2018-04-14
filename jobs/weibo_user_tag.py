@@ -10,7 +10,7 @@ if __name__ == '__main__':
     rootPath = Helper().getRootPath()
     df = pd.read_csv(rootPath + '/input/uid.csv',';')
     uidList = list(df['uid'].apply(str))
-    n = 101 # len(df)
+    n = len(df)
     uidGroup = [','.join(uidList[i:i+20]) for i in range(0,n,20)]
 
     weibo = SocialWeiboAPI()
@@ -21,10 +21,13 @@ if __name__ == '__main__':
     tasks = [asyncio.ensure_future(weibo.getTagsBatchOther(uids),loop=loop) for uids in uidGroup]
     loop.run_until_complete(asyncio.wait(tasks))
     result = [task.result() for task in tasks]
-    df = pd.concat(result,ignore_index=True)
-    filePath = rootPath + '/output/weibo_user_tag'
-    os.makedirs(filePath, exist_ok=True)
-    fileName = 'weibo_user_tag_' + datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + '.csv'
-    weibo.writeDataFrameToCsv(df,filePath + '/' + fileName,sep="|")
+    try:
+        df = pd.concat(result,ignore_index=True)
+        filePath = rootPath + '/output/weibo_user_tag'
+        os.makedirs(filePath, exist_ok=True)
+        fileName = 'weibo_user_tag_' + datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + '.csv'
+        weibo.writeDataFrameToCsv(df,filePath + '/' + fileName,sep="|")
+    except ValueError:
+        pass
     loop.close()
 

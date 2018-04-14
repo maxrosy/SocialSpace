@@ -663,7 +663,8 @@ class SocialWeiboAPI(SocialBasicAPI):
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
-	
+
+
 	def getCommentsShow(self,mid,latest=True,**kwargs):
 		"""
 		Documentation
@@ -784,7 +785,9 @@ class SocialWeiboAPI(SocialBasicAPI):
 			result = await self.getAsyncRequest(url, paramsDict)
 
 			if not result:
-				raise Exception("No data return!")
+				self.logger.warning("No data return!")
+				return
+				#raise Exception("No data return!")
 
 			data = reduce(lambda x,y: x+y, map(f,result))
 			df_tag = pd.DataFrame(data)

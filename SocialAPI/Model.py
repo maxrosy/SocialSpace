@@ -32,6 +32,7 @@ class PostStatus(Base):
     __table__ = Table('weibo_post_status',metadata,autoload=True)
     comment = relationship('Comment',backref='post')
     media = relationship('Media', backref='post')
+    postCrawl = relationship('PostCrawl',backref='post')
 
 class UserGrowth(Base):
     __table__ = Table('weibo_user_growth_daily',metadata,autoload=True)
@@ -47,3 +48,6 @@ class UserTag(Base):
 
 class TaskHistory(Base):
     __table__ = Table('task_history',metadata,autoload=True)
+
+class PostCrawl(Base):
+    __table__ = Table('weibo_crawl_post',metadata,autoload=True)
