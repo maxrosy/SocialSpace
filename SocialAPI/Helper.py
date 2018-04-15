@@ -9,7 +9,7 @@ class Helper(object):
 
         return os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
-    def convertMidtoId(self,id):
+    def convertIdtoMid(self,id):
         id = str(id)
         p1 = id[0:2]
         p2 = id[2:9]
@@ -23,7 +23,7 @@ class Helper(object):
             s3='0'+s3
         return s1+s2+s3
 
-    def convertIdtoMid(self, mid):
+    def convertMidtoId(self, mid):
         p1 = mid[0:1]
         p2 = mid[1:5]
         p3 = mid[5:]
