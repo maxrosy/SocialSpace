@@ -230,9 +230,9 @@ class SocialBasicAPI(object):
 				insert_stmt = insert(table).values(record)
 				#record.pop(pk)
 				upsert_stmt = insert_stmt.on_duplicate_key_update(**record)
-				res = conn.execute(upsert_stmt)
+				conn.execute(upsert_stmt)
 
-			res.close()
+			#res.close()
 			conn.close()
 			self.logger.info("{} reocrds have been upsert into table {}".format(len(records),table.__table__))
 		except Exception as e:
