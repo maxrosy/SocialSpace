@@ -1,5 +1,5 @@
 import os
-import base64
+
 
 class Helper(object):
 

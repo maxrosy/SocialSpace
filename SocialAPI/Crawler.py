@@ -183,13 +183,3 @@ class WeiBoCrawler(object):
         else:
             self.logger.error("Crawl page failed - ".format(response.reason))
 
-if __name__ == "__main__":
-    weibo = WeiBoCrawler()
-    weibo.login("timi.gao@gmail.com", "blackp@nther")
-    html = weibo.crawlPage('https://weibo.com/1846697095/B0StY5Qx0')
-    impressions = weibo.getImpressions(html)
-    forwards = weibo.getForwards(html)
-    comments = weibo.getComments(html)
-    likes = weibo.getLikes(html)
-    print(impressions,forwards,comments,likes)
-    a=1
