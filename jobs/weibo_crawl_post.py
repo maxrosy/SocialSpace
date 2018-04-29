@@ -4,6 +4,7 @@ from SocialAPI.Helper import Helper
 from SocialAPI.Crawler import WeiBoCrawler
 from SocialAPI.Model import PostStatus, PostCrawl
 import time
+import os
 
 if __name__ == '__main__':
     myHelper = Helper()
@@ -16,7 +17,7 @@ if __name__ == '__main__':
     crawlDict = {}
 
     for uid in df['uid']:
-        pids = session.query(PostStatus.id).filter(PostStatus.uid == uid).order_by(PostStatus.created_at.desc()).limit(2).all()
+        pids = session.query(PostStatus.id).filter(PostStatus.uid == uid).order_by(PostStatus.created_at.desc()).limit(10).all()
         pids = [pid[0] for pid in pids]
         crawlDict[uid] = pids
 
@@ -41,6 +42,14 @@ if __name__ == '__main__':
                            'update_date':time.strftime("%Y-%m-%d", time.localtime())})
     resultDf = pd.DataFrame(result)
     weibo.upsertToDB(PostCrawl, resultDf)
+
+    filePath = rootPath + '/output/weibo_crawl_post'
+    os.makedirs(filePath, exist_ok=True)
+    filePath = filePath + '/' + 'weibo_crawl_post.csv'
+    if os.path.exists(filePath):
+        weibo.writeDataFrameToCsv(resultDf, filePath, sep="|", header=False)
+    else:
+        weibo.writeDataFrameToCsv(resultDf, filePath, sep="|")
 
 
 

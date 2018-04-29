@@ -24,8 +24,12 @@ if __name__ == '__main__':
     df = pd.concat(result, ignore_index=True)
     filePath = rootPath + '/output/weibo_user_info'
     os.makedirs(filePath, exist_ok=True)
-    fileName = 'weibo_user_info_' + datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + '.csv'
-    weibo.writeDataFrameToCsv(df, filePath + '/' + fileName, sep="|")
+    #fileName = 'weibo_user_info_' + datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + '.csv'
+    filePath = filePath + '/'+ 'weibo_user_info.csv'
+    if os.path.exists(filePath):
+        weibo.writeDataFrameToCsv(df, filePath, sep="|",header=False)
+    else:
+        weibo.writeDataFrameToCsv(df, filePath, sep="|")
     loop.close()
 
 

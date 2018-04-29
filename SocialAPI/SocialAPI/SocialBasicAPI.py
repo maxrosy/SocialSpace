@@ -88,10 +88,10 @@ class SocialBasicAPI(object):
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
 	
-	def writeDataFrameToCsv(self,df,filename,sep=','):
+	def writeDataFrameToCsv(self,df,filename,sep=',',mode='a', header=True):
 		self.logger.info("Calling writeDataFrameToCsv function")
 		try:
-			df.to_csv(filename,sep=sep,header=True,index=False)
+			df.to_csv(filename,sep=sep,header=header,index=False,mode=mode)
 			self.logger.info('{} has been created'.format(filename))
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
