@@ -269,8 +269,9 @@ class SocialWeiboAPI(SocialBasicAPI):
 			params_dict = kwargs
 			params_dict['access_token'] = self.__apiToken
 			params_dict['uid'] = uid
+			start_day = params_dict.get('start_day',-7)
 			params_dict['trim_user'] = params_dict.get('trim_user',1)
-			#params_dict['start_time'] = self.getTimeStamp('2018-01-14 00:00:00')
+			params_dict['start_time'] = self.getTimeStamp(self.getStrTime(start_day))
 			#params_dict['end_time'] = self.getTimeStamp('2018-01-15 00:00:00')
 
 			url = 'https://c.api.weibo.com/2/statuses/user_timeline/other.json'
@@ -307,7 +308,11 @@ class SocialWeiboAPI(SocialBasicAPI):
 				except StopIteration:
 					self.logger.debug("Totally {} page(s)".format(page-1))
 					loop = False
-			df_post = pd.concat(df_list, ignore_index=True)
+			if df_list:
+				df_post = pd.concat(df_list, ignore_index=True)
+			else:
+				self.logger.warning('No data for user {} in last {} days'.format(uid,-start_day))
+				return
 
 			df_post['has_url_objects'] = False
 			df_post['is_retweeted'] = False

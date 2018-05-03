@@ -6,9 +6,8 @@ if __name__ == '__main__':
     rootPath = Helper().getRootPath()
     df = pd.read_csv(rootPath + '/input/uid.csv',';')
     uidList = list(df['uid'].apply(str))
-    n = len(df)
-    uidGroup = [','.join(uidList[i:i+20]) for i in range(0,n,20)]
 
     weibo = SocialWeiboAPI()
-    for uids in uidGroup:
-        weibo.getUserTimelineBatch(uids,count=200)
+
+    for uid in uidList:
+        weibo.getUserTimelineOther(uid, start_day=-7)

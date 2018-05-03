@@ -305,7 +305,7 @@ class SocialBasicAPI(object):
 			exit(1)
 
 	def getStrTime(self, delta=0):
-		date_time = datetime.date.today() - datetime.timedelta(days=delta)
+		date_time = datetime.date.today() + datetime.timedelta(days=delta)
 
 		return date_time.strftime("%Y-%m-%d %H:%M:%S")
 
