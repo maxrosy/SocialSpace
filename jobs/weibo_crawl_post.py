@@ -15,9 +15,11 @@ if __name__ == '__main__':
     weibo = SocialWeiboAPI()
     session = weibo.createSession()
     crawlDict = {}
+    startTime = weibo.getStrTime(-7)
 
     for uid in df['uid']:
-        pids = session.query(PostStatus.id).filter(PostStatus.uid == uid).order_by(PostStatus.created_at.desc()).limit(10).all()
+        pids = session.query(PostStatus.id).filter(PostStatus.uid == uid, PostStatus.created_at >= startTime).all()
+        #pids = session.query(PostStatus.id).filter(PostStatus.uid == uid).order_by(PostStatus.created_at.desc()).limit(10).all()
         pids = [pid[0] for pid in pids]
         crawlDict[uid] = pids
 
