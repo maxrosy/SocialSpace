@@ -1,7 +1,7 @@
 import pandas as pd
 from SocialAPI.SocialAPI.SocialWeiboAPI import SocialWeiboAPI
 from SocialAPI.Helper import Helper
-from SocialAPI.Model import engine, PostStatus, Comment
+from SocialAPI.Model import PostStatus
 
 if __name__ == '__main__':
     # Get the last 2000 comments for each post at most

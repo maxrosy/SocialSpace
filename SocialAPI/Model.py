@@ -26,6 +26,7 @@ class User(Base):
     post = relationship('PostStatus',backref='user')
     user_growth = relationship('UserGrowth',backref='user')
     user_tag = relationship('UserTag', backref='user')
+    attitude = relationship('Attitude', backref='user')
 
 
 class PostStatus(Base):
@@ -33,6 +34,7 @@ class PostStatus(Base):
     comment = relationship('Comment',backref='post')
     media = relationship('Media', backref='post')
     postCrawl = relationship('PostCrawl',backref='post')
+    attitude = relationship('Attitude',backref='post')
 
 class UserGrowth(Base):
     __table__ = Table('weibo_user_growth_daily',metadata,autoload=True)
@@ -51,3 +53,6 @@ class TaskHistory(Base):
 
 class PostCrawl(Base):
     __table__ = Table('weibo_crawl_post',metadata,autoload=True)
+
+class Attitude(Base):
+    __table__ = Table('weibo_post_attitude',metadata,autoload=True)

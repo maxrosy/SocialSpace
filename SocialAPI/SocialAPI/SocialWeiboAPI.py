@@ -6,7 +6,7 @@ import hashlib
 from urllib import parse
 from zipfile import ZipFile
 from functools import reduce
-from ..Model import User,UserGrowth,UserTag,Comment,PostStatus,TaskHistory,Media
+from ..Model import User,UserGrowth,UserTag,Comment,PostStatus,TaskHistory,Media,Attitude
 from sqlalchemy import func
 from SocialAPI.Helper import Helper
 
@@ -684,10 +684,16 @@ class SocialWeiboAPI(SocialBasicAPI):
 			paramsDict = kwargs
 			paramsDict['access_token'] = self.__apiToken
 			paramsDict['id'] = mid
-
+			if latest:
+				session = self.createSession()
+				since_id = session.query(func.max(Attitude.aid)).filter_by(pid = mid).scalar()
+				if since_id:
+					paramsDict['since_id'] = since_id
+				session.close()
 			url = 'https://c.api.weibo.com/2/attitudes/show/biz.json'
 			page = 0
 			loop = True
+			df_list = []
 
 			while loop:
 				try:
@@ -700,9 +706,43 @@ class SocialWeiboAPI(SocialBasicAPI):
 						raise Exception(
 							'Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
 
+					attitudes = result.get('attitudes')
+					if not attitudes or page == 11:
+						raise StopIteration
+					df_attitude = pd.DataFrame(attitudes)
+
+					# Extract attitude user_id
+					attitude_users = df_attitude['user']
+					attitude_users_list = [pd.DataFrame([attitude_user]) for attitude_user in attitude_users]
+					df_attitude_user = pd.concat(attitude_users_list, ignore_index=True)
+					df_attitude['uid'] = df_attitude_user['id']
+
+					df_attitude['source'] = df_attitude['source'].apply(self.matchPostSource)
+					df_attitude['pid'] = mid
+
+					df_list.append(df_attitude)
+					self.logger.info("Totally {} records in page {}".format(len(df_attitude), page))
+
 				except StopIteration:
 					self.logger.info("Totally {} page(s)".format(page - 1))
 					loop = False
+
+			if not df_list:
+				self.logger.warning("No data to update")
+				return
+			df_attitude = pd.concat(df_list, ignore_index=True)
+
+			# Upsert users before comments
+			df_user_list = [user for user in df_attitude['user']]
+			df_user = pd.DataFrame(df_user_list)
+			df_user_cleaned = self.cleanRecords(df_user,renameColumns={'id': 'uid'})
+			self.upsertToDB(User,df_user_cleaned)
+
+			df_attitude_cleaned = self.cleanRecords(df_attitude,dropColumns=['status','user'],renameColumns={'id':'aid'})
+			self.upsertToDB(Attitude,df_attitude_cleaned)
+
+			self.logger.info("Totally {} records in {} page(s)".format(len(df_attitude_cleaned), page-1))
+			return df_attitude_cleaned
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
 			exit(1)
