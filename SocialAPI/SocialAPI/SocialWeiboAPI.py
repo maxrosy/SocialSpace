@@ -669,6 +669,43 @@ class SocialWeiboAPI(SocialBasicAPI):
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)
 
+	def getAttitudesShow(self,mid,latest=True,**kwargs):
+		"""
+		Documentation
+		http://open.weibo.com/wiki/C/2/attitudes/show/biz
+
+		:param mid:
+		:param latest:
+		:param kwargs: count
+		:return:
+		"""
+		self.logger.info("Calling getAttitudesShow function")
+		try:
+			paramsDict = kwargs
+			paramsDict['access_token'] = self.__apiToken
+			paramsDict['id'] = mid
+
+			url = 'https://c.api.weibo.com/2/attitudes/show/biz.json'
+			page = 0
+			loop = True
+
+			while loop:
+				try:
+					page += 1
+					paramsDict['page'] = page
+					result = self.getRequest(url, paramsDict)
+					result = result.json()
+
+					if result.get('error_code') is not None:
+						raise Exception(
+							'Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
+
+				except StopIteration:
+					self.logger.info("Totally {} page(s)".format(page - 1))
+					loop = False
+		except Exception as e:
+			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
+			exit(1)
 
 	def getCommentsShow(self,mid,latest=True,**kwargs):
 		"""
