@@ -801,7 +801,8 @@ class SocialWeiboAPI(SocialBasicAPI):
 					df_comment['pid'] = df_comment_post['id']
 
 					# Get comment source match
-					df_comment['source'] = df_comment['source'].apply(self.matchPostSource)
+					if 'source' in df_comment.columns:
+						df_comment['source'] = df_comment['source'].apply(self.matchPostSource)
 
 					df_list.append(df_comment)
 					self.logger.info("Totally {} records in page {}".format(len(df_comment), page))
