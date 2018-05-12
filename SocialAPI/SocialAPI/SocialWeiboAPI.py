@@ -26,7 +26,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 		:param uids: seperated by ',', max 50
 		:return:
 		"""
-		self.logger.info("Calling getUserShowBatchOther with uids: ".format(uids))
+		self.logger.info("Calling getUserShowBatchOther with uids: {}".format(uids))
 		try:
 			params_dict = {'access_token': self.__apiToken, 'uids': uids}
 			url = 'https://c.api.weibo.com/2/users/show_batch/other.json'
@@ -56,7 +56,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 		:param uids: seperated by ',', max 100
 		:return:
 		"""
-		self.logger.info("Calling getUsersCountBatch with uids: ".format(uids))
+		self.logger.info("Calling getUsersCountBatch with uids: {}".format(uids))
 		try:
 			params_dict = {'access_token':self.__apiToken,'uids':uids}
 
@@ -95,7 +95,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 		:return:
 		"""
 
-		self.logger.info("Calling getRepostTimelineByPage with pid: ".format(pid))
+		self.logger.info("Calling getRepostTimelineByPage with pid: {}".format(pid))
 		try:
 			params_dict = kwargs
 			params_dict['access_token'] = self.__apiToken
@@ -176,7 +176,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 				item['pid'] = pid
 			return x
 
-		self.logger.info("Calling getUserTimelineBatch with uids: ".format(uids))
+		self.logger.info("Calling getUserTimelineBatch with uids: {}".format(uids))
 		try:
 			params_dict = kwargs
 			params_dict['access_token'] = self.__apiToken
@@ -264,7 +264,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 				item['pid'] = pid
 			return x
 
-		self.logger.info("Calling getStatusesUserTimelineOther with uid:".format(uid))
+		self.logger.info("Calling getStatusesUserTimelineOther with uid: {}".format(uid))
 		try:
 			params_dict = kwargs
 			params_dict['access_token'] = self.__apiToken
@@ -561,7 +561,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 			return x
 
 		dropColumns =[]
-		self.logger.info("Calling getStatusesShowBatch with ids".format(ids))
+		self.logger.info("Calling getStatusesShowBatch with ids: {}".format(ids))
 		try:
 			paramsDict = kwargs
 			paramsDict['access_token'] = self.__apiToken
@@ -679,7 +679,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 		:param kwargs: count
 		:return:
 		"""
-		self.logger.info("Calling getAttitudesShow function with mid:".format(mid))
+		self.logger.info("Calling getAttitudesShow function with mid: {}".format(mid))
 		try:
 			paramsDict = kwargs
 			paramsDict['access_token'] = self.__apiToken
@@ -756,7 +756,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 		:param kwargs:
 		:return:
 		"""
-		self.logger.info("Calling getCommentsShow function with mid:".format(mid))
+		self.logger.info("Calling getCommentsShow function with mid: {}".format(mid))
 		try:
 			paramsDict = kwargs
 			paramsDict['access_token'] = self.__apiToken
@@ -857,7 +857,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 				tagList.append(dict(dictTuple))
 			return tagList
 
-		self.logger.info("Calling getTagsBatchOther function with uids:".format(uids))
+		self.logger.info("Calling getTagsBatchOther function with uids: {}".format(uids))
 		try:
 			paramsDict = {}
 			paramsDict['uids'] = uids
