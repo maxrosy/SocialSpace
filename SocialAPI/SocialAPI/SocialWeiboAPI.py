@@ -264,11 +264,8 @@ class SocialWeiboAPI(SocialBasicAPI):
 				item['pid'] = pid
 			return x
 
-<<<<<<< HEAD
 		self.logger.info("Calling getStatusesUserTimelineOther with uid: {}".format(uid))
-=======
-		self.logger.info("Calling getUserTimelineOther")
->>>>>>> 3ffd6c920a9d227cc65d71183f54d2b34d7e044c
+
 		try:
 			params_dict = kwargs
 			params_dict['access_token'] = self.__apiToken
