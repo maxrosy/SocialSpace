@@ -92,7 +92,7 @@ class SocialBasicAPI(object):
 		self.logger.info("Calling writeDataFrameToCsv function")
 		try:
 			df.to_csv(filename,sep=sep,header=header,index=False,mode=mode)
-			self.logger.info('{} has been created'.format(filename))
+			self.logger.info('{} has been updated'.format(filename))
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
 			exit(1)	
