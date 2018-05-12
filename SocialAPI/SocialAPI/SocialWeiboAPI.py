@@ -264,7 +264,11 @@ class SocialWeiboAPI(SocialBasicAPI):
 				item['pid'] = pid
 			return x
 
+<<<<<<< HEAD
 		self.logger.info("Calling getStatusesUserTimelineOther with uid: {}".format(uid))
+=======
+		self.logger.info("Calling getUserTimelineOther")
+>>>>>>> 3ffd6c920a9d227cc65d71183f54d2b34d7e044c
 		try:
 			params_dict = kwargs
 			params_dict['access_token'] = self.__apiToken
@@ -331,12 +335,13 @@ class SocialWeiboAPI(SocialBasicAPI):
 				df_url_objects = pd.DataFrame(df_url_objects_list)
 
 			df_post_cleaned = self.cleanRecords(df_post,dropColumns=dropColumns)
-			df_url_objects_cleaned = self.cleanRecords(df_url_objects,utcTimeCovert=False)
 			self.logger.info("Totally {} records in {} page(s)".format(len(df_post_cleaned), page - 1))
 			self.upsertToDB(PostStatus, df_post_cleaned)
-			self.upsertToDB(Media,df_url_objects_cleaned)
+			if not df_url_objects.empty:
+				df_url_objects_cleaned = self.cleanRecords(df_url_objects, utcTimeCovert=False)
+				self.upsertToDB(Media,df_url_objects_cleaned)
 
-			return df_post_cleaned, df_url_objects_cleaned
+			return df_post_cleaned
 
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno,e))
