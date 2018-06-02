@@ -705,8 +705,11 @@ class SocialWeiboAPI(SocialBasicAPI):
 					result = result.json()
 
 					if result.get('error_code') is not None:
-						raise Exception(
-							'Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
+						if result.get('error_code') == 20101:
+							self.logger.warning("Post {} has been removed!".format(mid))
+						else:
+							raise Exception(
+								'Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
 
 					attitudes = result.get('attitudes')
 					if not attitudes or page == 11:
