@@ -712,7 +712,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 								'Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
 
 					attitudes = result.get('attitudes')
-					if not attitudes or page == 11:
+					if not attitudes or page == 21:
 						raise StopIteration
 					df_attitude = pd.DataFrame(attitudes)
 
@@ -788,7 +788,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 						raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
 
 					comments = result.get('comments')
-					if not comments or page == 11: # Since there are too many comments, stop after 10 pages to call DB upsert
+					if not comments or page == 21: # Since there are too many comments, stop after 10 pages to call DB upsert
 						raise StopIteration
 
 					df_comment = pd.DataFrame(comments)

@@ -19,4 +19,4 @@ if __name__ == '__main__':
         pidList += pids
     session.close()
     for pid in pidList:
-        weibo.getAttitudesShow(pid[0],count=200)
+        weibo.getAttitudesShow(pid[0],count=100)

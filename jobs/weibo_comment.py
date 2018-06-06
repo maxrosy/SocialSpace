@@ -22,4 +22,4 @@ if __name__ == '__main__':
         pidList += pids
     session.close()
     for pid in pidList:
-        weibo.getCommentsShow(pid[0],count=200)
+        weibo.getCommentsShow(pid[0],count=100)
