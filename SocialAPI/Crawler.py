@@ -153,25 +153,28 @@ class WeiBoCrawler(object):
 
 
     def getForwards(self,html):
-        matchObj = re.search(r'ficon_forward(.*?)<em>(\d+)<\\/em>', html)
+        html = html.replace('\r\n', '')
+        matchObj = re.search(r'WB_feed_handle(.*?)ficon_forward(.*?)<em>(\d+)<\\/em>', html)
         if matchObj:
-            return matchObj.group(2)
+            return matchObj.group(3)
         else:
             return 0
 
 
     def getComments(self,html):
-        matchObj = re.search(r'ficon_repeat(.*?)<em>(\d+)<\\/em>', html)
+        html = html.replace('\r\n', '')
+        matchObj = re.search(r'WB_feed_handle(.*?)ficon_repeat(.*?)<em>(\d+)<\\/em>', html)
         if matchObj:
-            return matchObj.group(2)
+            return matchObj.group(3)
         else:
             return 0
 
 
     def getLikes(self,html):
-        matchObj = re.search(r'ficon_praised(.*?)<em>(\d+)<\\/em>', html)
+        html = html.replace('\r\n','')
+        matchObj = re.search(r'WB_feed_handle(.*?)ficon_praised(.*?)<em>(\d+)<\\/em>', html)
         if matchObj:
-            return matchObj.group(2)
+            return matchObj.group(3)
         else:
             return 0
 
