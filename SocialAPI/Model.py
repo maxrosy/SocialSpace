@@ -56,3 +56,6 @@ class PostCrawl(Base):
 
 class Attitude(Base):
     __table__ = Table('weibo_post_attitude',metadata,autoload=True)
+
+class Kol(Base):
+    __table__ = Table('weibo_kol',metadata,autoload=True)
