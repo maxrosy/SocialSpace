@@ -4,17 +4,18 @@ from SocialAPI.Helper import Helper
 import asyncio
 import uvloop
 from datetime import datetime
+from SocialAPI.Model import Kol
 import os
 
 if __name__ == '__main__':
     rootPath = Helper().getRootPath()
-    df = pd.read_csv(rootPath + '/input/uid.csv',';')
-    uidList = list(df['uid'].apply(str))
-
-    n = len(df)
-    uidGroup = [','.join(uidList[i:i+50]) for i in range(0,n,50)]
 
     weibo = SocialWeiboAPI()
+    session = weibo.createSession()
+    uids = session.query(Kol.uid).filter(Kol.status==1).all()
+    uidList = [str(uid[0]) for uid in uids]
+    uidGroup = [','.join(uidList[i:i + 50]) for i in range(0, len(uidList), 50)]
+
 
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     loop = asyncio.new_event_loop()
@@ -31,6 +32,7 @@ if __name__ == '__main__':
     else:
         weibo.writeDataFrameToCsv(df, filePath, sep="|")
     loop.close()
+    session.close()
 
 
 

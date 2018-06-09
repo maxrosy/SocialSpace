@@ -1,18 +1,20 @@
 import pandas as pd
 from SocialAPI.SocialAPI.SocialWeiboAPI import SocialWeiboAPI
 from SocialAPI.Helper import Helper
-from SocialAPI.Model import PostStatus
+from SocialAPI.Model import PostStatus, Kol
 
 if __name__ == '__main__':
     # Get the last 2000 comments for each post at most
     rootPath = Helper().getRootPath()
-    df = pd.read_csv(rootPath + '/input/uid.csv', ';')
-    uidList = list(df['uid'].apply(str))
-    df.drop_duplicates(inplace=True)
 
     weibo = SocialWeiboAPI()
     session = weibo.createSession()
     startTime = weibo.getStrTime(-7)
+    uids = session.query(Kol.uid).filter(Kol.status == 1).all()
+    uidList = [str(uid[0]) for uid in uids]
+
+
+
     pidList = []
     for uid in uidList:
 
@@ -22,4 +24,4 @@ if __name__ == '__main__':
         pidList += pids
     session.close()
     for pid in pidList:
-        weibo.getCommentsShow(pid[0],count=100)
+        weibo.getCommentsShow(pid[0],count=200)

@@ -3,21 +3,26 @@ from SocialAPI.SocialAPI.SocialWeiboAPI import SocialWeiboAPI
 from SocialAPI.Helper import Helper
 from SocialAPI.Crawler import WeiBoCrawler
 from SocialAPI.Model import PostStatus, PostCrawl
+from SocialAPI.Model import Kol
 import time
 import os
 
 if __name__ == '__main__':
     myHelper = Helper()
     rootPath = myHelper.getRootPath()
-    df = pd.read_csv(rootPath + '/input/uid.csv',';')
-    df.drop_duplicates(inplace=True)
 
     weibo = SocialWeiboAPI()
     session = weibo.createSession()
     crawlDict = {}
     startTime = weibo.getStrTime(-7)
+    userDict = {}
+    userInfo = session.query(Kol.uid,Kol.username,Kol.pw).filter(Kol.status == 1, Kol.crawl_status==1).all()
+    #uidList = [uid[0] for uid in uids]
 
-    for uid in df['uid']:
+    for user in userInfo:
+        userDict[user[0]] = (user[1],user[2])
+
+    for uid in userDict.keys():
         pids = session.query(PostStatus.id).filter(PostStatus.uid == uid, PostStatus.created_at >= startTime).all()
         #pids = session.query(PostStatus.id).filter(PostStatus.uid == uid).order_by(PostStatus.created_at.desc()).limit(10).all()
         pids = [pid[0] for pid in pids]
@@ -27,9 +32,9 @@ if __name__ == '__main__':
     weiboCrawler = WeiBoCrawler()
 
     for uid, pids in crawlDict.items():
-        udf = df[df['uid']==uid].reset_index()
+        #udf = df[df['uid']==uid].reset_index()
 
-        weiboCrawler.login(udf['username'][0], udf['pw'][0])
+        weiboCrawler.login(userDict[uid][0],userDict[uid][1])
 
         for pid in pids:
             mid = myHelper.convertIdtoMid(pid)
@@ -53,6 +58,6 @@ if __name__ == '__main__':
     else:
         weibo.writeDataFrameToCsv(resultDf, filePath, sep="|")
 
-
+    session.close()
 
 
