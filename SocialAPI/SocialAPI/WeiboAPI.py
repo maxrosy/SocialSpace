@@ -320,8 +320,8 @@ class SocialWeiboAPI(SocialBasicAPI):
                 
             for result in resultList:
                 for attitude in result:
-                    attitude['updatedTime'] = time.time()
-                    res = attitudeTable.update({'id':attitude['id]},{'$set':attitude, '$setOnInsert':{'createdTime':time.time()}},upsert=True)
+                    attitude['updatedTime'] = int(time.time())
+                    res = attitudeTable.update({'id':attitude['id]},{'$set':attitude, '$setOnInsert':{'createdTime':int(time.time())},upsert=True)
                     print('Attitude {}: {}'.format(attitude['id'], res))
             
             
