@@ -32,7 +32,7 @@ class SocialWeiboAPI(SocialBasicAPI):
                 raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
             users = result.get('users')
             if not users:
-                raise Exception("No data returned")
+                raise Exception("No data returned for uids-{}".format(uids))
 
             client = MongoClient()
             db = client.weibo
@@ -42,11 +42,15 @@ class SocialWeiboAPI(SocialBasicAPI):
                 user['updatedTime'] = int(time.time())
                 result = userTable.update({'id': user['id']}, {'$set': user, '$setOnInsert':{'createdTime':int(time.time())}},upsert=True)
                 self.logger.info('User {} : {} '.format(user['id'], result))
-            client.close()
+            
             return
 
         except Exception as e:
-            self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
+            msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
+            self.logger.error(msg)
+            db.weibo_error_log.insert({'createdTime':datetime.now().strftime('%Y-%m-%d %H:%M:%S'),'msg':msg})
+        finally:
+            client.close()
 
     async def getTagsBatchOther(self, uids):
         """
@@ -175,7 +179,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             result = await self.getAsyncRequest(url, params_dict)
 
             if not result:
-                self.logger.warning('No data returned for uids;{}'.format(uids))
+                self.logger.warning('No data returned for uids - {}'.format(uids))
                 return
 
             for user in result:
@@ -190,5 +194,141 @@ class SocialWeiboAPI(SocialBasicAPI):
             self.logger.error(msg)
             db.weibo_error_log.insert({'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
 
+        finally:
+            client.close()
+
+    def getCommentsShow(self,mid,latest=True,**kwargs):
+        """
+        Documentation
+        http://open.weibo.com/wiki/C/2/comments/show/all
+        :param id:
+        :param kwargs:
+        :return:
+        """
+        self.logger.info("Calling getCommentsShow function with mid: {}".format(mid))
+        try:
+            url = 'https://c.api.weibo.com/2/comments/show/all.json'
+            page = 0
+            resultList = []
+            loop = True
+            
+            paramsDict = kwargs
+            paramsDict['access_token'] = self.__apiToken
+            paramsDict['id'] = mid
+            
+            client = MongoCient()
+            db = client.weibo
+            commentTable = db.weibo_user_comment
+            
+            if latest:
+                since_id = commentTable.find().sort({'id':-1}).limit(1)
+                if since_id:
+                    paramsDict['since_id'] = since_id
+            
+            while loop:
+                try:
+                    page += 1
+                    paramsDict['page'] = page
+                    result = self.getRequest(url, paramsDict)
+                    result = result.json()
+
+                    if result.get('error_code') is not None:
+                        raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
+
+                    comments = result.get('comments')
+                    if not comments or page == 21: # Since there are too many comments, stop after 10 pages to call DB upsert
+                        raise StopIteration
+
+                    resultList.append(comments)
+                    
+                except StopIteration:
+                    self.logger.info("Totally {} page(s)".format(page - 1))
+                    loop = False
+                    
+            if not resultList:
+                self.logger.warning("No data to update for post {}".format(mid))
+                return
+            
+            for comments in resultList:
+                for comment in comments:
+                    comment['updatedTime'] = int(time.time())
+                    res = commentTable.update({'id':comment['id]},{'$set':comment, '$setOnInsert':{'createdTime':int(time.time())}},upsert=True)
+                    print('Comment {} : {}'.format(comment['id'], res))
+
+        except Exception as e:
+            msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
+            self.logger.error(msg)
+            db.weibo_error_log.insert({'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
+        
+        finally:
+            client.close()
+
+    def getAttitudesShow(self,mid,latest=True,**kwargs):
+        """
+        Documentation
+        http://open.weibo.com/wiki/C/2/attitudes/show/biz
+        :param mid:
+        :param latest:
+        :param kwargs: count
+        :return:
+        """
+        self.logger.info("Calling getAttitudesShow function with mid: {}".format(mid))
+        try:
+            url = 'https://c.api.weibo.com/2/attitudes/show/biz.json'
+            page = 0
+            loop = True
+            resultList = []
+    
+            paramsDict = kwargs
+            paramsDict['access_token'] = self.__apiToken
+            paramsDict['id'] = mid
+            
+            client = MongoCient()
+            db = client.weibo
+            AttitudeTable = db.weibo_user_attitude
+            
+            if latest:
+                since_id = attitudeTable.find().sort({'id':-1}).limit(1)
+                if since_id:
+                    paramsDict['since_id'] = since_id
+
+            while loop:
+                try:
+                    page += 1
+                    paramsDict['page'] = page
+                    result = self.getRequest(url, paramsDict).json()
+
+                    if result.get('error_code') is not None:
+                        if result.get('error_code') == 20101:
+                            self.logger.warning("Post {} has been removed!".format(mid))
+                        else:
+                            raise Exception(
+                                'Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
+
+                    attitudes = result.get('attitudes')
+                    if not attitudes or page == 21:
+                        raise StopIteration
+                    resultList.append(attitudes)
+
+                except StopIteration:
+                    self.logger.info("Totally {} page(s)".format(page - 1))
+                    loop = False
+
+            if not resultList:
+                self.logger.warning("No data to update for post {}".format(mid))
+                return
+                
+            for result in resultList:
+                for attitude in result:
+                    attitude['updatedTime'] = time.time()
+                    res = attitudeTable.update({'id':attitude['id]},{'$set':attitude, '$setOnInsert':{'createdTime':time.time()}},upsert=True)
+                    print('Attitude {}: {}'.format(attitude['id'], res))
+            
+            
+        except Exception as e:
+            msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
+            self.logger.error(msg)
+            db.weibo_error_log.insert({'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
+            
         finally:
             client.close()
