@@ -6,22 +6,27 @@ from SocialAPI.Model import PostStatus, PostCrawl
 from SocialAPI.Model import Kol
 import time
 import os
+from pymongo import MongoClient
 
 if __name__ == '__main__':
     myHelper = Helper()
-    rootPath = myHelper.getRootPath()
 
     weibo = SocialWeiboAPI()
     session = weibo.createSession()
+
+    client = MongoClient()
+    db = client.weibo
+    crawlTable = db.weibo_post_crawl
+
     crawlDict = {}
     startTime = weibo.getStrTime(-7)
     userDict = {}
     userInfo = session.query(Kol.uid,Kol.username,Kol.pw).filter(Kol.status == 1, Kol.crawl_status==1).all()
     #uidList = [uid[0] for uid in uids]
-
-    for user in userInfo:
-        userDict[user[0]] = (user[1],user[2])
-
+    #for user in userInfo:
+    #    userDict[user[0]] = (user[1],user[2])
+    userDict[5933632405] = ('cnpogba@sina.cn','Adidas01!')
+    userDict[5210739467] =('jamestwitter@gmail.com','zhehenadi2016')
     for uid in userDict.keys():
         pids = session.query(PostStatus.id).filter(PostStatus.uid == uid, PostStatus.created_at >= startTime).all()
         #pids = session.query(PostStatus.id).filter(PostStatus.uid == uid).order_by(PostStatus.created_at.desc()).limit(10).all()
@@ -46,18 +51,13 @@ if __name__ == '__main__':
             likes = weiboCrawler.getLikes(html)
 
             result.append({'pid':pid,'uid':uid, 'impression':impressions,'forward':forwards,'comment':comments,'like':likes,
-                           'update_date':time.strftime("%Y-%m-%d", time.localtime())})
-    resultDf = pd.DataFrame(result)
-    weibo.upsertToDB(PostCrawl, resultDf)
+                           'crawlDate':time.strftime("%Y-%m-%d", time.localtime())})
 
-    filePath = rootPath + '/output/weibo_crawl_post'
-    os.makedirs(filePath, exist_ok=True)
-    filePath = filePath + '/' + 'weibo_crawl_post.csv'
-    if os.path.exists(filePath):
-        weibo.writeDataFrameToCsv(resultDf, filePath, sep="|", header=False)
-    else:
-        weibo.writeDataFrameToCsv(resultDf, filePath, sep="|")
-
+    for post in result:
+        post['updatedTime'] = int(time.time())
+        res = crawlTable.update({'pid':post['pid'],'crwalDate':time.strftime("%Y-%m-%d", time.localtime())},
+                                {'$set': post, '$setOnInsert': {'createdTime': int(time.time())}}, upsert=True)
+    client.close()
     session.close()
 
 

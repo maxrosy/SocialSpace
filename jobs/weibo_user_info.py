@@ -1,5 +1,5 @@
 import pandas as pd
-from SocialAPI.SocialAPI.SocialWeiboAPI import SocialWeiboAPI
+from SocialAPI.SocialAPI.WeiboAPI import SocialWeiboAPI
 from SocialAPI.Helper import Helper
 import asyncio
 import uvloop
@@ -12,8 +12,9 @@ if __name__ == '__main__':
 
     weibo = SocialWeiboAPI()
     session = weibo.createSession()
-    uids = session.query(Kol.uid).filter(Kol.status==1).all()
+    uids = session.query(Kol.uid).all()
     uidList = [str(uid[0]) for uid in uids]
+    #uidList = ['1828260462']
     uidGroup = [','.join(uidList[i:i + 50]) for i in range(0, len(uidList), 50)]
 
 
@@ -22,6 +23,7 @@ if __name__ == '__main__':
     tasks = [asyncio.ensure_future(weibo.getUserShowBatchOther(uids), loop=loop) for uids in uidGroup]
     loop.run_until_complete(asyncio.wait(tasks))
     result = [task.result() for task in tasks]
+    """
     df = pd.concat(result, ignore_index=True)
     filePath = rootPath + '/output/weibo_user_info'
     os.makedirs(filePath, exist_ok=True)
@@ -31,6 +33,7 @@ if __name__ == '__main__':
         weibo.writeDataFrameToCsv(df, filePath, sep="|",header=False)
     else:
         weibo.writeDataFrameToCsv(df, filePath, sep="|")
+    """
     loop.close()
     session.close()
 

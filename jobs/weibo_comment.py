@@ -1,7 +1,8 @@
 import pandas as pd
-from SocialAPI.SocialAPI.SocialWeiboAPI import SocialWeiboAPI
+from SocialAPI.SocialAPI.WeiboAPI import SocialWeiboAPI
 from SocialAPI.Helper import Helper
-from SocialAPI.Model import PostStatus, Kol
+from SocialAPI.Model import Kol
+from pymongo import MongoClient
 
 if __name__ == '__main__':
     # Get the last 2000 comments for each post at most
@@ -9,19 +10,21 @@ if __name__ == '__main__':
 
     weibo = SocialWeiboAPI()
     session = weibo.createSession()
-    startTime = weibo.getStrTime(-7)
-    uids = session.query(Kol.uid).filter(Kol.status == 1).all()
-    uidList = [str(uid[0]) for uid in uids]
+    client = MongoClient()
+    db = client.weibo
+    postTable = db.weibo_user_post
 
+    startTime = weibo.getStrTime(-1)
+    startTimeStamp = weibo.getTimeStamp(startTime)
+    uids = session.query(Kol.uid).all()
+    uidList = [uid[0] for uid in uids]
 
+    pidList = list(postTable.find({'uid': {'$in': uidList}, 'created_at': {'$gte': startTimeStamp}}, {'id': 1}))
 
-    pidList = []
-    for uid in uidList:
-
-        #pids = session.query(PostStatus.id).order_by(PostStatus.id.desc()).limit(1).all()
-        #pids = session.query(PostStatus.id).filter(PostStatus.created_at>last_week).order_by(PostStatus.created_at.desc()).all()
-        pids = session.query(PostStatus.id).filter(PostStatus.uid==uid, PostStatus.created_at>=startTime).all()
-        pidList += pids
+    client.close()
     session.close()
+
+    weibo.logger.info('{} posts to be updated'.format(len(pidList)))
     for pid in pidList:
-        weibo.getCommentsShow(pid[0],count=200)
+        weibo.logger.info('{}/{} is in progress!'.format(pidList.index(pid)+1, len(pidList)))
+        weibo.getCommentsShow(pid['id'],count=200)

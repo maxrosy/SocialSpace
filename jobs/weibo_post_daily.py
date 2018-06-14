@@ -1,15 +1,17 @@
 import pandas as pd
-from SocialAPI.SocialAPI.SocialWeiboAPI import SocialWeiboAPI
+from SocialAPI.SocialAPI.WeiboAPI import SocialWeiboAPI
 from SocialAPI.Helper import Helper
-from SocialAPI.Model import Kol
+from SocialAPI.Model import Kol, PostStatus
+from sqlalchemy import distinct
 
 if __name__ == '__main__':
     rootPath = Helper().getRootPath()
 
     weibo = SocialWeiboAPI()
     session = weibo.createSession()
-    uids = session.query(Kol.uid).filter(Kol.status == 1).all()
-    uidList = [str(uid[0]) for uid in uids]
+    uids = session.query(Kol.uid).all()
+    uids = [str(uid[0]) for uid in uids]
 
-    for uid in uidList:
-        weibo.getUserTimelineOther(uid,start_day=-7)
+
+    for uid in uids:
+        weibo.getUserTimelineOther(uid,start_day=-2)
