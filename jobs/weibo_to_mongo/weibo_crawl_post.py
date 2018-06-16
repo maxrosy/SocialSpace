@@ -25,8 +25,7 @@ if __name__ == '__main__':
     #uidList = [uid[0] for uid in uids]
     #for user in userInfo:
     #    userDict[user[0]] = (user[1],user[2])
-    userDict[5933632405] = ('cnpogba@sina.cn','Adidas01!')
-    userDict[5210739467] =('jamestwitter@gmail.com','zhehenadi2016')
+    
     for uid in userDict.keys():
         pids = session.query(PostStatus.id).filter(PostStatus.uid == uid, PostStatus.created_at >= startTime).all()
         #pids = session.query(PostStatus.id).filter(PostStatus.uid == uid).order_by(PostStatus.created_at.desc()).limit(10).all()
