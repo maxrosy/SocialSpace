@@ -107,7 +107,7 @@ class SocialWeiboAPI(SocialBasicAPI):
         finally:
             client.close()
 
-    def getUserTimelineOther(self, uid, **kwargs):
+    def getUserTimelineOther(self,uid,**kwargs):
         """
         Documentation
         http://open.weibo.com/wiki/C/2/statuses/user_timeline/other
@@ -129,12 +129,11 @@ class SocialWeiboAPI(SocialBasicAPI):
             params_dict['uid'] = uid
             start_day = params_dict.get('start_day', -7)
             params_dict['trim_user'] = params_dict.get('trim_user', 1)
-            #params_dict['start_time'] = self.getTimeStamp(self.getStrTime(start_day))
-            params_dict['start_time'] = self.getTimeStamp('2018-01-01 00:00:00')
-            params_dict['count'] = 100
+            params_dict['start_time'] = self.getTimeStamp(self.getStrTime(start_day))
+            #params_dict['start_time'] = self.getTimeStamp('2018-01-01 00:00:00')
             #params_dict['end_time'] = self.getTimeStamp('2018-01-01 00:00:00')
-            #if params_dict.get('end_day'):
-             #   params_dict['end_time'] = self.getTimeStamp(self.getStrTime(start_day))
+            if params_dict.get('end_day'):
+                params_dict['end_time'] = self.getTimeStamp(self.getStrTime(end_day))
             url = 'https://c.api.weibo.com/2/statuses/user_timeline/other.json'
 
 
@@ -149,9 +148,11 @@ class SocialWeiboAPI(SocialBasicAPI):
                     event_loop = asyncio.new_event_loop()
                     tasks = [asyncio.ensure_future(self.getAsyncRequest(url,params_dict,page=i+1), loop=event_loop) for i in range(page-5,page)]
                     event_loop.run_until_complete(asyncio.wait(tasks))
-                    a=1
+
                     result = [task.result() for task in tasks]
                     event_loop.close()
+                    if not result:
+                        raise StopIteration
                     for item in result:
                         if item.get('error_code') is not None:
                             raise Exception('Error Code: {}, Error Msg: {}'.format(item.get('error_code'), item.get('error')))
@@ -271,6 +272,10 @@ class SocialWeiboAPI(SocialBasicAPI):
                     event_loop.run_until_complete(asyncio.wait(tasks))
                     result = [task.result() for task in tasks]
                     event_loop.close()
+
+                    if not result:
+                        raise StopIteration
+
                     for item in result:
                         if item.get('error_code') is not None:
                             raise Exception('Error Code: {}, Error Msg: {}'.format(item.get('error_code'), item.get('error')))
@@ -346,6 +351,10 @@ class SocialWeiboAPI(SocialBasicAPI):
                     tasks = [asyncio.ensure_future(self.getAsyncRequest(url,paramsDict,page=i+1), loop=loop) for i in range(page-5,page)]
                     loop.run_until_complete(asyncio.wait(tasks))
                     result = [task.result() for task in tasks]
+                    event_loop.close()
+
+                    if not result:
+                        raise StopIteration
                     for item in result:
                         if item.get('error_code') is not None:
                             raise Exception('Error Code: {}, Error Msg: {}'.format(item.get('error_code'), item.get('error')))
@@ -379,5 +388,85 @@ class SocialWeiboAPI(SocialBasicAPI):
             self.logger.error(msg)
             db.weibo_error_log.insert({'className': class_name, 'functionName': function_name, 'params': mid,
                                        'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
+        finally:
+            client.close()
+
+    def getStatusRepostTimeline(self,mid,latest=True,**kwargs):
+        """
+        Documentation
+        http://open.weibo.com/wiki/C/2/statuses/repost_timeline/all
+        :param mid:
+        :param latest:
+        :param kwargs:
+        :return:
+        """
+        self.logger.info('Calling getStatusRepostTimeline function with mid: {}'.format(mid))
+        try:
+            url = 'https://c.api.weibo.com/2/statuses/repost_timeline/all.json'
+            page = 0
+            loop = True
+            repostList = []
+
+            paramsDict = kwargs
+            paramsDict['access_token'] = self.__apiToken
+            paramsDict['id'] = mid
+
+            client = MongoClient()
+            db = client.weibo
+            repostTable = db.weibo_user_repost
+
+            if latest:
+                res = list(repostTable.find({'retweeted_status.id': int(mid)}, {'id': 1}).sort([('id', -1)]).limit(1))
+                if res:
+                    since_id = res[0]['id']
+                    paramsDict['since_id'] = str(since_id)
+
+            while loop:
+                try:
+                    page += 5
+                    if page > 20:
+                        raise StopIteration
+                    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+                    loop = asyncio.new_event_loop()
+                    tasks = [asyncio.ensure_future(self.getAsyncRequest(url,paramsDict,page=i+1), loop=loop) for i in range(page-5,page)]
+                    loop.run_until_complete(asyncio.wait(tasks))
+                    result = [task.result() for task in tasks]
+                    event_loop.close()
+                    
+                    if not result:
+                        raise StopIteration
+                    for item in result:
+                        if item.get('error_code') is not None:
+                            raise Exception('Error Code: {}, Error Msg: {}'.format(item.get('error_code'), item.get('error')))
+                        reposts = item.get('reposts')
+                        if not reposts:
+                            raise StopIteration
+                        repostList += reposts
+                except StopIteration:
+                    loop = False
+
+            if not repostList:
+                self.logger.warning("No data to update for post {}".format(mid))
+                return
+            for repost in repostList:
+                if repost.get('created_at'):
+                    repost['created_at_timestamp'] = int(time.mktime(time.strptime(repost['created_at'], "%a %b %d %H:%M:%S %z %Y")))
+                    repost['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(repost['created_at_timestamp']))
+                repost['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                repost['createdTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                #res = attitudeTable.update({'id':attitude['id']},{'$set':attitude,
+                 #                                                 '$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},upsert=True)
+            res = repostTable.insert_many(repostList)
+            self.logger.info('{} records has been inserted!'.format(len(repostList)))
+            #self.logger.info('Attitude {}: {}'.format(attitude['id'], res))
+
+        except Exception as e:
+            class_name = self.__class__.__name__
+            function_name = sys._getframe().f_code.co_name
+            msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
+            self.logger.error(msg)
+            db.weibo_error_log.insert({'className': class_name, 'functionName': function_name, 'params': mid,
+                                       'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
+
         finally:
             client.close()
