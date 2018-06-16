@@ -29,6 +29,6 @@ if __name__ == '__main__':
     weibo.logger.info('{} posts to be updated'.format(len(pidList)))
     for pid in pidList:
         weibo.logger.info('{}/{} is in progress!'.format(pidList.index(pid)+1,len(pidList)))
-        weibo.getAttitudesShow(pid['id'],count=100)
+        weibo.getAttitudesShow(str(pid['id']),count=100)
 
 
