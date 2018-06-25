@@ -23,13 +23,13 @@ if __name__ == '__main__':
     uids = session.query(Kol.uid).all()
     uidList = [uid[0] for uid in uids]
 
-    pidList = list(postTable.find({'uid': {'$in': uidList}, 'created_at_timestamp': {'$gte': startTimeStamp}}, {'id': 1}))
+    pidList = postTable.find({'uid': {'$in': uidList}, 'created_at_timestamp': {'$gte': startTimeStamp}}, {'id': 1})
     pidList = [pid['id'] for pid in pidList]
     pipeline = [
         {'$match' : {'retweeted_status.id':{'$in':pidList}}},
         {'$group' : {'_id': '$retweeted_status.id','since_id':{'$max':'$id'}}}
     ]
-    repostList = list(repostTable.aggregate(pipeline))
+    repostList = repostTable.aggregate(pipeline)
     client.close()
     session.close()
 

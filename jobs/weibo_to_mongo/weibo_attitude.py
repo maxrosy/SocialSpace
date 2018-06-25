@@ -22,14 +22,14 @@ if __name__ == '__main__':
     uidList = [uid[0] for uid in uids]
 
 
-    pidList = list(postTable.find({'uid':{'$in':uidList},'created_at_timestamp':{'$gte':startTimeStamp}},{'id':1}))
+    pidList = postTable.find({'uid':{'$in':uidList},'created_at_timestamp':{'$gte':startTimeStamp}},{'id':1})
     pidList = [pid['id'] for pid in pidList]
 
     pipeline = [
         {'$match': {'status.id': {'$in': pidList}}},
         {'$group': {'_id': '$status.id', 'since_id': {'$max': '$id'}}}
     ]
-    attitudeList = list(attitudeTable.aggregate(pipeline))
+    attitudeList = attitudeTable.aggregate(pipeline)
 
     client.close()
     session.close()

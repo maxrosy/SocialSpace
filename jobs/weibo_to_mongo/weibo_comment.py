@@ -16,19 +16,19 @@ if __name__ == '__main__':
     postTable = db.weibo_user_post
     commentTable = db.weibo_user_comment
 
-    startTime = weibo.getStrTime(-1)
+    startTime = weibo.getStrTime(-30)
     startTimeStamp = weibo.getTimeStamp(startTime)
     uids = session.query(Kol.uid).all()
     uidList = [uid[0] for uid in uids]
 
-    pidList = list(postTable.find({'uid': {'$in': uidList}, 'created_at_timestamp': {'$gte': startTimeStamp}}, {'id': 1}))
+    pidList = postTable.find({'uid': {'$in': uidList}, 'created_at_timestamp': {'$gte': startTimeStamp}}, {'id': 1})
     pidList = [pid['id'] for pid in pidList]
 
     pipeline = [
         {'$match': {'status.id': {'$in': pidList}}},
         {'$group': {'_id': '$status.id', 'since_id': {'$max': '$id'}}}
     ]
-    commentList = list(commentTable.aggregate(pipeline))
+    commentList = commentTable.aggregate(pipeline)
 
     client.close()
     session.close()

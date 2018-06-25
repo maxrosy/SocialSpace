@@ -11,6 +11,7 @@ if __name__ == '__main__':
     session = weibo.createSession()
     uids = session.query(Kol.uid).all()
     uids = [str(uid[0]) for uid in uids]
+    session.close()
     #uids = [1743040097]
     """
     for uid in uids:
