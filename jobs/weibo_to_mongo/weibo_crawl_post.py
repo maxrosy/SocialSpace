@@ -17,19 +17,21 @@ if __name__ == '__main__':
     client = MongoClient()
     db = client.weibo
     crawlTable = db.weibo_post_crawl
+    postTable = db.weibo_user_post
 
     crawlDict = {}
-    startTime = weibo.getStrTime(-7)
+    startTime = weibo.getStrTime(-30)
+    startTimeStamp = weibo.getTimeStamp(startTime)
     userDict = {}
     userInfo = session.query(Kol.uid,Kol.username,Kol.pw).filter(Kol.status == 1, Kol.crawl_status==1).all()
     #uidList = [uid[0] for uid in uids]
     #for user in userInfo:
     #    userDict[user[0]] = (user[1],user[2])
-    
+    userDict[5933632405] = ('cnpogba@sina.cn','Adidas01!')
+    userDict[5210739467] =('jamestwitter@gmail.com','zhehenadi2016')
     for uid in userDict.keys():
-        pids = session.query(PostStatus.id).filter(PostStatus.uid == uid, PostStatus.created_at >= startTime).all()
-        #pids = session.query(PostStatus.id).filter(PostStatus.uid == uid).order_by(PostStatus.created_at.desc()).limit(10).all()
-        pids = [pid[0] for pid in pids]
+        pids = postTable.find({'uid':uid,'created_at_timestamp':{'$gte':startTimeStamp}},{'id':1})
+        pids = [pid['id'] for pid in pids]
         crawlDict[uid] = pids
 
     result = []

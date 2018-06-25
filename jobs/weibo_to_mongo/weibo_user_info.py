@@ -23,17 +23,7 @@ if __name__ == '__main__':
     tasks = [asyncio.ensure_future(weibo.getUserShowBatchOther(uids), loop=loop) for uids in uidGroup]
     loop.run_until_complete(asyncio.wait(tasks))
     result = [task.result() for task in tasks]
-    """
-    df = pd.concat(result, ignore_index=True)
-    filePath = rootPath + '/output/weibo_user_info'
-    os.makedirs(filePath, exist_ok=True)
-    #fileName = 'weibo_user_info_' + datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + '.csv'
-    filePath = filePath + '/'+ 'weibo_user_info.csv'
-    if os.path.exists(filePath):
-        weibo.writeDataFrameToCsv(df, filePath, sep="|",header=False)
-    else:
-        weibo.writeDataFrameToCsv(df, filePath, sep="|")
-    """
+
     loop.close()
     session.close()
 

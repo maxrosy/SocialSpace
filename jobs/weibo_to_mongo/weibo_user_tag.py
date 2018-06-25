@@ -23,15 +23,5 @@ if __name__ == '__main__':
     loop.run_until_complete(asyncio.wait(tasks))
     #result = [task.result() for task in tasks]
 
-    """
-    try:
-        df = pd.concat(result,ignore_index=True)
-        filePath = rootPath + '/output/weibo_user_tag'
-        os.makedirs(filePath, exist_ok=True)
-        fileName = 'weibo_user_tag_' + datetime.now().strftime("%Y_%m_%d_%H_%M_%S") + '.csv'
-        weibo.writeDataFrameToCsv(df,filePath + '/' + fileName,sep="|")
-    except ValueError:
-        pass
-    """
     loop.close()
     session.close()

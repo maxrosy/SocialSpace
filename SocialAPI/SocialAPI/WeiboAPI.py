@@ -5,6 +5,7 @@ from .SocialBasicAPI import SocialBasicAPI
 from SocialAPI.Helper import Helper
 import sys, time
 from datetime import datetime
+import pandas as pd
 
 
 class SocialWeiboAPI(SocialBasicAPI):
@@ -49,7 +50,7 @@ class SocialWeiboAPI(SocialBasicAPI):
                 result = userTable.update({'id': user['id']},
                                           {'$set': user, '$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},upsert=True)
                 #self.logger.info('User {}: {} '.format(user['id'], result))
-            self.logger.info('{} records have been updated.'.format((len(users))))
+            self.logger.info('{} records have been updated for users {}'.format(len(users),uids))
             return
 
         except Exception as e:
@@ -95,7 +96,7 @@ class SocialWeiboAPI(SocialBasicAPI):
                 result = usersTable.update({'id': user['id']},
                                            {'$set': user,'$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%d %H:%M:%S')}}, upsert=True)
                 #self.logger.info('User {}: {} '.format(user['id'], result))
-            self.logger.info('{} records have been updated.'.format((len(resultList))))
+            self.logger.info('{} records have been updated for users {}'.format(len(result),uids))
             return
 
         except Exception as e:
@@ -141,16 +142,17 @@ class SocialWeiboAPI(SocialBasicAPI):
             db = client.weibo
             postTable = db.weibo_user_post
 
+            asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+            event_loop = asyncio.new_event_loop()
             while loop:
                 try:
                     page += 5
-                    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-                    event_loop = asyncio.new_event_loop()
+
                     tasks = [asyncio.ensure_future(self.getAsyncRequest(url,params_dict,page=i+1), loop=event_loop) for i in range(page-5,page)]
                     event_loop.run_until_complete(asyncio.wait(tasks))
 
                     result = [task.result() for task in tasks]
-                    event_loop.close()
+
                     if not result:
                         raise StopIteration
                     for item in result:
@@ -163,6 +165,7 @@ class SocialWeiboAPI(SocialBasicAPI):
                 except StopIteration:
                     loop = False
 
+            event_loop.close()
             if not postList:
                 self.logger.info('No post returned in last {} day(s) for user {}'.format(-start_day+1,uid))
                 return
@@ -175,7 +178,7 @@ class SocialWeiboAPI(SocialBasicAPI):
                 res = postTable.update({'id': post['id']},
                                            {'$set': post,'$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},upsert=True)
                 #self.logger.info('Post {}: {} '.format(post['id'], res))
-            self.logger.info('{} records have been updated.'.format((len(postList))))
+            self.logger.info('{} records have been updated for user {}'.format(len(postList),uid))
 
         except Exception as e:
             class_name = self.__class__.__name__
@@ -220,7 +223,7 @@ class SocialWeiboAPI(SocialBasicAPI):
                                              {'$set': user, '$setOnInsert': {'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
                                              upsert=True)
                 #self.logger.info('User {}: {} '.format(user['id'], res))
-            self.logger.info('{} records have been updated.'.format((len(result))))
+            self.logger.info('{} records have been updated for users {}'.format(len(result),uids))
 
         except Exception as e:
             class_name = self.__class__.__name__
@@ -232,7 +235,7 @@ class SocialWeiboAPI(SocialBasicAPI):
         finally:
             client.close()
 
-    def getCommentsShow(self,mid,latest=True,**kwargs):
+    def getCommentsShow(self,mid,**kwargs):
         """
         Documentation
         http://open.weibo.com/wiki/C/2/comments/show/all
@@ -254,29 +257,22 @@ class SocialWeiboAPI(SocialBasicAPI):
             client = MongoClient()
             db = client.weibo
             commentTable = db.weibo_user_comment
-            
-            if latest:
-                res = list(commentTable.find({'status.id': int(mid)}, {'id': 1}).sort([('id', -1)]).limit(1))
-                if res:
-                    since_id = res[0]['id']
-                    paramsDict['since_id'] = str(since_id)
 
+            asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+            event_loop = asyncio.new_event_loop()
             while loop:
                 try:
                     page += 5
                     if page >20:
                         raise StopIteration
-                    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-                    event_loop = asyncio.new_event_loop()
+
                     tasks = [asyncio.ensure_future(self.getAsyncRequest(url,paramsDict,page=i+1), loop=event_loop) for i in range(page-5,page)]
                     event_loop.run_until_complete(asyncio.wait(tasks))
                     result = [task.result() for task in tasks]
-                    event_loop.close()
-
-                    if not result:
-                        raise StopIteration
 
                     for item in result:
+                        if not item:
+                            raise StopIteration
                         if item.get('error_code') is not None:
                             raise Exception('Error Code: {}, Error Msg: {}'.format(item.get('error_code'), item.get('error')))
                         comments = item.get('comments')
@@ -286,21 +282,27 @@ class SocialWeiboAPI(SocialBasicAPI):
                 except StopIteration:
                     loop = False
 
+            event_loop.close()
             if not commentList:
                 self.logger.warning("No data to update for post {}".format(mid))
                 return
 
 
             for comment in commentList:
-                if comment.get('created_at'):
-                    comment['created_at_timestamp'] = int(time.mktime(time.strptime(comment['created_at'], "%a %b %d %H:%M:%S %z %Y")))
-                    comment['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(user['created_at_timestamp']))
                 comment['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 comment['createdTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            res = commentTable.insert_many(commentList)
+                if comment.get('created_at'):
+                    comment['created_at_timestamp'] = int(time.mktime(time.strptime(comment['created_at'], "%a %b %d %H:%M:%S %z %Y")))
+                    comment['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(comment['created_at_timestamp']))
+                if comment.get('user'):
+                    comment['user']['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S',time.strptime(comment['user']['created_at'], "%a %b %d %H:%M:%S %z %Y"))
+                if comment.get('status'):
+                    comment['status']['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S',time.strptime(comment['status']['created_at'], "%a %b %d %H:%M:%S %z %Y"))
                 #res = commentTable.update({'id':comment['id']},{'$set':comment,
-                                                                #'$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},upsert=True)
-            self.logger.info('{} records have been updated.'.format((len(commentList))))
+                 #                                               '$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},upsert=True)
+            res = commentTable.insert_many(commentList)
+            self.logger.info('{} records have been inserted for post {}'.format(len(commentList),mid))
+
         except Exception as e:
             class_name = self.__class__.__name__
             function_name = sys._getframe().f_code.co_name
@@ -311,7 +313,7 @@ class SocialWeiboAPI(SocialBasicAPI):
         finally:
             client.close()
 
-    def getAttitudesShow(self,mid,latest=True,**kwargs):
+    def getAttitudesShow(self,mid,**kwargs):
         """
         Documentation
         http://open.weibo.com/wiki/C/2/attitudes/show/biz
@@ -320,7 +322,7 @@ class SocialWeiboAPI(SocialBasicAPI):
         :param kwargs: count
         :return:
         """
-        self.logger.info("Calling getAttitudesShow function with mid: {}".format(mid))
+
         try:
             url = 'https://c.api.weibo.com/2/attitudes/show/biz.json'
             page = 0
@@ -331,31 +333,27 @@ class SocialWeiboAPI(SocialBasicAPI):
             paramsDict['access_token'] = self.__apiToken
             paramsDict['id'] = mid
 
+
             client = MongoClient()
             db = client.weibo
             attitudeTable = db.weibo_user_attitude
-            
-            if latest:
-                res = list(attitudeTable.find({'status.id': int(mid)}, {'id': 1}).sort([('id', -1)]).limit(1))
-                if res:
-                    since_id = res[0]['id']
-                    paramsDict['since_id'] = str(since_id)
 
+            self.logger.info("Calling getAttitudesShow function with mid: {}".format(mid))
+            asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+            event_loop = asyncio.new_event_loop()
             while loop:
                 try:
                     page += 5
                     if page > 20:
                         raise StopIteration
-                    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-                    loop = asyncio.new_event_loop()
-                    tasks = [asyncio.ensure_future(self.getAsyncRequest(url,paramsDict,page=i+1), loop=loop) for i in range(page-5,page)]
-                    loop.run_until_complete(asyncio.wait(tasks))
-                    result = [task.result() for task in tasks]
-                    event_loop.close()
 
-                    if not result:
-                        raise StopIteration
+                    tasks = [asyncio.ensure_future(self.getAsyncRequest(url,paramsDict,page=i+1), loop=event_loop) for i in range(page-5,page)]
+                    event_loop.run_until_complete(asyncio.wait(tasks))
+                    result = [task.result() for task in tasks]
+
                     for item in result:
+                        if not item:
+                            raise StopIteration
                         if item.get('error_code') is not None:
                             raise Exception('Error Code: {}, Error Msg: {}'.format(item.get('error_code'), item.get('error')))
                         attitudes = item.get('attitudes')
@@ -364,21 +362,25 @@ class SocialWeiboAPI(SocialBasicAPI):
                         attitudeList += attitudes
                 except StopIteration:
                     loop = False
-
+            event_loop.close()
             if not attitudeList:
                 self.logger.warning("No data to update for post {}".format(mid))
                 return
 
             for attitude in attitudeList:
+                attitude['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                attitude['createdTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 if attitude.get('created_at'):
                     attitude['created_at_timestamp'] = int(time.mktime(time.strptime(attitude['created_at'], "%a %b %d %H:%M:%S %z %Y")))
                     attitude['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(attitude['created_at_timestamp']))
-                attitude['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                attitude['createdTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                if attitude.get('user'):
+                    attitude['user']['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.strptime(attitude['user']['created_at'],"%a %b %d %H:%M:%S %z %Y"))
+                if attitude['status']:
+                    attitude['status']['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S',time.strptime(attittude['status']['created_at'],"%a %b %d %H:%M:%S %z %Y"))
                 #res = attitudeTable.update({'id':attitude['id']},{'$set':attitude,
-                 #                                                 '$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},upsert=True)
+                #                                                   '$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},upsert=True)
             res = attitudeTable.insert_many(attitudeList)
-            self.logger.info('{} records has been inserted!'.format(len(attitudeList)))
+            self.logger.info('{} records has been inserted for post {}'.format(len(attitudeList),mid))
             #self.logger.info('Attitude {}: {}'.format(attitude['id'], res))
 
         except Exception as e:
@@ -391,7 +393,7 @@ class SocialWeiboAPI(SocialBasicAPI):
         finally:
             client.close()
 
-    def getStatusRepostTimeline(self,mid,latest=True,**kwargs):
+    def getStatusRepostTimeline(self,mid,**kwargs):
         """
         Documentation
         http://open.weibo.com/wiki/C/2/statuses/repost_timeline/all
@@ -400,7 +402,7 @@ class SocialWeiboAPI(SocialBasicAPI):
         :param kwargs:
         :return:
         """
-        self.logger.info('Calling getStatusRepostTimeline function with mid: {}'.format(mid))
+
         try:
             url = 'https://c.api.weibo.com/2/statuses/repost_timeline/all.json'
             page = 0
@@ -415,27 +417,27 @@ class SocialWeiboAPI(SocialBasicAPI):
             db = client.weibo
             repostTable = db.weibo_user_repost
 
-            if latest:
-                res = list(repostTable.find({'retweeted_status.id': int(mid)}, {'id': 1}).sort([('id', -1)]).limit(1))
-                if res:
-                    since_id = res[0]['id']
-                    paramsDict['since_id'] = str(since_id)
+            self.logger.info('Calling getStatusRepostTimeline function with mid: {}'.format(mid))
 
+            print('CheckPiont A - {}'.format(time.time()))
+
+            asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+            event_loop = asyncio.new_event_loop()
             while loop:
                 try:
+                    print('CheckPiont B - {}'.format(time.time()))
                     page += 5
                     if page > 20:
                         raise StopIteration
-                    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-                    loop = asyncio.new_event_loop()
-                    tasks = [asyncio.ensure_future(self.getAsyncRequest(url,paramsDict,page=i+1), loop=loop) for i in range(page-5,page)]
-                    loop.run_until_complete(asyncio.wait(tasks))
+
+                    tasks = [asyncio.ensure_future(self.getAsyncRequest(url,paramsDict,page=i+1), loop=event_loop) for i in range(page-5,page)]
+                    event_loop.run_until_complete(asyncio.wait(tasks))
                     result = [task.result() for task in tasks]
-                    event_loop.close()
-                    
-                    if not result:
-                        raise StopIteration
+                    print('CheckPiont C - {}'.format(time.time()))
+
                     for item in result:
+                        if not item:
+                            raise StopIteration
                         if item.get('error_code') is not None:
                             raise Exception('Error Code: {}, Error Msg: {}'.format(item.get('error_code'), item.get('error')))
                         reposts = item.get('reposts')
@@ -444,21 +446,28 @@ class SocialWeiboAPI(SocialBasicAPI):
                         repostList += reposts
                 except StopIteration:
                     loop = False
-
+            event_loop.close()
+            print('CheckPiont D - {}'.format(time.time()))
             if not repostList:
                 self.logger.warning("No data to update for post {}".format(mid))
                 return
             for repost in repostList:
+                repost['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                repost['createdTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 if repost.get('created_at'):
                     repost['created_at_timestamp'] = int(time.mktime(time.strptime(repost['created_at'], "%a %b %d %H:%M:%S %z %Y")))
                     repost['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(repost['created_at_timestamp']))
-                repost['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                repost['createdTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                #res = attitudeTable.update({'id':attitude['id']},{'$set':attitude,
-                 #                                                 '$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},upsert=True)
+                if repost.get('user'):
+                    repost['user']['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S',time.strptime(repost['user']['created_at'],"%a %b %d %H:%M:%S %z %Y"))
+                if repost.get('retweeted_status'):
+                    repost['retweeted_status']['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S',time.strptime(repost['retweeted_status']['created_at'],"%a %b %d %H:%M:%S %z %Y"))
+                #res = attitudeTable.update({'id':attitude['id']},{'$set':attitude,'$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},upsert=True)
+
+
             res = repostTable.insert_many(repostList)
-            self.logger.info('{} records has been inserted!'.format(len(repostList)))
-            #self.logger.info('Attitude {}: {}'.format(attitude['id'], res))
+            self.logger.info('{} records has been inserted for post {}'.format(len(repostList),mid))
+            #return repostList
+            print('CheckPiont E - {}'.format(time.time()))
 
         except Exception as e:
             class_name = self.__class__.__name__

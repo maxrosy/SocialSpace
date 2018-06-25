@@ -20,7 +20,7 @@ Base = declarative_base()
 engine = create_engine(dblink,echo=False)
 metadata = MetaData(bind=engine)
 
-
+"""
 class User(Base):
     __table__ = Table('weibo_user_info',metadata,autoload=True)
     post = relationship('PostStatus',backref='user')
@@ -30,7 +30,7 @@ class User(Base):
 
 
 class PostStatus(Base):
-    __table__ = Table('weibo_post_status',metadata,autoload=True)
+    __table__ = Table('weibo_user_post',metadata,autoload=True)
     comment = relationship('Comment',backref='post')
     media = relationship('Media', backref='post')
     postCrawl = relationship('PostCrawl',backref='post')
@@ -56,6 +56,6 @@ class PostCrawl(Base):
 
 class Attitude(Base):
     __table__ = Table('weibo_post_attitude',metadata,autoload=True)
-
+"""
 class Kol(Base):
     __table__ = Table('weibo_kol',metadata,autoload=True)
