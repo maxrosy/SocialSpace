@@ -1,0 +1,476 @@
+Java HotSpot(TM) 64-Bit Server VM warning: ignoring option MaxPermSize=256m; support was removed in 8.0
+Java HotSpot(TM) 64-Bit Server VM warning: CMSFullGCsBeforeCompaction is deprecated and will likely be removed in a future release.
+23:19:06,904 INFO  [KarafBoot] Checking to see if org.pentaho.clean.karaf.cache is enabled
+23:19:07,037 INFO  [KarafInstance] 
+*******************************************************************************
+*** Karaf Instance Number: 1 at /home/panther/data-integration/./system/kar ***
+***   af/caches/kitchen/data-1                                              ***
+*** FastBin Provider Port:52901                                             ***
+*** Karaf Port:8802                                                         ***
+*** OSGI Service Port:9051                                                  ***
+*******************************************************************************
+Jun 25, 2018 11:19:08 PM org.apache.karaf.main.Main$KarafLockCallback lockAquired
+INFO: Lock acquired. Setting startlevel to 100
+2018/06/25 23:19:08 - Kitchen - Start of run.
+2018-06-25 23:19:17.262:INFO:oejs.Server:jetty-8.1.15.v20140411
+2018-06-25 23:19:17.365:INFO:oejs.AbstractConnector:Started NIOSocketConnectorWrapper@0.0.0.0:9051
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://cxf.apache.org/blueprint/core
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://cxf.apache.org/configuration/beans
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://cxf.apache.org/configuration/parameterized-types
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://cxf.apache.org/configuration/security
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://schemas.xmlsoap.org/wsdl/
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://www.w3.org/2005/08/addressing
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://schemas.xmlsoap.org/ws/2004/08/addressing
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.osgi.CXFExtensionBundleListener addExtensions
+INFO: Adding the extensions from bundle org.apache.cxf.cxf-rt-management (192) [org.apache.cxf.management.InstrumentationManager]
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.osgi.CXFExtensionBundleListener addExtensions
+INFO: Adding the extensions from bundle org.apache.cxf.cxf-rt-wsdl (195) [org.apache.cxf.wsdl.WSDLManager]
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.osgi.CXFExtensionBundleListener addExtensions
+INFO: Adding the extensions from bundle org.apache.cxf.cxf-rt-bindings-xml (197) [org.apache.cxf.binding.xml.XMLBindingFactory, org.apache.cxf.binding.xml.wsdl11.XMLWSDLExtensionLoader]
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.osgi.CXFExtensionBundleListener addExtensions
+INFO: Adding the extensions from bundle org.apache.cxf.cxf-rt-bindings-soap (198) [org.apache.cxf.binding.soap.SoapBindingFactory, org.apache.cxf.binding.soap.SoapTransportFactory]
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://cxf.apache.org/blueprint/bindings/soap
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.osgi.CXFExtensionBundleListener addExtensions
+INFO: Adding the extensions from bundle org.apache.cxf.cxf-rt-ws-policy (217) [org.apache.cxf.ws.policy.PolicyEngine, org.apache.cxf.policy.PolicyDataEngine, org.apache.cxf.ws.policy.AssertionBuilderRegistry, org.apache.cxf.ws.policy.PolicyInterceptorProviderRegistry, org.apache.cxf.ws.policy.PolicyBuilder, org.apache.cxf.ws.policy.PolicyAnnotationListener, org.apache.cxf.ws.policy.attachment.ServiceModelPolicyProvider, org.apache.cxf.ws.policy.attachment.external.DomainExpressionBuilderRegistry, org.apache.cxf.ws.policy.attachment.external.EndpointReferenceDomainExpressionBuilder, org.apache.cxf.ws.policy.attachment.external.URIDomainExpressionBuilder, org.apache.cxf.ws.policy.attachment.wsdl11.Wsdl11AttachmentPolicyProvider, org.apache.cxf.ws.policy.mtom.MTOMAssertionBuilder, org.apache.cxf.ws.policy.mtom.MTOMPolicyInterceptorProvider]
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.osgi.CXFExtensionBundleListener addExtensions
+INFO: Adding the extensions from bundle org.apache.cxf.cxf-rt-transports-http (199) [org.apache.cxf.transport.http.HTTPTransportFactory, org.apache.cxf.transport.http.HTTPWSDLExtensionLoader, org.apache.cxf.transport.http.policy.HTTPClientAssertionBuilder, org.apache.cxf.transport.http.policy.HTTPServerAssertionBuilder, org.apache.cxf.transport.http.policy.NoOpPolicyInterceptorProvider]
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://cxf.apache.org/transports/http/configuration
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://cxf.apache.org/blueprint/simple
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.osgi.CXFExtensionBundleListener addExtensions
+INFO: Adding the extensions from bundle org.apache.cxf.cxf-rt-frontend-jaxws (201) [org.apache.cxf.jaxws.context.WebServiceContextResourceResolver]
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://cxf.apache.org/blueprint/jaxws
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://cxf.apache.org/blueprint/jaxrs
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://cxf.apache.org/blueprint/jaxrs-client
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://cxf.apache.org/binding/coloc
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.osgi.CXFExtensionBundleListener addExtensions
+INFO: Adding the extensions from bundle org.apache.cxf.cxf-rt-transports-local (213) [org.apache.cxf.transport.local.LocalTransportFactory]
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.osgi.CXFExtensionBundleListener addExtensions
+INFO: Adding the extensions from bundle org.apache.cxf.cxf-rt-bindings-object (214) [org.apache.cxf.binding.object.ObjectBindingFactory]
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://cxf.apache.org/blueprint/binding/object
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://cxf.apache.org/policy
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://www.w3.org/ns/ws-policy
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://www.w3.org/2006/07/ws-policy
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://schemas.xmlsoap.org/ws/2004/09/policy
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://www.w3.org/2000/09/xmldsig#
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.osgi.CXFExtensionBundleListener addExtensions
+INFO: Adding the extensions from bundle org.apache.cxf.cxf-rt-ws-addr (234) [org.apache.cxf.ws.addressing.policy.AddressingAssertionBuilder, org.apache.cxf.ws.addressing.policy.UsingAddressingAssertionBuilder, org.apache.cxf.ws.addressing.policy.AddressingPolicyInterceptorProvider, org.apache.cxf.ws.addressing.impl.AddressingWSDLExtensionLoader, org.apache.cxf.ws.addressing.WSAddressingFeature$WSAddressingFeatureApplier, org.apache.cxf.ws.addressing.MAPAggregator$MAPAggregatorLoader]
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://cxf.apache.org/ws/addressing
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.osgi.CXFExtensionBundleListener addExtensions
+INFO: Adding the extensions from bundle org.apache.cxf.cxf-rt-ws-security (236) [org.apache.cxf.ws.security.policy.WSSecurityPolicyLoader, org.apache.cxf.ws.security.cache.CacheCleanupListener]
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.osgi.CXFExtensionBundleListener addExtensions
+INFO: Adding the extensions from bundle org.apache.cxf.cxf-rt-ws-rm (238) [org.apache.cxf.ws.rm.RMManager, org.apache.cxf.ws.rm.policy.RMPolicyInterceptorProvider, org.apache.cxf.ws.rm.policy.RM10AssertionBuilder, org.apache.cxf.ws.rm.policy.RM12AssertionBuilder, org.apache.cxf.ws.rm.policy.WSRMP12PolicyLoader, org.apache.cxf.ws.rm.policy.MC11PolicyLoader, org.apache.cxf.ws.rm.policy.RSPPolicyLoader]
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://cxf.apache.org/ws/rm/manager
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.blueprint.NamespaceHandlerRegisterer register
+INFO: Registered blueprint namespace handler for http://schemas.xmlsoap.org/ws/2005/02/rm/policy
+Jun 25, 2018 11:19:18 PM org.apache.cxf.bus.osgi.CXFExtensionBundleListener addExtensions
+INFO: Adding the extensions from bundle org.apache.cxf.cxf-rt-javascript (239) [org.apache.cxf.javascript.JavascriptServerListener]
+Jun 25, 2018 11:19:19 PM org.pentaho.caching.impl.PentahoCacheManagerFactory$RegistrationHandler$1 onSuccess
+INFO: New Caching Service registered
+Loading class `com.mysql.jdbc.Driver'. This is deprecated. The new driver class is `com.mysql.cj.jdbc.Driver'. The driver is automatically registered via the SPI and manual loading of the driver class is generally unnecessary.
+SLF4J: Class path contains multiple SLF4J bindings.
+SLF4J: Found binding in [jar:file:/home/panther/data-integration/launcher/../lib/slf4j-log4j12-1.7.7.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: Found binding in [jar:file:/home/panther/data-integration/plugins/pentaho-big-data-plugin/lib/slf4j-log4j12-1.7.7.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.
+SLF4J: Actual binding is of type [org.slf4j.impl.Log4jLoggerFactory]
+2018/06/25 23:19:22 - Weibo - Start of job execution
+2018/06/25 23:19:23 - Weibo - Starting entry [weibo_user_info]
+2018/06/25 23:19:23 - weibo_user_info - Loading transformation from repository [weibo_user_info] in directory [/home/panther/SocialSpace/jobs/mongo_to_mysql]
+Jun 25, 2018 11:19:23 PM org.apache.cxf.endpoint.ServerImpl initDestination
+INFO: Setting the server's publish address to be /lineage
+2018/06/25 23:19:23 - weibo_user_info - Using run configuration [Pentaho local]
+2018/06/25 23:19:23 - weibo_user_info - Using legacy execution engine
+2018/06/25 23:19:23 - weibo_user_info - Dispatching started for transformation [weibo_user_info]
+Jun 25, 2018 11:19:23 PM org.apache.cxf.endpoint.ServerImpl initDestination
+INFO: Setting the server's publish address to be /i18n
+2018/06/25 23:19:23 - MongoDB Input.0 - Configuring connection with read preference: primary
+2018/06/25 23:19:23 - MongoDB Input.0 - No read preference tag sets defined
+2018/06/25 23:19:23 - MongoDB Input.0 - Configuring connection with write concern - w = 1, wTimeout = 0, journaled = false
+Jun 25, 2018 11:19:23 PM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Cluster created with settings {hosts=[localhost:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms', maxWaitQueueSize=500}
+Jun 25, 2018 11:19:24 PM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Opened connection [connectionId{localValue:1, serverValue:170}] to localhost:27017
+Mon Jun 25 23:19:24 CST 2018 WARN: Establishing SSL connection without server's identity verification is not recommended. According to MySQL 5.5.45+, 5.6.26+ and 5.7.6+ requirements SSL connection must be established by default if explicit option isn't set. For compliance with existing applications not using SSL the verifyServerCertificate property is set to 'false'. You need either to explicitly disable SSL by setting useSSL=false, or set useSSL=true and provide truststore for server certificate verification.
+Jun 25, 2018 11:19:24 PM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Monitor thread successfully connected to server with description ServerDescription{address=localhost:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[3, 6, 5]}, minWireVersion=0, maxWireVersion=6, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=7755168}
+2018/06/25 23:19:24 - Table output.0 - Connected to database [newSocialDB] (commit=10000)
+Jun 25, 2018 11:19:24 PM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Opened connection [connectionId{localValue:2, serverValue:171}] to localhost:27017
+2018/06/25 23:19:24 - MongoDB Input.0 - Query pulled data from: localhost:27017
+Jun 25, 2018 11:19:26 PM org.apache.cxf.endpoint.ServerImpl initDestination
+INFO: Setting the server's publish address to be /marketplace
+Jun 25, 2018 11:19:28 PM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Closed connection [connectionId{localValue:2, serverValue:171}] to localhost:27017 because the pool has been closed.
+2018/06/25 23:19:28 - MongoDB Input.0 - Finished processing (I=0, O=0, R=0, W=1019, U=0, E=0)
+2018/06/25 23:19:28 - 字段选择.0 - Finished processing (I=0, O=0, R=1019, W=1019, U=0, E=0)
+2018/06/25 23:19:29 - Table output.0 - Finished processing (I=0, O=1019, R=1019, W=1019, U=0, E=0)
+2018/06/25 23:19:29 - Carte - Installing timer to purge stale objects after 1440 minutes.
+2018/06/25 23:19:29 - Weibo - Starting entry [weibo_user_post]
+2018/06/25 23:19:29 - weibo_user_post - Loading transformation from repository [weibo_user_post] in directory [/home/panther/SocialSpace/jobs/mongo_to_mysql]
+2018/06/25 23:19:29 - weibo_user_post - Using run configuration [Pentaho local]
+2018/06/25 23:19:29 - weibo_user_post - Using legacy execution engine
+2018/06/25 23:19:29 - weibo_user_post - Dispatching started for transformation [weibo_user_post]
+2018/06/25 23:19:29 - MongoDB Input.0 - Configuring connection with read preference: primary
+2018/06/25 23:19:29 - MongoDB Input.0 - No read preference tag sets defined
+2018/06/25 23:19:29 - MongoDB Input.0 - Configuring connection with write concern - w = 1, wTimeout = 0, journaled = false
+Jun 25, 2018 11:19:29 PM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Cluster created with settings {hosts=[localhost:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms', maxWaitQueueSize=500}
+Jun 25, 2018 11:19:29 PM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Opened connection [connectionId{localValue:3, serverValue:172}] to localhost:27017
+Jun 25, 2018 11:19:29 PM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Monitor thread successfully connected to server with description ServerDescription{address=localhost:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[3, 6, 5]}, minWireVersion=0, maxWireVersion=6, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=714976}
+Mon Jun 25 23:19:29 CST 2018 WARN: Establishing SSL connection without server's identity verification is not recommended. According to MySQL 5.5.45+, 5.6.26+ and 5.7.6+ requirements SSL connection must be established by default if explicit option isn't set. For compliance with existing applications not using SSL the verifyServerCertificate property is set to 'false'. You need either to explicitly disable SSL by setting useSSL=false, or set useSSL=true and provide truststore for server certificate verification.
+2018/06/25 23:19:29 - Table output.0 - Connected to database [newSocialDB] (commit=10000)
+Jun 25, 2018 11:19:29 PM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Opened connection [connectionId{localValue:4, serverValue:173}] to localhost:27017
+2018/06/25 23:19:29 - MongoDB Input.0 - Query pulled data from: localhost:27017
+2018/06/25 23:20:11 - Select values.0 - linenr 50000
+2018/06/25 23:20:15 - Table output.0 - linenr 50000
+2018/06/25 23:20:42 - Select values.0 - linenr 100000
+2018/06/25 23:20:45 - Table output.0 - linenr 100000
+2018/06/25 23:21:15 - Select values.0 - linenr 150000
+2018/06/25 23:21:19 - Table output.0 - linenr 150000
+2018/06/25 23:21:48 - Select values.0 - linenr 200000
+2018/06/25 23:21:52 - Table output.0 - linenr 200000
+2018/06/25 23:22:25 - Select values.0 - linenr 250000
+2018/06/25 23:22:29 - Table output.0 - linenr 250000
+2018/06/25 23:23:01 - Select values.0 - linenr 300000
+2018/06/25 23:23:05 - Table output.0 - linenr 300000
+2018/06/25 23:23:35 - Select values.0 - linenr 350000
+2018/06/25 23:23:38 - Table output.0 - linenr 350000
+2018/06/25 23:24:09 - Select values.0 - linenr 400000
+2018/06/25 23:24:13 - Table output.0 - linenr 400000
+2018/06/25 23:24:43 - Select values.0 - linenr 450000
+2018/06/25 23:24:47 - Table output.0 - linenr 450000
+2018/06/25 23:25:10 - Select values.0 - Finished processing (I=0, O=0, R=489339, W=489339, U=0, E=0)
+Jun 25, 2018 11:25:10 PM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Closed connection [connectionId{localValue:4, serverValue:173}] to localhost:27017 because the pool has been closed.
+2018/06/25 23:25:10 - MongoDB Input.0 - Finished processing (I=0, O=0, R=0, W=489339, U=0, E=0)
+2018/06/25 23:25:13 - Table output.0 - Finished processing (I=0, O=489339, R=489339, W=489339, U=0, E=0)
+2018/06/25 23:25:13 - Weibo - Starting entry [weibo_post_media]
+2018/06/25 23:25:13 - weibo_post_media - Loading transformation from repository [weibo_post_media] in directory [/home/panther/SocialSpace/jobs/mongo_to_mysql]
+2018/06/25 23:25:13 - weibo_post_media - Using run configuration [Pentaho local]
+2018/06/25 23:25:13 - weibo_post_media - Using legacy execution engine
+2018/06/25 23:25:13 - weibo_post_media - Dispatching started for transformation [weibo_post_media]
+2018/06/25 23:25:14 - MongoDB Input.0 - Configuring connection with read preference: primary
+2018/06/25 23:25:14 - MongoDB Input.0 - No read preference tag sets defined
+2018/06/25 23:25:14 - MongoDB Input.0 - Configuring connection with write concern - w = 1, wTimeout = 0, journaled = false
+Jun 25, 2018 11:25:14 PM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Cluster created with settings {hosts=[localhost:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms', maxWaitQueueSize=500}
+Jun 25, 2018 11:25:14 PM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Opened connection [connectionId{localValue:5, serverValue:174}] to localhost:27017
+Jun 25, 2018 11:25:14 PM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Monitor thread successfully connected to server with description ServerDescription{address=localhost:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[3, 6, 5]}, minWireVersion=0, maxWireVersion=6, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=512655}
+Mon Jun 25 23:25:14 CST 2018 WARN: Establishing SSL connection without server's identity verification is not recommended. According to MySQL 5.5.45+, 5.6.26+ and 5.7.6+ requirements SSL connection must be established by default if explicit option isn't set. For compliance with existing applications not using SSL the verifyServerCertificate property is set to 'false'. You need either to explicitly disable SSL by setting useSSL=false, or set useSSL=true and provide truststore for server certificate verification.
+2018/06/25 23:25:14 - Table output.0 - Connected to database [newSocialDB] (commit=10000)
+Jun 25, 2018 11:25:14 PM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Opened connection [connectionId{localValue:6, serverValue:175}] to localhost:27017
+2018/06/25 23:25:14 - MongoDB Input.0 - Query pulled data from: localhost:27017
+2018/06/25 23:26:10 - Select values.0 - linenr 50000
+2018/06/25 23:26:11 - Table output.0 - linenr 50000
+2018/06/25 23:27:00 - Select values.0 - linenr 100000
+2018/06/25 23:27:01 - Table output.0 - linenr 100000
+2018/06/25 23:27:45 - Select values.0 - linenr 150000
+2018/06/25 23:27:46 - Table output.0 - linenr 150000
+2018/06/25 23:28:38 - Select values.0 - linenr 200000
+2018/06/25 23:28:39 - Table output.0 - linenr 200000
+2018/06/25 23:29:25 - Select values.0 - linenr 250000
+2018/06/25 23:29:26 - Table output.0 - linenr 250000
+2018/06/25 23:30:17 - Select values.0 - linenr 300000
+2018/06/25 23:30:17 - Table output.0 - linenr 300000
+2018/06/25 23:31:07 - Select values.0 - linenr 350000
+2018/06/25 23:31:08 - Table output.0 - linenr 350000
+2018/06/25 23:31:37 - Select values.0 - Finished processing (I=0, O=0, R=385478, W=385478, U=0, E=0)
+Jun 25, 2018 11:31:37 PM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Closed connection [connectionId{localValue:6, serverValue:175}] to localhost:27017 because the pool has been closed.
+2018/06/25 23:31:37 - MongoDB Input.0 - Finished processing (I=0, O=0, R=0, W=385478, U=0, E=0)
+2018/06/25 23:31:37 - Table output.0 - Finished processing (I=0, O=385478, R=385478, W=385478, U=0, E=0)
+2018/06/25 23:31:38 - Weibo - Starting entry [Success]
+2018/06/25 23:31:38 - Weibo - Finished job entry [Success] (result=[true])
+2018/06/25 23:31:38 - Weibo - Finished job entry [weibo_post_media] (result=[true])
+2018/06/25 23:31:38 - Weibo - Starting entry [weibo_user_comment]
+2018/06/25 23:31:38 - weibo_user_comment - Loading transformation from repository [weibo_user_comment] in directory [/home/panther/SocialSpace/jobs/mongo_to_mysql]
+2018/06/25 23:31:38 - weibo_user_comment - Using run configuration [Pentaho local]
+2018/06/25 23:31:38 - weibo_user_comment - Using legacy execution engine
+2018/06/25 23:31:38 - weibo_user_comment - Dispatching started for transformation [weibo_user_comment]
+2018/06/25 23:31:38 - MongoDB Input.0 - Configuring connection with read preference: primary
+2018/06/25 23:31:38 - MongoDB Input.0 - No read preference tag sets defined
+2018/06/25 23:31:38 - MongoDB Input.0 - Configuring connection with write concern - w = 1, wTimeout = 0, journaled = false
+Jun 25, 2018 11:31:38 PM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Cluster created with settings {hosts=[localhost:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms', maxWaitQueueSize=500}
+Mon Jun 25 23:31:38 CST 2018 WARN: Establishing SSL connection without server's identity verification is not recommended. According to MySQL 5.5.45+, 5.6.26+ and 5.7.6+ requirements SSL connection must be established by default if explicit option isn't set. For compliance with existing applications not using SSL the verifyServerCertificate property is set to 'false'. You need either to explicitly disable SSL by setting useSSL=false, or set useSSL=true and provide truststore for server certificate verification.
+Mon Jun 25 23:31:38 CST 2018 WARN: Establishing SSL connection without server's identity verification is not recommended. According to MySQL 5.5.45+, 5.6.26+ and 5.7.6+ requirements SSL connection must be established by default if explicit option isn't set. For compliance with existing applications not using SSL the verifyServerCertificate property is set to 'false'. You need either to explicitly disable SSL by setting useSSL=false, or set useSSL=true and provide truststore for server certificate verification.
+Jun 25, 2018 11:31:38 PM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Opened connection [connectionId{localValue:7, serverValue:176}] to localhost:27017
+Jun 25, 2018 11:31:38 PM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Monitor thread successfully connected to server with description ServerDescription{address=localhost:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[3, 6, 5]}, minWireVersion=0, maxWireVersion=6, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=649138}
+2018/06/25 23:31:38 - weibo_user_comment.0 - Connected to database [newSocialDB] (commit=10000)
+Jun 25, 2018 11:31:38 PM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Opened connection [connectionId{localValue:8, serverValue:177}] to localhost:27017
+2018/06/25 23:31:38 - MongoDB Input.0 - Query pulled data from: localhost:27017
+2018/06/25 23:32:58 - Select values for Comment.0 - linenr 50000
+2018/06/25 23:32:58 - weibo_user_comment.0 - linenr 50000
+2018/06/25 23:33:22 - Select values for User.0 - linenr 50000
+2018/06/25 23:33:48 - weibo_user_info.0 - linenr 50000
+2018/06/25 23:35:09 - Select values for Comment.0 - linenr 100000
+2018/06/25 23:35:10 - weibo_user_comment.0 - linenr 100000
+2018/06/25 23:35:36 - Select values for User.0 - linenr 100000
+2018/06/25 23:36:02 - weibo_user_info.0 - linenr 100000
+2018/06/25 23:37:18 - Select values for Comment.0 - linenr 150000
+2018/06/25 23:37:19 - weibo_user_comment.0 - linenr 150000
+2018/06/25 23:37:44 - Select values for User.0 - linenr 150000
+2018/06/25 23:38:10 - weibo_user_info.0 - linenr 150000
+2018/06/25 23:39:25 - Select values for Comment.0 - linenr 200000
+2018/06/25 23:39:25 - weibo_user_comment.0 - linenr 200000
+2018/06/25 23:39:50 - Select values for User.0 - linenr 200000
+2018/06/25 23:40:18 - weibo_user_info.0 - linenr 200000
+2018/06/25 23:41:33 - Select values for Comment.0 - linenr 250000
+2018/06/25 23:41:34 - weibo_user_comment.0 - linenr 250000
+2018/06/25 23:41:56 - Select values for User.0 - linenr 250000
+2018/06/25 23:42:24 - weibo_user_info.0 - linenr 250000
+2018/06/25 23:43:42 - Select values for Comment.0 - linenr 300000
+2018/06/25 23:43:42 - weibo_user_comment.0 - linenr 300000
+2018/06/25 23:44:06 - Select values for User.0 - linenr 300000
+2018/06/25 23:44:33 - weibo_user_info.0 - linenr 300000
+2018/06/25 23:45:44 - Select values for Comment.0 - linenr 350000
+2018/06/25 23:45:45 - weibo_user_comment.0 - linenr 350000
+2018/06/25 23:46:08 - Select values for User.0 - linenr 350000
+2018/06/25 23:46:32 - weibo_user_info.0 - linenr 350000
+2018/06/25 23:47:54 - Select values for Comment.0 - linenr 400000
+2018/06/25 23:47:55 - weibo_user_comment.0 - linenr 400000
+2018/06/25 23:48:21 - Select values for User.0 - linenr 400000
+2018/06/25 23:48:48 - weibo_user_info.0 - linenr 400000
+2018/06/25 23:50:09 - Select values for Comment.0 - linenr 450000
+2018/06/25 23:50:10 - weibo_user_comment.0 - linenr 450000
+2018/06/25 23:50:33 - Select values for User.0 - linenr 450000
+2018/06/25 23:50:57 - weibo_user_info.0 - linenr 450000
+2018/06/25 23:52:18 - Select values for Comment.0 - linenr 500000
+2018/06/25 23:52:19 - weibo_user_comment.0 - linenr 500000
+2018/06/25 23:52:45 - Select values for User.0 - linenr 500000
+2018/06/25 23:53:12 - weibo_user_info.0 - linenr 500000
+2018/06/25 23:54:40 - Select values for Comment.0 - linenr 550000
+2018/06/25 23:54:40 - weibo_user_comment.0 - linenr 550000
+2018/06/25 23:54:44 - Select values for Comment.0 - Finished processing (I=0, O=0, R=551633, W=551633, U=0, E=0)
+Jun 25, 2018 11:54:44 PM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Closed connection [connectionId{localValue:8, serverValue:177}] to localhost:27017 because the pool has been closed.
+2018/06/25 23:54:44 - MongoDB Input.0 - Finished processing (I=0, O=0, R=0, W=1103266, U=0, E=0)
+2018/06/25 23:54:44 - weibo_user_comment.0 - Finished processing (I=0, O=551633, R=551633, W=551633, U=0, E=0)
+2018/06/25 23:55:04 - Select values for User.0 - linenr 550000
+2018/06/25 23:55:08 - Select values for User.0 - Finished processing (I=0, O=0, R=551633, W=551633, U=0, E=0)
+2018/06/25 23:55:27 - weibo_user_info.0 - linenr 550000
+2018/06/25 23:55:31 - weibo_user_info.0 - Finished processing (I=551633, O=313983, R=551633, W=551633, U=237650, E=0)
+2018/06/25 23:55:31 - Weibo - Starting entry [Success 3]
+2018/06/25 23:55:31 - Weibo - Finished job entry [Success 3] (result=[true])
+2018/06/25 23:55:31 - Weibo - Finished job entry [weibo_user_comment] (result=[true])
+2018/06/25 23:55:31 - Weibo - Starting entry [weibo_user_attitude]
+2018/06/25 23:55:31 - weibo_user_attitude - Loading transformation from repository [weibo_user_attitude] in directory [/home/panther/SocialSpace/jobs/mongo_to_mysql]
+2018/06/25 23:55:31 - weibo_user_attitude - Using run configuration [Pentaho local]
+2018/06/25 23:55:31 - weibo_user_attitude - Using legacy execution engine
+2018/06/25 23:55:31 - weibo_user_attitude - Dispatching started for transformation [weibo_user_attitude]
+2018/06/25 23:55:31 - MongoDB Input.0 - Configuring connection with read preference: primary
+2018/06/25 23:55:31 - MongoDB Input.0 - No read preference tag sets defined
+2018/06/25 23:55:31 - MongoDB Input.0 - Configuring connection with write concern - w = 1, wTimeout = 0, journaled = false
+Jun 25, 2018 11:55:31 PM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Cluster created with settings {hosts=[localhost:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms', maxWaitQueueSize=500}
+Jun 25, 2018 11:55:31 PM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Opened connection [connectionId{localValue:9, serverValue:178}] to localhost:27017
+Jun 25, 2018 11:55:31 PM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Monitor thread successfully connected to server with description ServerDescription{address=localhost:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[3, 6, 5]}, minWireVersion=0, maxWireVersion=6, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=392094}
+Mon Jun 25 23:55:31 CST 2018 WARN: Establishing SSL connection without server's identity verification is not recommended. According to MySQL 5.5.45+, 5.6.26+ and 5.7.6+ requirements SSL connection must be established by default if explicit option isn't set. For compliance with existing applications not using SSL the verifyServerCertificate property is set to 'false'. You need either to explicitly disable SSL by setting useSSL=false, or set useSSL=true and provide truststore for server certificate verification.
+Mon Jun 25 23:55:31 CST 2018 WARN: Establishing SSL connection without server's identity verification is not recommended. According to MySQL 5.5.45+, 5.6.26+ and 5.7.6+ requirements SSL connection must be established by default if explicit option isn't set. For compliance with existing applications not using SSL the verifyServerCertificate property is set to 'false'. You need either to explicitly disable SSL by setting useSSL=false, or set useSSL=true and provide truststore for server certificate verification.
+2018/06/25 23:55:31 - weibo_user_attitude.0 - Connected to database [newSocialDB] (commit=10000)
+Jun 25, 2018 11:55:31 PM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Opened connection [connectionId{localValue:10, serverValue:179}] to localhost:27017
+2018/06/25 23:55:32 - MongoDB Input.0 - Query pulled data from: localhost:27017
+2018/06/25 23:56:51 - Select values for Attitude.0 - linenr 50000
+2018/06/25 23:56:52 - weibo_user_attitude.0 - linenr 50000
+2018/06/25 23:57:15 - Select values for User.0 - linenr 50000
+2018/06/25 23:57:41 - weibo_user_info.0 - linenr 50000
+2018/06/25 23:58:56 - Select values for Attitude.0 - linenr 100000
+2018/06/25 23:58:56 - weibo_user_attitude.0 - linenr 100000
+2018/06/25 23:59:22 - Select values for User.0 - linenr 100000
+2018/06/25 23:59:50 - weibo_user_info.0 - linenr 100000
+2018/06/26 00:01:12 - Select values for Attitude.0 - linenr 150000
+2018/06/26 00:01:13 - weibo_user_attitude.0 - linenr 150000
+2018/06/26 00:01:38 - Select values for User.0 - linenr 150000
+2018/06/26 00:02:09 - weibo_user_info.0 - linenr 150000
+2018/06/26 00:03:27 - Select values for Attitude.0 - linenr 200000
+2018/06/26 00:03:28 - weibo_user_attitude.0 - linenr 200000
+2018/06/26 00:03:51 - Select values for User.0 - linenr 200000
+2018/06/26 00:04:18 - weibo_user_info.0 - linenr 200000
+2018/06/26 00:05:37 - Select values for Attitude.0 - linenr 250000
+2018/06/26 00:05:37 - weibo_user_attitude.0 - linenr 250000
+2018/06/26 00:06:03 - Select values for User.0 - linenr 250000
+2018/06/26 00:06:29 - weibo_user_info.0 - linenr 250000
+2018/06/26 00:07:50 - Select values for Attitude.0 - linenr 300000
+2018/06/26 00:07:50 - weibo_user_attitude.0 - linenr 300000
+2018/06/26 00:08:15 - Select values for User.0 - linenr 300000
+2018/06/26 00:08:40 - weibo_user_info.0 - linenr 300000
+2018/06/26 00:09:54 - Select values for Attitude.0 - linenr 350000
+2018/06/26 00:09:55 - weibo_user_attitude.0 - linenr 350000
+2018/06/26 00:10:23 - Select values for User.0 - linenr 350000
+2018/06/26 00:10:50 - weibo_user_info.0 - linenr 350000
+2018/06/26 00:12:14 - Select values for Attitude.0 - linenr 400000
+2018/06/26 00:12:15 - weibo_user_attitude.0 - linenr 400000
+2018/06/26 00:12:19 - Select values for Attitude.0 - Finished processing (I=0, O=0, R=401737, W=401737, U=0, E=0)
+Jun 26, 2018 12:12:19 AM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Closed connection [connectionId{localValue:10, serverValue:179}] to localhost:27017 because the pool has been closed.
+2018/06/26 00:12:19 - MongoDB Input.0 - Finished processing (I=0, O=0, R=0, W=803474, U=0, E=0)
+2018/06/26 00:12:19 - weibo_user_attitude.0 - Finished processing (I=0, O=401737, R=401737, W=401737, U=0, E=0)
+2018/06/26 00:12:37 - Select values for User.0 - linenr 400000
+2018/06/26 00:12:40 - Select values for User.0 - Finished processing (I=0, O=0, R=401737, W=401737, U=0, E=0)
+2018/06/26 00:12:58 - weibo_user_info.0 - linenr 400000
+2018/06/26 00:13:02 - weibo_user_info.0 - Finished processing (I=401737, O=264180, R=401737, W=401737, U=137557, E=0)
+2018/06/26 00:13:02 - Weibo - Starting entry [Success 5]
+2018/06/26 00:13:02 - Weibo - Finished job entry [Success 5] (result=[true])
+2018/06/26 00:13:02 - Weibo - Finished job entry [weibo_user_attitude] (result=[true])
+2018/06/26 00:13:02 - Weibo - Starting entry [weibo_user_repost]
+2018/06/26 00:13:02 - weibo_user_repost - Loading transformation from repository [weibo_user_repost] in directory [/home/panther/SocialSpace/jobs/mongo_to_mysql]
+2018/06/26 00:13:02 - weibo_user_repost - Using run configuration [Pentaho local]
+2018/06/26 00:13:02 - weibo_user_repost - Using legacy execution engine
+2018/06/26 00:13:02 - weibo_user_repost - Dispatching started for transformation [weibo_user_repost]
+2018/06/26 00:13:02 - MongoDB Input.0 - Configuring connection with read preference: primary
+2018/06/26 00:13:02 - MongoDB Input.0 - No read preference tag sets defined
+2018/06/26 00:13:02 - MongoDB Input.0 - Configuring connection with write concern - w = 1, wTimeout = 0, journaled = false
+Jun 26, 2018 12:13:02 AM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Cluster created with settings {hosts=[localhost:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms', maxWaitQueueSize=500}
+Tue Jun 26 00:13:02 CST 2018 WARN: Establishing SSL connection without server's identity verification is not recommended. According to MySQL 5.5.45+, 5.6.26+ and 5.7.6+ requirements SSL connection must be established by default if explicit option isn't set. For compliance with existing applications not using SSL the verifyServerCertificate property is set to 'false'. You need either to explicitly disable SSL by setting useSSL=false, or set useSSL=true and provide truststore for server certificate verification.
+Tue Jun 26 00:13:02 CST 2018 WARN: Establishing SSL connection without server's identity verification is not recommended. According to MySQL 5.5.45+, 5.6.26+ and 5.7.6+ requirements SSL connection must be established by default if explicit option isn't set. For compliance with existing applications not using SSL the verifyServerCertificate property is set to 'false'. You need either to explicitly disable SSL by setting useSSL=false, or set useSSL=true and provide truststore for server certificate verification.
+2018/06/26 00:13:02 - Table output.0 - Connected to database [newSocialDB] (commit=10000)
+Jun 26, 2018 12:13:02 AM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Cluster description not yet available. Waiting for 30000 ms before timing out
+Jun 26, 2018 12:13:02 AM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Opened connection [connectionId{localValue:11, serverValue:184}] to localhost:27017
+Jun 26, 2018 12:13:02 AM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Monitor thread successfully connected to server with description ServerDescription{address=localhost:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[3, 6, 5]}, minWireVersion=0, maxWireVersion=6, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=435347}
+Jun 26, 2018 12:13:02 AM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Opened connection [connectionId{localValue:12, serverValue:185}] to localhost:27017
+2018/06/26 00:13:02 - MongoDB Input.0 - Query pulled data from: localhost:27017
+2018/06/26 00:14:48 - Select values for Repost.0 - linenr 50000
+2018/06/26 00:14:50 - Table output.0 - linenr 50000
+2018/06/26 00:15:10 - Select values for User.0 - linenr 50000
+2018/06/26 00:15:39 - Insert / Update.0 - linenr 50000
+2018/06/26 00:17:06 - Select values for Repost.0 - linenr 100000
+2018/06/26 00:17:08 - Table output.0 - linenr 100000
+2018/06/26 00:17:33 - Select values for User.0 - linenr 100000
+2018/06/26 00:17:57 - Insert / Update.0 - linenr 100000
+2018/06/26 00:19:17 - Select values for Repost.0 - linenr 150000
+2018/06/26 00:19:18 - Table output.0 - linenr 150000
+2018/06/26 00:19:46 - Select values for User.0 - linenr 150000
+2018/06/26 00:20:12 - Insert / Update.0 - linenr 150000
+2018/06/26 00:21:34 - Select values for Repost.0 - linenr 200000
+2018/06/26 00:21:35 - Table output.0 - linenr 200000
+2018/06/26 00:22:00 - Select values for User.0 - linenr 200000
+2018/06/26 00:22:26 - Insert / Update.0 - linenr 200000
+2018/06/26 00:23:45 - Select values for Repost.0 - linenr 250000
+2018/06/26 00:23:46 - Table output.0 - linenr 250000
+2018/06/26 00:24:11 - Select values for User.0 - linenr 250000
+2018/06/26 00:24:37 - Insert / Update.0 - linenr 250000
+2018/06/26 00:25:56 - Select values for Repost.0 - linenr 300000
+2018/06/26 00:25:57 - Table output.0 - linenr 300000
+2018/06/26 00:26:23 - Select values for User.0 - linenr 300000
+2018/06/26 00:26:52 - Insert / Update.0 - linenr 300000
+2018/06/26 00:28:11 - Select values for Repost.0 - linenr 350000
+2018/06/26 00:28:12 - Table output.0 - linenr 350000
+2018/06/26 00:28:36 - Select values for User.0 - linenr 350000
+2018/06/26 00:29:02 - Insert / Update.0 - linenr 350000
+2018/06/26 00:30:22 - Select values for Repost.0 - linenr 400000
+2018/06/26 00:30:24 - Table output.0 - linenr 400000
+2018/06/26 00:30:48 - Select values for User.0 - linenr 400000
+2018/06/26 00:31:15 - Insert / Update.0 - linenr 400000
+2018/06/26 00:31:58 - Select values for Repost.0 - Finished processing (I=0, O=0, R=434820, W=434820, U=0, E=0)
+Jun 26, 2018 12:31:58 AM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Closed connection [connectionId{localValue:12, serverValue:185}] to localhost:27017 because the pool has been closed.
+2018/06/26 00:31:58 - MongoDB Input.0 - Finished processing (I=0, O=0, R=0, W=869640, U=0, E=0)
+2018/06/26 00:31:59 - Table output.0 - Finished processing (I=0, O=434820, R=434820, W=434820, U=0, E=0)
+2018/06/26 00:32:21 - Select values for User.0 - Finished processing (I=0, O=0, R=434820, W=434820, U=0, E=0)
+2018/06/26 00:32:42 - Insert / Update.0 - Finished processing (I=434820, O=189237, R=434820, W=434820, U=245583, E=0)
+2018/06/26 00:32:42 - Weibo - Starting entry [Success 6]
+2018/06/26 00:32:42 - Weibo - Finished job entry [Success 6] (result=[true])
+2018/06/26 00:32:42 - Weibo - Finished job entry [weibo_user_repost] (result=[true])
+2018/06/26 00:32:42 - Weibo - Finished job entry [weibo_user_post] (result=[true])
+2018/06/26 00:32:42 - Weibo - Finished job entry [weibo_user_info] (result=[true])
+2018/06/26 00:32:42 - Weibo - Starting entry [weibo_user_growth]
+2018/06/26 00:32:42 - weibo_user_growth - Loading transformation from repository [weibo_user_growth] in directory [/home/panther/SocialSpace/jobs/mongo_to_mysql]
+2018/06/26 00:32:42 - weibo_user_growth - Using run configuration [Pentaho local]
+2018/06/26 00:32:42 - weibo_user_growth - Using legacy execution engine
+2018/06/26 00:32:42 - weibo_user_growth - Dispatching started for transformation [weibo_user_growth]
+2018/06/26 00:32:42 - MongoDB Input.0 - Configuring connection with read preference: primary
+2018/06/26 00:32:42 - MongoDB Input.0 - No read preference tag sets defined
+2018/06/26 00:32:42 - MongoDB Input.0 - Configuring connection with write concern - w = 1, wTimeout = 0, journaled = false
+Jun 26, 2018 12:32:42 AM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Cluster created with settings {hosts=[localhost:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms', maxWaitQueueSize=500}
+Tue Jun 26 00:32:42 CST 2018 WARN: Establishing SSL connection without server's identity verification is not recommended. According to MySQL 5.5.45+, 5.6.26+ and 5.7.6+ requirements SSL connection must be established by default if explicit option isn't set. For compliance with existing applications not using SSL the verifyServerCertificate property is set to 'false'. You need either to explicitly disable SSL by setting useSSL=false, or set useSSL=true and provide truststore for server certificate verification.
+Jun 26, 2018 12:32:42 AM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Opened connection [connectionId{localValue:13, serverValue:186}] to localhost:27017
+Jun 26, 2018 12:32:42 AM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Monitor thread successfully connected to server with description ServerDescription{address=localhost:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[3, 6, 5]}, minWireVersion=0, maxWireVersion=6, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=1178855}
+Jun 26, 2018 12:32:42 AM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Opened connection [connectionId{localValue:14, serverValue:187}] to localhost:27017
+2018/06/26 00:32:42 - MongoDB Input.0 - Query pulled data from: localhost:27017
+Jun 26, 2018 12:32:43 AM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Closed connection [connectionId{localValue:14, serverValue:187}] to localhost:27017 because the pool has been closed.
+2018/06/26 00:32:43 - Select values.0 - Finished processing (I=0, O=0, R=3093, W=3093, U=0, E=0)
+2018/06/26 00:32:43 - MongoDB Input.0 - Finished processing (I=0, O=0, R=0, W=3093, U=0, E=0)
+2018/06/26 00:32:45 - Insert / Update.0 - Finished processing (I=3093, O=0, R=3093, W=3093, U=3093, E=0)
+2018/06/26 00:32:45 - Weibo - Starting entry [Success 2]
+2018/06/26 00:32:45 - Weibo - Finished job entry [Success 2] (result=[true])
+2018/06/26 00:32:45 - Weibo - Finished job entry [weibo_user_growth] (result=[true])
+2018/06/26 00:32:45 - Weibo - Starting entry [weibo_user_tag]
+2018/06/26 00:32:45 - weibo_user_tag - Loading transformation from repository [weibo_user_tag] in directory [/home/panther/SocialSpace/jobs/mongo_to_mysql]
+2018/06/26 00:32:45 - weibo_user_tag - Using run configuration [Pentaho local]
+2018/06/26 00:32:45 - weibo_user_tag - Using legacy execution engine
+2018/06/26 00:32:45 - weibo_user_tag - Dispatching started for transformation [weibo_user_tag]
+2018/06/26 00:32:45 - MongoDB Input.0 - Configuring connection with read preference: primary
+2018/06/26 00:32:45 - MongoDB Input.0 - No read preference tag sets defined
+2018/06/26 00:32:45 - MongoDB Input.0 - Configuring connection with write concern - w = 1, wTimeout = 0, journaled = false
+Jun 26, 2018 12:32:45 AM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Cluster created with settings {hosts=[localhost:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms', maxWaitQueueSize=500}
+Jun 26, 2018 12:32:45 AM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Opened connection [connectionId{localValue:15, serverValue:188}] to localhost:27017
+Jun 26, 2018 12:32:45 AM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Monitor thread successfully connected to server with description ServerDescription{address=localhost:27017, type=STANDALONE, state=CONNECTED, ok=true, version=ServerVersion{versionList=[3, 6, 5]}, minWireVersion=0, maxWireVersion=6, maxDocumentSize=16777216, logicalSessionTimeoutMinutes=30, roundTripTimeNanos=238031}
+Tue Jun 26 00:32:45 CST 2018 WARN: Establishing SSL connection without server's identity verification is not recommended. According to MySQL 5.5.45+, 5.6.26+ and 5.7.6+ requirements SSL connection must be established by default if explicit option isn't set. For compliance with existing applications not using SSL the verifyServerCertificate property is set to 'false'. You need either to explicitly disable SSL by setting useSSL=false, or set useSSL=true and provide truststore for server certificate verification.
+2018/06/26 00:32:45 - Table output.0 - Connected to database [newSocialDB] (commit=10000)
+Jun 26, 2018 12:32:45 AM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Opened connection [connectionId{localValue:16, serverValue:189}] to localhost:27017
+2018/06/26 00:32:45 - MongoDB Input.0 - Query pulled data from: localhost:27017
+Jun 26, 2018 12:32:46 AM com.mongodb.diagnostics.logging.JULLogger log
+INFO: Closed connection [connectionId{localValue:16, serverValue:189}] to localhost:27017 because the pool has been closed.
+2018/06/26 00:32:46 - MongoDB Input.0 - Finished processing (I=0, O=0, R=0, W=714, U=0, E=0)
+2018/06/26 00:32:46 - Select values.0 - Finished processing (I=0, O=0, R=714, W=714, U=0, E=0)
+2018/06/26 00:32:46 - Table output.0 - Finished processing (I=0, O=714, R=714, W=714, U=0, E=0)
+2018/06/26 00:32:46 - Weibo - Starting entry [Success 4]
+2018/06/26 00:32:46 - Weibo - Finished job entry [Success 4] (result=[true])
+2018/06/26 00:32:46 - Weibo - Finished job entry [weibo_user_tag] (result=[true])
+2018/06/26 00:32:46 - Weibo - Job execution finished
+2018/06/26 00:32:46 - Kitchen - Finished!
+2018/06/26 00:32:46 - Kitchen - Start=2018/06/25 23:19:08.322, Stop=2018/06/26 00:32:46.250
+2018/06/26 00:32:46 - Kitchen - Processing ended after 1 hours, 13 minutes and 37 seconds (4417 seconds total).
