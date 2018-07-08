@@ -39,7 +39,7 @@ class WeiBoCrawler(object):
         self.pass_word = pass_word
         self.user_uniqueid = None
         self.user_nick = None
-
+        self.logger.info('Login in process for {}'.format(user_name))
         # get json data
         s_user_name = self.get_username()
         json_data = self.get_json_data(su_value=s_user_name)

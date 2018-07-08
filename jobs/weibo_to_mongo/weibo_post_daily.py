@@ -12,7 +12,6 @@ if __name__ == '__main__':
     uids = session.query(Kol.uid).all()
     uids = [str(uid[0]) for uid in uids]
     session.close()
-    #uids = [1743040097]
     """
     for uid in uids:
         weibo.getUserTimelineOther(uid,start_day=-2,count=100)
@@ -20,7 +19,7 @@ if __name__ == '__main__':
     threads = []
 
     for uid in uids:
-        t = threading.Thread(target=weibo.getUserTimelineOther, args=(uid,), kwargs={'start_day':-2,'count': 50})
+        t = threading.Thread(target=weibo.getUserTimelineOther, args=(uid,), kwargs={'start_day':-7,'count': 50})
         threads.append(t)
 
     for t in threads:

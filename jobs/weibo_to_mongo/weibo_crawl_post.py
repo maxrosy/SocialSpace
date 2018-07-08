@@ -1,8 +1,7 @@
 import pandas as pd
-from SocialAPI.SocialAPI.SocialWeiboAPI import SocialWeiboAPI
+from SocialAPI.SocialAPI.WeiboAPI import SocialWeiboAPI
 from SocialAPI.Helper import Helper
 from SocialAPI.Crawler import WeiBoCrawler
-from SocialAPI.Model import PostStatus, PostCrawl
 from SocialAPI.Model import Kol
 import time
 import os
@@ -24,11 +23,10 @@ if __name__ == '__main__':
     startTimeStamp = weibo.getTimeStamp(startTime)
     userDict = {}
     userInfo = session.query(Kol.uid,Kol.username,Kol.pw).filter(Kol.status == 1, Kol.crawl_status==1).all()
-    #uidList = [uid[0] for uid in uids]
-    #for user in userInfo:
-    #    userDict[user[0]] = (user[1],user[2])
-    userDict[5933632405] = ('cnpogba@sina.cn','Adidas01!')
-    userDict[5210739467] =('jamestwitter@gmail.com','zhehenadi2016')
+
+    for user in userInfo:
+        userDict[user[0]] = (user[1],user[2])
+
     for uid in userDict.keys():
         pids = postTable.find({'uid':uid,'created_at_timestamp':{'$gte':startTimeStamp}},{'id':1})
         pids = [pid['id'] for pid in pids]

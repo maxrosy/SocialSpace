@@ -1,24 +1,19 @@
 from SocialAPI.SocialAPI.WeiboAPI import SocialWeiboAPI
 from SocialAPI.Helper import Helper
 from SocialAPI.Model import Kol
-from pymongo import MongoClient
-import threading
-from multiprocessing import Pool
 
-def func(pid,position,total):
-    weibo.logger.info('{}/{}'.format(position,total))
-    weibo.getStatusRepostTimeline(pid,count=50)
+
 
 if __name__ == '__main__':
 
     weibo = SocialWeiboAPI()
     session = weibo.createSession()
-    client = MongoClient()
+    client = weibo._client
     db = client.weibo
     postTable = db.weibo_user_post
     repostTable = db.weibo_user_repost
 
-    startTime = weibo.getStrTime(-1)
+    startTime = weibo.getStrTime(-7)
     startTimeStamp = weibo.getTimeStamp(startTime)
     uids = session.query(Kol.uid).all()
     uidList = [uid[0] for uid in uids]
@@ -29,37 +24,24 @@ if __name__ == '__main__':
         {'$match' : {'retweeted_status.id':{'$in':pidList}}},
         {'$group' : {'_id': '$retweeted_status.id','since_id':{'$max':'$id'}}}
     ]
-    repostList = repostTable.aggregate(pipeline)
+    repostList = list(repostTable.aggregate(pipeline))
     client.close()
     session.close()
 
-    weibo.logger.info('{} posts to be updated'.format(len(pidList)))
-
-    for repost in repostList:
-        weibo.logger.info('{}/{} is in progress!'.format(repostList.index(repost)+1, len(repostList)))
-        weibo.getStatusRepostTimeline(str(repost['_id']),since_id=str(repost['since_id']),count=50)
-
-    """
-    # Multiporcessing
-    p = Pool(4)
-
+    # Append posts with no attitude in DB into list
+    repostPostList = [repostPost['_id'] for repostPost in repostList]
     for pid in pidList:
-        res = p.apply_async(func,(str(pid['id']),pidList.index(pid)+1,len(pidList),))
+        if pid not in repostPostList:
+            repostList.append(dict(_id=pid,since_id=0))
 
-    p.close()
-    p.join()
     """
+    for i,repost in enumerate(repostList):
+        weibo.logger.info('{}/{} is in progress!'.format(i+1, len(repostList)))
+        if repost.get('since_id'):
+            weibo.getStatusRepostTimeline(str(repost['_id']),client,since_id=str(repost['since_id']),count=50)
+        else:
+            weibo.getStatusRepostTimeline(str(repost['_id']),client, count=50)
     """
-    #Threading
-    threads = []
-    for pid in pidList:
-        t = threading.Thread(target=weibo.getStatusRepostTimeline,args=(str(pid['id']),),kwargs={'count':50})
-        threads.append(t)
-
-    for t in threads:
-        t.start()
-        while True:
-            if len(threading.enumerate()) < 50:
-                break
-    """
+    weibo.doParallel('repost',repostList)
+    weibo._client.close()
 

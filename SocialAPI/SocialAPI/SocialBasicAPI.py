@@ -9,6 +9,7 @@ import configparser
 from openpyxl import load_workbook, Workbook
 from sqlalchemy import create_engine, MetaData,Table
 from sqlalchemy.dialects.mysql import insert
+from sqlalchemy.sql import select
 from SocialAPI.Logger.BasicLogger import Logger
 import re
 from ..Model import engine
@@ -42,9 +43,10 @@ class SocialBasicAPI(object):
 		r = requests.get(url, params=paramsDict, stream=stream)
 		return r
 
-	async def getAsyncRequest(self,url, paramsDict={}):
+	async def getAsyncRequest(self,url, paramsDict={}, **kwargs):
+		params = dict(paramsDict,**kwargs)
 		async with aiohttp.ClientSession() as session:
-			async with session.get(url, params=paramsDict) as r:
+			async with session.get(url, params=params) as r:
 				return await r.json()
 
 	def encodeElement(self,text):
@@ -66,7 +68,7 @@ class SocialBasicAPI(object):
 			df = df.where(df.applymap(lambda x: False if not x else True), None)
 
 			df=df.applymap(self.encodeElement)
-			df.drop_duplicates(inplace=True)
+			#df.drop_duplicates(inplace=True)
 
 			if dedupColumns:
 				isDuplicated = df.duplicated(dedupColumns)
@@ -205,6 +207,17 @@ class SocialBasicAPI(object):
 		session = Session()
 		return session
 
+	def selectFromDB(self,table,columns=[]):
+		try:
+			conn = engine.connect()
+			s = select([table])
+			result = conn.execute(s)
+			a = result.fetchall()
+		except Exception as e:
+			pass
+		finally:
+			result.close()
+
 	def upsertToDB(self,table,records):
 		"""
 		New feature in SQLAlchemy 1.2
@@ -225,6 +238,14 @@ class SocialBasicAPI(object):
 			else:
 				raise Exception("Record Type {} is wrong".format(type(records)))
 
+			# Check if there is any column not in table
+			"""
+			select_stmt = select([table])
+			result = conn.execute(select_stmt)
+			
+			result.close()
+			"""
+
 			# To do, check if batch upsert is possible
 			for record in records:
 				insert_stmt = insert(table).values(record)
@@ -236,8 +257,12 @@ class SocialBasicAPI(object):
 			conn.close()
 			self.logger.info("{} reocrds have been upsert into table {}".format(len(records),table.__table__))
 		except Exception as e:
-			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
-			exit(1)
+
+			if re.search('Unconsumed column names',str(e)):
+				self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
+			else:
+				self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
+				exit(1)
 
 	def insertToDB(self,dbName,tableName,records):
 

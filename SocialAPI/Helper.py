@@ -27,9 +27,9 @@ class Helper(object):
         p1 = mid[0:1]
         p2 = mid[1:5]
         p3 = mid[5:]
-        s1 = self.__base62_decode(p1)
-        s2 = self.__base62_decode(p2)
-        s3 = self.__base62_decode(p3)
+        s1 = str(self.__base62_decode(p1))
+        s2 = str(self.__base62_decode(p2))
+        s3 = str(self.__base62_decode(p3))
 
         return int(s1+s2+s3)
 

@@ -1,9 +1,9 @@
-import pandas as pd
 from SocialAPI.SocialAPI.WeiboAPI import SocialWeiboAPI
 from SocialAPI.Helper import Helper
 from SocialAPI.Model import Kol
 from pymongo import MongoClient
-import threading
+from multiprocessing import Pool
+
 
 if __name__ == '__main__':
     # Get the last 2000 comments for each post at most
@@ -11,7 +11,7 @@ if __name__ == '__main__':
 
     weibo = SocialWeiboAPI()
     session = weibo.createSession()
-    client = MongoClient()
+    client = weibo._client
     db = client.weibo
     postTable = db.weibo_user_post
     attitudeTable = db.weibo_user_attitude
@@ -21,35 +21,34 @@ if __name__ == '__main__':
     uids = session.query(Kol.uid).all()
     uidList = [uid[0] for uid in uids]
 
+    session.close()
 
     pidList = postTable.find({'uid':{'$in':uidList},'created_at_timestamp':{'$gte':startTimeStamp}},{'id':1})
     pidList = [pid['id'] for pid in pidList]
+
 
     pipeline = [
         {'$match': {'status.id': {'$in': pidList}}},
         {'$group': {'_id': '$status.id', 'since_id': {'$max': '$id'}}}
     ]
-    attitudeList = attitudeTable.aggregate(pipeline)
+    attitudeList = list(attitudeTable.aggregate(pipeline))
 
-    client.close()
-    session.close()
 
-    for attitude in attitudeList:
-        weibo.logger.info('{}/{} is in progress!'.format(attitudeList.index(attitude) + 1, len(attitudeList)))
-        weibo.getAttitudesShow(str(attitude['_id']), since_id = str(attitude['since_id']),count=100)
-    """
-    threads = []
-    weibo.logger.info('{} posts to be updated'.format(len(pidList)))
+    # Append posts with no attitude in DB into list
+    attitudePostList = [attitudePost['_id'] for attitudePost in attitudeList]
     for pid in pidList:
-        t = threading.Thread(target=weibo.getAttitudesShow,args = (str(pid['id']),), kwargs={'count':100,'position':pidList.index(pid)+1,'all':len(pidList)})
-        #weibo.logger.info('{}/{} is in progress!'.format(pidList.index(pid)+1,len(pidList)))
-        #weibo.getAttitudesShow(str(pid['id']),count=100)
-        threads.append(t)
-
-    for t in threads:
-        t.start()
-        while True:
-            if len(threading.enumerate()) < 50:
-                break
+        if pid not in attitudePostList:
+            attitudeList.append(dict(_id=pid,since_id=0))
 
     """
+    for i,attitude in enumerate(attitudeList):
+        weibo.logger.info('{}/{} is in progress!'.format(i + 1, len(attitudeList)))
+        if attitude.get('since_id'):
+            weibo.getAttitudesShow(str(attitude['_id']), client, since_id = str(attitude['since_id']),count=100)
+        else:
+            weibo.getAttitudesShow(str(attitude['_id']), client, count=100)
+    """
+    weibo.doParallel('attitude',attitudeList)
+    weibo._client.close()
+
+
