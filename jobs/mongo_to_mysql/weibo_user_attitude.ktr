@@ -8,6 +8,16 @@
     <trans_status>0</trans_status>
     <directory>/</directory>
     <parameters>
+      <parameter>
+        <name>endTime</name>
+        <default_value />
+        <description />
+      </parameter>
+      <parameter>
+        <name>startTime</name>
+        <default_value />
+        <description />
+      </parameter>
     </parameters>
     <log>
       <trans-log-table>
@@ -442,7 +452,7 @@
     <created_user>-</created_user>
     <created_date>2018/06/23 21:26:04.245</created_date>
     <modified_user>-</modified_user>
-    <modified_date>2018/06/25 23:03:00.188</modified_date>
+    <modified_date>2018/07/11 21:24:40.405</modified_date>
     <key_for_session_key>H4sIAAAAAAAAAAMAAAAAAAAAAAA=</key_for_session_key>
     <is_key_private>N</is_key_private>
   </info>
@@ -530,11 +540,6 @@
       <enabled>Y</enabled>
     </hop>
     <hop>
-      <from>Select values for Attitude</from>
-      <to>weibo_user_attitude</to>
-      <enabled>Y</enabled>
-    </hop>
-    <hop>
       <from>MongoDB Input</from>
       <to>Select values for User</to>
       <enabled>Y</enabled>
@@ -544,7 +549,104 @@
       <to>weibo_user_info</to>
       <enabled>Y</enabled>
     </hop>
+    <hop>
+      <from>Select values for Attitude</from>
+      <to>weibo_user_attitude</to>
+      <enabled>Y</enabled>
+    </hop>
   </order>
+  <step>
+    <name>weibo_user_attitude</name>
+    <type>InsertUpdate</type>
+    <description />
+    <distribute>Y</distribute>
+    <custom_distribution />
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name />
+    </partitioning>
+    <connection>newSocialDB</connection>
+    <commit>10000</commit>
+    <update_bypassed>N</update_bypassed>
+    <lookup>
+      <schema />
+      <table>weibo_user_attitude</table>
+      <key>
+        <name>aid</name>
+        <field>aid</field>
+        <condition>=</condition>
+        <name2 />
+      </key>
+      <value>
+        <name>attitude</name>
+        <rename>attitude</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>attitude_mask</name>
+        <rename>attitude_mask</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>attitude_type</name>
+        <rename>attitude_type</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>created_at</name>
+        <rename>created_at</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>last_attitude</name>
+        <rename>last_attitude</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>source</name>
+        <rename>source</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>source_allowclick</name>
+        <rename>source_allowclick</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>source_type</name>
+        <rename>source_type</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>pid</name>
+        <rename>pid</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>uid</name>
+        <rename>uid</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>aid</name>
+        <rename>aid</rename>
+        <update>Y</update>
+      </value>
+    </lookup>
+    <cluster_schema />
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>608</xloc>
+      <yloc>48</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
   <step>
     <name>MongoDB Input</name>
     <type>MongoDbInput</type>
@@ -563,7 +665,7 @@
     <fields_name />
     <collection>weibo_user_attitude</collection>
     <json_field_name>json</json_field_name>
-    <json_query />
+    <json_query>{'updatedTime':{'$gte':'%%startTime%%','$lte':'%%endTime%%'}}</json_query>
     <auth_database />
     <auth_user />
     <auth_password>Encrypted </auth_password>
@@ -1285,49 +1387,6 @@
     <GUI>
       <xloc>384</xloc>
       <yloc>224</yloc>
-      <draw>Y</draw>
-    </GUI>
-  </step>
-  <step>
-    <name>weibo_user_attitude</name>
-    <type>TableOutput</type>
-    <description />
-    <distribute>Y</distribute>
-    <custom_distribution />
-    <copies>1</copies>
-    <partitioning>
-      <method>none</method>
-      <schema_name />
-    </partitioning>
-    <connection>newSocialDB</connection>
-    <schema />
-    <table>weibo_user_attitude</table>
-    <commit>10000</commit>
-    <truncate>Y</truncate>
-    <ignore_errors>N</ignore_errors>
-    <use_batch>Y</use_batch>
-    <specify_fields>N</specify_fields>
-    <partitioning_enabled>N</partitioning_enabled>
-    <partitioning_field />
-    <partitioning_daily>N</partitioning_daily>
-    <partitioning_monthly>Y</partitioning_monthly>
-    <tablename_in_field>N</tablename_in_field>
-    <tablename_field />
-    <tablename_in_table>Y</tablename_in_table>
-    <return_keys>N</return_keys>
-    <return_field />
-    <fields>
-    </fields>
-    <cluster_schema />
-    <remotesteps>
-      <input>
-      </input>
-      <output>
-      </output>
-    </remotesteps>
-    <GUI>
-      <xloc>600</xloc>
-      <yloc>100</yloc>
       <draw>Y</draw>
     </GUI>
   </step>

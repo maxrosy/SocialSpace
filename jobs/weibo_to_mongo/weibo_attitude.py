@@ -1,8 +1,8 @@
 from SocialAPI.SocialAPI.WeiboAPI import SocialWeiboAPI
 from SocialAPI.Helper import Helper
 from SocialAPI.Model import Kol
-from pymongo import MongoClient
-from multiprocessing import Pool
+import pandas as pd
+import numpy as np
 
 
 if __name__ == '__main__':
@@ -16,39 +16,35 @@ if __name__ == '__main__':
     postTable = db.weibo_user_post
     attitudeTable = db.weibo_user_attitude
 
-    startTime = weibo.getStrTime(-1)
+    startTime = weibo.getStrTime(-7)
     startTimeStamp = weibo.getTimeStamp(startTime)
     uids = session.query(Kol.uid).all()
     uidList = [uid[0] for uid in uids]
 
     session.close()
 
-    pidList = postTable.find({'uid':{'$in':uidList},'created_at_timestamp':{'$gte':startTimeStamp}},{'id':1})
-    pidList = [pid['id'] for pid in pidList]
+    pidList = list(postTable.find({'uid':{'$in':uidList},'created_at_timestamp':{'$gte':startTimeStamp}},{'id':1,'attitudes_count':1}))
+    pList = [pid['id'] for pid in pidList]
 
 
+    df_attitudesInPost = pd.DataFrame(pidList)
     pipeline = [
-        {'$match': {'status.id': {'$in': pidList}}},
-        {'$group': {'_id': '$status.id', 'since_id': {'$max': '$id'}}}
+        {'$match': {'status.id': {'$in': pList}}},
+        {'$group': {'_id': '$status.id', 'since_id': {'$max': '$id'},'count':{'$sum':1}}}
     ]
     attitudeList = list(attitudeTable.aggregate(pipeline))
 
+    df_attitudesInAttitude = pd.DataFrame(attitudeList)
 
-    # Append posts with no attitude in DB into list
-    attitudePostList = [attitudePost['_id'] for attitudePost in attitudeList]
-    for pid in pidList:
-        if pid not in attitudePostList:
-            attitudeList.append(dict(_id=pid,since_id=0))
 
-    """
-    for i,attitude in enumerate(attitudeList):
-        weibo.logger.info('{}/{} is in progress!'.format(i + 1, len(attitudeList)))
-        if attitude.get('since_id'):
-            weibo.getAttitudesShow(str(attitude['_id']), client, since_id = str(attitude['since_id']),count=100)
-        else:
-            weibo.getAttitudesShow(str(attitude['_id']), client, count=100)
-    """
-    weibo.doParallel('attitude',attitudeList)
+    df = df_attitudesInPost.merge(df_attitudesInAttitude,left_on='id',right_on='_id',how='left')
+
+    df['since_id'] = df['since_id'].replace(np.nan,0)
+    df['count'] = df['count'].replace(np.nan,0)
+    df = df[df['attitudes_count']>df['count']]
+
+    attitudePostList = df[['id','since_id']].to_dict('records')
+    weibo.doParallel('attitude',attitudePostList)
     weibo._client.close()
 
 

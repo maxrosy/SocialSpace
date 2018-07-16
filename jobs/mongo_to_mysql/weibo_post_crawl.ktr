@@ -1,12 +1,23 @@
 <transformation>
   <info>
-    <name>weibo_user_tag</name>
+    <name>weibo_post_crawl</name>
     <description />
     <extended_description />
     <trans_version />
     <trans_type>Normal</trans_type>
+    <trans_status>0</trans_status>
     <directory>/</directory>
     <parameters>
+      <parameter>
+        <name>endTime</name>
+        <default_value />
+        <description />
+      </parameter>
+      <parameter>
+        <name>startTime</name>
+        <default_value />
+        <description />
+      </parameter>
     </parameters>
     <log>
       <trans-log-table>
@@ -439,10 +450,10 @@
     <clusterschemas>
     </clusterschemas>
     <created_user>-</created_user>
-    <created_date>2018/06/22 22:25:48.593</created_date>
+    <created_date>2018/07/12 20:41:57.789</created_date>
     <modified_user>-</modified_user>
-    <modified_date>2018/07/11 21:15:21.363</modified_date>
-    <key_for_session_key>H4sIAAAAAAAAAAMAAAAAAAAAAAA=</key_for_session_key>
+    <modified_date>2018/07/12 21:12:13.332</modified_date>
+    <key_for_session_key />
     <is_key_private>N</is_key_private>
   </info>
   <notepads>
@@ -530,7 +541,7 @@
     </hop>
     <hop>
       <from>Select values</from>
-      <to>Table output</to>
+      <to>Insert / Update</to>
       <enabled>Y</enabled>
     </hop>
   </order>
@@ -550,9 +561,9 @@
     <use_all_replica_members>N</use_all_replica_members>
     <db_name>weibo</db_name>
     <fields_name />
-    <collection>weibo_user_tag</collection>
+    <collection>weibo_post_crawl</collection>
     <json_field_name>json</json_field_name>
-    <json_query />
+    <json_query>{'updatedTime':{'$gte':'%%startTime%%','$lte':'%%endTime%%'}}</json_query>
     <auth_database />
     <auth_user />
     <auth_password>Encrypted </auth_password>
@@ -567,13 +578,53 @@
     <execute_for_each_row>N</execute_for_each_row>
     <mongo_fields>
       <mongo_field>
-        <field_name>id</field_name>
-        <field_path>$.id</field_path>
+        <field_name>uid</field_name>
+        <field_path>$.uid</field_path>
         <field_type>BigNumber</field_type>
       </mongo_field>
       <mongo_field>
-        <field_name>tags</field_name>
-        <field_path>$.tags</field_path>
+        <field_name>updatedTime</field_name>
+        <field_path>$.updatedTime</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>like</field_name>
+        <field_path>$.like</field_path>
+        <field_type>Integer</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>forward</field_name>
+        <field_path>$.forward</field_path>
+        <field_type>Integer</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>crawlDate</field_name>
+        <field_path>$.crawlDate</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>createdTime</field_name>
+        <field_path>$.createdTime</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>impression</field_name>
+        <field_path>$.impression</field_path>
+        <field_type>Integer</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>comment</field_name>
+        <field_path>$.comment</field_path>
+        <field_type>Integer</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>pid</field_name>
+        <field_path>$.pid</field_path>
+        <field_type>BigNumber</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>_id</field_name>
+        <field_path>$._id</field_path>
         <field_type>String</field_type>
       </mongo_field>
     </mongo_fields>
@@ -585,8 +636,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>200</xloc>
-      <yloc>100</yloc>
+      <xloc>256</xloc>
+      <yloc>160</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -603,12 +654,32 @@
     </partitioning>
     <fields>
       <field>
-        <name>tags</name>
-        <rename>tags</rename>
+        <name>uid</name>
+        <rename>uid</rename>
       </field>
       <field>
-        <name>id</name>
-        <rename>uid</rename>
+        <name>like</name>
+        <rename>like</rename>
+      </field>
+      <field>
+        <name>forward</name>
+        <rename>forward</rename>
+      </field>
+      <field>
+        <name>crawlDate</name>
+        <rename>crawlDate</rename>
+      </field>
+      <field>
+        <name>impression</name>
+        <rename>impression</rename>
+      </field>
+      <field>
+        <name>comment</name>
+        <rename>comment</rename>
+      </field>
+      <field>
+        <name>pid</name>
+        <rename>pid</rename>
       </field>
       <select_unspecified>N</select_unspecified>
     </fields>
@@ -621,13 +692,13 @@
     </remotesteps>
     <GUI>
       <xloc>400</xloc>
-      <yloc>100</yloc>
+      <yloc>160</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
   <step>
-    <name>Table output</name>
-    <type>TableOutput</type>
+    <name>Insert / Update</name>
+    <type>InsertUpdate</type>
     <description />
     <distribute>Y</distribute>
     <custom_distribution />
@@ -637,24 +708,59 @@
       <schema_name />
     </partitioning>
     <connection>newSocialDB</connection>
-    <schema />
-    <table>weibo_user_tag</table>
     <commit>10000</commit>
-    <truncate>Y</truncate>
-    <ignore_errors>N</ignore_errors>
-    <use_batch>Y</use_batch>
-    <specify_fields>N</specify_fields>
-    <partitioning_enabled>N</partitioning_enabled>
-    <partitioning_field />
-    <partitioning_daily>N</partitioning_daily>
-    <partitioning_monthly>Y</partitioning_monthly>
-    <tablename_in_field>N</tablename_in_field>
-    <tablename_field />
-    <tablename_in_table>Y</tablename_in_table>
-    <return_keys>N</return_keys>
-    <return_field />
-    <fields>
-    </fields>
+    <update_bypassed>N</update_bypassed>
+    <lookup>
+      <schema />
+      <table>weibo_post_crawl</table>
+      <key>
+        <name>crawlDate</name>
+        <field>crawlDate</field>
+        <condition>=</condition>
+        <name2 />
+      </key>
+      <key>
+        <name>pid</name>
+        <field>pid</field>
+        <condition>=</condition>
+        <name2 />
+      </key>
+      <value>
+        <name>uid</name>
+        <rename>uid</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>like</name>
+        <rename>like</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>forward</name>
+        <rename>forward</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>crawlDate</name>
+        <rename>crawlDate</rename>
+        <update>N</update>
+      </value>
+      <value>
+        <name>impression</name>
+        <rename>impression</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>comment</name>
+        <rename>comment</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>pid</name>
+        <rename>pid</rename>
+        <update>N</update>
+      </value>
+    </lookup>
     <cluster_schema />
     <remotesteps>
       <input>
@@ -663,8 +769,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>544</xloc>
-      <yloc>96</yloc>
+      <xloc>576</xloc>
+      <yloc>176</yloc>
       <draw>Y</draw>
     </GUI>
   </step>

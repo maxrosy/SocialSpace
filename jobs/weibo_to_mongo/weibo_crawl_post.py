@@ -4,7 +4,7 @@ from SocialAPI.Helper import Helper
 from SocialAPI.Crawler import WeiBoCrawler
 from SocialAPI.Model import Kol
 import time
-import os
+from datetime import datetime
 from pymongo import MongoClient
 
 if __name__ == '__main__':
@@ -53,9 +53,9 @@ if __name__ == '__main__':
                            'crawlDate':time.strftime("%Y-%m-%d", time.localtime())})
 
     for post in result:
-        post['updatedTime'] = int(time.time())
+        post['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')#int(time.time())
         res = crawlTable.update({'pid':post['pid'],'crawlDate':time.strftime("%Y-%m-%d", time.localtime())},
-                                {'$set': post, '$setOnInsert': {'createdTime': int(time.time())}}, upsert=True)
+                                {'$set': post, '$setOnInsert': {'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}}, upsert=True)
     client.close()
     session.close()
 
