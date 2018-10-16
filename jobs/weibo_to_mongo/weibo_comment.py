@@ -32,13 +32,18 @@ if __name__ == '__main__':
     ]
     commentList = list(commentTable.aggregate(pipeline))
 
-    df_commentsInComment = pd.DataFrame(commentList)
 
-    df = df_commentsInPost.merge(df_commentsInComment, left_on='id', right_on='_id', how='left')
+    if commentList:
+        df_commentsInComment = pd.DataFrame(commentList)
+        df = df_commentsInPost.merge(df_commentsInComment, left_on='id', right_on='_id', how='left')
+        df['since_id'] = df['since_id'].replace(np.nan, 0)
+        df['count'] = df['count'].replace(np.nan, 0)
+        df = df[df['comments_count'] > df['count']]
+    else:
+        df = df_commentsInPost
+        df['since_id'] = 0
 
-    df['since_id'] = df['since_id'].replace(np.nan, 0)
-    df['count'] = df['count'].replace(np.nan, 0)
-    df = df[df['comments_count'] > df['count']]
+
 
     commentPostList = df[['id', 'since_id']].to_dict('records')
 
