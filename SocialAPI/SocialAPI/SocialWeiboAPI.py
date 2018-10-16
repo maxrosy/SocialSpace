@@ -3,6 +3,9 @@ from .SocialBasicAPI import SocialBasicAPI
 import sys, os
 import time, datetime
 import hashlib
+import asyncio
+import uvloop
+from pymongo import MongoClient
 from urllib import parse
 from zipfile import ZipFile
 from functools import reduce
@@ -259,10 +262,15 @@ class SocialWeiboAPI(SocialBasicAPI):
 			:param x:[id,{},{}...]
 			:return: [{'pid':id,},{'pid':id,}...]
 			"""
-			pid = x.pop(0)
-			for item in x:
-				item['pid'] = pid
-			return x
+			try:
+				pid = x.pop(0)
+				for item in x:
+					item['pid'] = pid
+				return x
+
+			except Exception as e:
+				self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
+				return [None]
 
 		self.logger.info("Calling getStatusesUserTimelineOther with uid: {}".format(uid))
 
@@ -335,7 +343,10 @@ class SocialWeiboAPI(SocialBasicAPI):
 			self.logger.info("Totally {} records in {} page(s)".format(len(df_post_cleaned), page - 1))
 			self.upsertToDB(PostStatus, df_post_cleaned)
 			if not df_url_objects.empty:
-				df_url_objects_cleaned = self.cleanRecords(df_url_objects, utcTimeCovert=False)
+				dropColumns2 = []
+				if 'user' in df_url_objects.columns:
+					dropColumns2.append('user')
+				df_url_objects_cleaned = self.cleanRecords(df_url_objects, dropColumns=dropColumns2,utcTimeCovert=False)
 				self.upsertToDB(Media,df_url_objects_cleaned)
 
 			return df_post_cleaned
@@ -707,6 +718,8 @@ class SocialWeiboAPI(SocialBasicAPI):
 					if result.get('error_code') is not None:
 						if result.get('error_code') == 20101:
 							self.logger.warning("Post {} has been removed!".format(mid))
+						elif result.get('error_code') == 23202:
+							self.logger.error(result.get('error'))
 						else:
 							raise Exception(
 								'Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
@@ -726,7 +739,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 					df_attitude['pid'] = mid
 
 					df_list.append(df_attitude)
-					self.logger.info("Totally {} records in page {}".format(len(df_attitude), page))
+					#self.logger.info("Totally {} records in page {}".format(len(df_attitude), page))
 
 				except StopIteration:
 					self.logger.info("Totally {} page(s)".format(page - 1))
@@ -810,7 +823,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 						df_comment['source'] = df_comment['source'].apply(self.matchPostSource)
 
 					df_list.append(df_comment)
-					self.logger.info("Totally {} records in page {}".format(len(df_comment), page))
+					#self.logger.info("Totally {} records in page {}".format(len(df_comment), page))
 
 				except StopIteration:
 					self.logger.info("Totally {} page(s)".format(page - 1))
@@ -885,4 +898,3 @@ class SocialWeiboAPI(SocialBasicAPI):
 		except Exception as e:
 			self.logger.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
 			exit(1)
-

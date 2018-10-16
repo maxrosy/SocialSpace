@@ -452,8 +452,8 @@
     <created_user>-</created_user>
     <created_date>2018/07/12 20:41:57.789</created_date>
     <modified_user>-</modified_user>
-    <modified_date>2018/07/12 21:12:13.332</modified_date>
-    <key_for_session_key />
+    <modified_date>2018/08/07 08:09:55.421</modified_date>
+    <key_for_session_key>H4sIAAAAAAAAAAMAAAAAAAAAAAA=</key_for_session_key>
     <is_key_private>N</is_key_private>
   </info>
   <notepads>
@@ -465,7 +465,7 @@
     <access>Native</access>
     <database>socialdb</database>
     <port>3306</port>
-    <username>pandas</username>
+    <username>pandas_kettle</username>
     <password>Encrypted 2be98afc86aa7f294aa17aa71cdd38f99</password>
     <servername />
     <data_tablespace />
@@ -545,6 +545,84 @@
       <enabled>Y</enabled>
     </hop>
   </order>
+  <step>
+    <name>Insert / Update</name>
+    <type>InsertUpdate</type>
+    <description />
+    <distribute>Y</distribute>
+    <custom_distribution />
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name />
+    </partitioning>
+    <connection>newSocialDB</connection>
+    <commit>10000</commit>
+    <update_bypassed>N</update_bypassed>
+    <lookup>
+      <schema />
+      <table>weibo_post_crawl</table>
+      <key>
+        <name>crawlDate</name>
+        <field>crawlDate</field>
+        <condition>=</condition>
+        <name2 />
+      </key>
+      <key>
+        <name>pid</name>
+        <field>pid</field>
+        <condition>=</condition>
+        <name2 />
+      </key>
+      <value>
+        <name>uid</name>
+        <rename>uid</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>like</name>
+        <rename>like</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>forward</name>
+        <rename>forward</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>crawlDate</name>
+        <rename>crawlDate</rename>
+        <update>N</update>
+      </value>
+      <value>
+        <name>impression</name>
+        <rename>impression</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>comment</name>
+        <rename>comment</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>pid</name>
+        <rename>pid</rename>
+        <update>N</update>
+      </value>
+    </lookup>
+    <cluster_schema />
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>576</xloc>
+      <yloc>176</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
   <step>
     <name>MongoDB Input</name>
     <type>MongoDbInput</type>
@@ -693,84 +771,6 @@
     <GUI>
       <xloc>400</xloc>
       <yloc>160</yloc>
-      <draw>Y</draw>
-    </GUI>
-  </step>
-  <step>
-    <name>Insert / Update</name>
-    <type>InsertUpdate</type>
-    <description />
-    <distribute>Y</distribute>
-    <custom_distribution />
-    <copies>1</copies>
-    <partitioning>
-      <method>none</method>
-      <schema_name />
-    </partitioning>
-    <connection>newSocialDB</connection>
-    <commit>10000</commit>
-    <update_bypassed>N</update_bypassed>
-    <lookup>
-      <schema />
-      <table>weibo_post_crawl</table>
-      <key>
-        <name>crawlDate</name>
-        <field>crawlDate</field>
-        <condition>=</condition>
-        <name2 />
-      </key>
-      <key>
-        <name>pid</name>
-        <field>pid</field>
-        <condition>=</condition>
-        <name2 />
-      </key>
-      <value>
-        <name>uid</name>
-        <rename>uid</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>like</name>
-        <rename>like</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>forward</name>
-        <rename>forward</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>crawlDate</name>
-        <rename>crawlDate</rename>
-        <update>N</update>
-      </value>
-      <value>
-        <name>impression</name>
-        <rename>impression</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>comment</name>
-        <rename>comment</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>pid</name>
-        <rename>pid</rename>
-        <update>N</update>
-      </value>
-    </lookup>
-    <cluster_schema />
-    <remotesteps>
-      <input>
-      </input>
-      <output>
-      </output>
-    </remotesteps>
-    <GUI>
-      <xloc>576</xloc>
-      <yloc>176</yloc>
       <draw>Y</draw>
     </GUI>
   </step>

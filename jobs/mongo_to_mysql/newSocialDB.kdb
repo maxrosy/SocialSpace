@@ -5,7 +5,7 @@
     <access>Native</access>
     <database>socialdb</database>
     <port>3306</port>
-    <username>pandas</username>
+    <username>pandas_kettle</username>
     <password>Encrypted 2be98afc86aa7f294aa17aa71cdd38f99</password>
     <servername/>
     <data_tablespace/>
