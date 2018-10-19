@@ -13,6 +13,7 @@ if __name__ == '__main__':
     session = weibo.createSession()
     uids = session.query(Kol.uid).all()
     uidList = [str(uid[0]) for uid in uids]
+
     uidGroup = [','.join(uidList[i:i + 100]) for i in range(0, len(uidList), 100)]
 
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())

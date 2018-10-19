@@ -59,3 +59,6 @@ class Attitude(Base):
 """
 class Kol(Base):
     __table__ = Table('weibo_kol',metadata,autoload=True)
+
+class WeixinAccount(Base):
+    __table__ = Table('weixin_account',metadata,autoload=True)
