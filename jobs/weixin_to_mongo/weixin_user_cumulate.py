@@ -13,8 +13,7 @@ if __name__ == '__main__':
 
     session = weixin.createSession()
     accountInfo = session.query(WeixinAccount.appid,WeixinAccount.appkey,WeixinAccount.account_name).all()
-    begin_date = weixin.getStrTime(-1).split(' ')[0]
-    end_date = weixin.getStrTime(-1).split(' ')[0]
+
 
     for account in accountInfo:
         for n in range(1):

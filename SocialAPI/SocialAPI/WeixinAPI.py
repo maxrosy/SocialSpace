@@ -42,6 +42,7 @@ class SocialWeixinAPI(SocialBasicAPI):
             class_name = self.__class__.__name__
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
+            db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': uids,'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
             self.logger.error(msg)
 
     def getUserCumulate(self, access_token, begin_date, end_date, account_name):
@@ -76,23 +77,38 @@ class SocialWeixinAPI(SocialBasicAPI):
         finally:
             client.close()
 
-    def getArticleSummary(self, access_token, begin_date, end_date, account_name):
-        url = 'https://api.weixin.qq.com/datacube/getarticlesummary?access_token={}'.format(access_token)
+    def getArticleTotal(self, access_token, begin_date, end_date, account_name):
+        url = 'https://api.weixin.qq.com/datacube/getarticletotal?access_token={}'.format(access_token)
         data = {'begin_date': begin_date, 'end_date': end_date}
         postData = json.dumps(data)
         try:
-            self.logger.info('Calling getArticleSummary API for account {} from {} to {}'.format(account_name, begin_date, end_date))
+            self.logger.info('Calling getArticleTotal API for account {} from {} to {}'.format(account_name, begin_date, end_date))
+            client = self._client
+            db = client.weixin
+            postTable = db.weixin_post
             r = self.postRequest(url, postData)
             res = r.json()
             if res.get('errcode'):
                 raise Exception(res.get('errmsg'))
-            return res
+            for post in res['list']:
+                post['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                post['account_name'] = account_name
+                result = postTable.update({'msgid': post['msgid'], 'ref_date': post['ref_date']},
+                                          {'$set': post, '$setOnInsert': {
+                                              'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
+                                          upsert=True)
+
+            return
 
         except Exception as e:
             class_name = self.__class__.__name__
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
+            db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': uids,'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
             self.logger.error(msg)
+
+        finally:
+            client.close()
 
     def getUpstreamMsg(self, access_token, begin_date, end_date, account_name):
         url = 'https://api.weixin.qq.com/datacube/getupstreammsg?access_token={}'.format(access_token)
@@ -121,6 +137,7 @@ class SocialWeixinAPI(SocialBasicAPI):
             class_name = self.__class__.__name__
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
+            db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': uids,'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
             self.logger.error(msg)
         finally:
             client.close()
