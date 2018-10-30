@@ -22,6 +22,9 @@ class SocialWeixinAPI(SocialBasicAPI):
             url_ackey = 'http://api.woaap.com/api/ackey'
             paramsDict = {'appid':appid,'appkey':appkey}
 
+            client = self._client
+            db = client.weixin
+
             r = self.getRequest(url_ackey,paramsDict)
             res = r.json()
             if res.get('errcode') != 0:
@@ -42,8 +45,11 @@ class SocialWeixinAPI(SocialBasicAPI):
             class_name = self.__class__.__name__
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
-            db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': uids,'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
+            db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': '','createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
             self.logger.error(msg)
+
+        finally:
+            client.close()
 
     def getUserCumulate(self, access_token, begin_date, end_date, account_name):
         url = 'https://api.weixin.qq.com/datacube/getusercumulate?access_token={}'.format(access_token)
@@ -73,7 +79,7 @@ class SocialWeixinAPI(SocialBasicAPI):
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
             self.logger.error(msg)
-            db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': uids,'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
+            db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': account_name+','+begin_date+','+end_date,'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
         finally:
             client.close()
 
@@ -104,7 +110,7 @@ class SocialWeixinAPI(SocialBasicAPI):
             class_name = self.__class__.__name__
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
-            db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': uids,'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
+            db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': account_name+','+begin_date+','+end_date,'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
             self.logger.error(msg)
 
         finally:
@@ -137,7 +143,7 @@ class SocialWeixinAPI(SocialBasicAPI):
             class_name = self.__class__.__name__
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
-            db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': uids,'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
+            db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': account_name+','+begin_date+','+end_date,'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
             self.logger.error(msg)
         finally:
             client.close()

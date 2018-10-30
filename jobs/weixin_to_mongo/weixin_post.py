@@ -10,10 +10,11 @@ if __name__ == '__main__':
 
     session = weixin.createSession()
     accountInfo = session.query(WeixinAccount.appid,WeixinAccount.appkey,WeixinAccount.account_name).all()
-    #first_date = datetime.strptime("2018-10-28", "%Y-%m-%d")
-    #last_date = datetime.strptime("2018-10-29", "%Y-%m-%d")
-    first_date = datetime.date.today() + datetime.timedelta(-1)
-    last_date = datetime.date.today() + datetime.timedelta(-1)
+
+    #first_date = datetime.datetime.strptime("2018-10-22", "%Y-%m-%d")
+    #last_date = datetime.datetime.strptime("2018-10-29", "%Y-%m-%d")
+    first_date = datetime.date.today()+datetime.timedelta(-7)
+    last_date = datetime.date.today()+datetime.timedelta(-1)
 
     for account in accountInfo:
         accessToken = None
@@ -22,8 +23,9 @@ if __name__ == '__main__':
             begin_date = run_date.strftime("%Y-%m-%d")
             end_date = begin_date
             if accessToken is None:
-                accessToken = weixin.getAccessTokenFromController(account[0],account[1])
-            res = weixin.getUserCumulate(accessToken,begin_date,end_date,account[2])
+                accessToken = weixin.getAccessTokenFromController(account[0], account[1])
+            res = weixin.getArticleTotal(accessToken, begin_date, end_date, account[2])
             run_date = run_date + datetime.timedelta(days=1)
+
 
     session.close()
