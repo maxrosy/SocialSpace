@@ -7,6 +7,7 @@ import sys, time
 import json
 from datetime import datetime
 from multiprocessing import Pool
+import urllib
 
 
 class SocialWeixinAPI(SocialBasicAPI):
@@ -15,14 +16,21 @@ class SocialWeixinAPI(SocialBasicAPI):
         super(SocialWeixinAPI, self).__init__()
         self.__apiToken = self.cfp.get('api', 'weibo')
         self.__rootPath = Helper().getRootPath()
-        self._client = MongoClient()
+        self.__user = urllib.parse.quote_plus(self.cfp.get('mongodb_weixin','user'))
+        self.__pwd = urllib.parse.quote_plus(self.cfp.get('mongodb_weixin','pwd'))
+        self.__host = self.cfp.get('mongodb','host')
+        self.__port = self.cfp.get('mongodb','port')
+
+        self.__uri = 'mongodb://' + self.__user + ':' + self.__pwd + '@' + self.__host + ':' + self.__port + '/' + 'weixin'
+        self.client = MongoClient(self.__uri)
+        #self.client = MongoClient()
 
     def getAccessTokenFromController(self,appid,appkey):
         try:
             url_ackey = 'http://api.woaap.com/api/ackey'
             paramsDict = {'appid':appid,'appkey':appkey}
 
-            client = self._client
+            client = self.client
             db = client.weixin
 
             r = self.getRequest(url_ackey,paramsDict)
@@ -57,7 +65,7 @@ class SocialWeixinAPI(SocialBasicAPI):
         postData = json.dumps(data)
         try:
             self.logger.info('Calling getUserCimulate API for account {} from {} to {}'.format(account_name,begin_date,end_date))
-            client = self._client
+            client = self.client
             db = client.weixin
             userTable = db.weixin_user_cumulate
 
@@ -89,7 +97,7 @@ class SocialWeixinAPI(SocialBasicAPI):
         postData = json.dumps(data)
         try:
             self.logger.info('Calling getArticleTotal API for account {} from {} to {}'.format(account_name, begin_date, end_date))
-            client = self._client
+            client = self.client
             db = client.weixin
             postTable = db.weixin_post
             r = self.postRequest(url, postData)
@@ -122,7 +130,7 @@ class SocialWeixinAPI(SocialBasicAPI):
         postData = json.dumps(data)
         try:
             self.logger.info('Calling getUpstreamMsg API for account {} from {} to {}'.format(account_name, begin_date, end_date))
-            client = self._client
+            client = self.client
             db = client.weixin
             msgTable = db.weixin_upstream_msg
             r = self.postRequest(url, postData)

@@ -6,6 +6,7 @@ from SocialAPI.Helper import Helper
 import sys, time
 from datetime import datetime
 from multiprocessing import Pool
+import urllib
 
 def doCommentParellelWrapper(*args,**kwargs):
     w = SocialWeiboAPI()
@@ -26,7 +27,15 @@ class SocialWeiboAPI(SocialBasicAPI):
         super(SocialWeiboAPI, self).__init__()
         self.__apiToken = self.cfp.get('api', 'weibo')
         self.__rootPath = Helper().getRootPath()
-        self._client = MongoClient()
+        self.__user = urllib.parse.quote_plus(self.cfp.get('mongodb_weibo', 'user'))
+        self.__pwd = urllib.parse.quote_plus(self.cfp.get('mongodb_weibo', 'pwd'))
+        self.__host = self.cfp.get('mongodb', 'host')
+        self.__port = self.cfp.get('mongodb', 'port')
+
+        self.__uri = 'mongodb://' + self.__user + ':' + self.__pwd + '@' + self.__host + ':' + self.__port + '/' + 'weibo'
+        self.client = MongoClient(self.__uri)
+        #self.client = MongoClient()
+
 
     async def getUserShowBatchOther(self, uids):
         """
@@ -38,7 +47,7 @@ class SocialWeiboAPI(SocialBasicAPI):
         """
         self.logger.info("Calling getUserShowBatchOther with uids: {}".format(uids))
         try:
-            client = self._client
+            client = self.client
             db = client.weibo
             userTable = db.weibo_user_info
 
@@ -151,7 +160,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             url = 'https://c.api.weibo.com/2/statuses/user_timeline/other.json'
 
 
-            client = MongoClient()
+            client = self.client
             db = client.weibo
             postTable = db.weibo_user_post
 
@@ -213,7 +222,7 @@ class SocialWeiboAPI(SocialBasicAPI):
         """
         self.logger.info("Calling getUsersCountBatch with uids: {}".format(uids))
         try:
-            client = MongoClient()
+            client = self.client
             db = client.weibo
             userGrowthTable = db.weibo_user_growth
 
@@ -268,7 +277,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             paramsDict['access_token'] = self.__apiToken
             paramsDict['id'] = mid
 
-            client = self._client
+            client = self.client
             db = client.weibo
             commentTable = db.weibo_user_comment
 
@@ -354,7 +363,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             paramsDict['access_token'] = self.__apiToken
             paramsDict['id'] = mid
 
-            client = self._client
+            client = self.client
             db = client.weibo
             attitudeTable = db.weibo_user_attitude
 
@@ -432,7 +441,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             paramsDict['access_token'] = self.__apiToken
             paramsDict['id'] = mid
 
-            client = self._client
+            client = self.client
             db = client.weibo
             repostTable = db.weibo_user_repost2
 

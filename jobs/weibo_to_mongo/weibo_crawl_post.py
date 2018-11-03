@@ -12,8 +12,7 @@ if __name__ == '__main__':
 
     weibo = SocialWeiboAPI()
     session = weibo.createSession()
-
-    client = MongoClient()
+    client = weibo.client
     db = client.weibo
     crawlTable = db.weibo_post_crawl
     postTable = db.weibo_user_post

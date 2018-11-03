@@ -9,7 +9,7 @@ if __name__ == '__main__':
 
     weibo = SocialWeiboAPI()
     session = weibo.createSession()
-    client = weibo._client
+    client = weibo.client
     db = client.weibo
     postTable = db.weibo_user_post
     repostTable = db.weibo_user_repost2
