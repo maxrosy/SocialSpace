@@ -452,7 +452,7 @@
     <created_user>-</created_user>
     <created_date>2018/06/23 21:26:04.245</created_date>
     <modified_user>-</modified_user>
-    <modified_date>2018/07/11 21:24:40.405</modified_date>
+    <modified_date>2018/11/03 13:00:15.654</modified_date>
     <key_for_session_key>H4sIAAAAAAAAAAMAAAAAAAAAAAA=</key_for_session_key>
     <is_key_private>N</is_key_private>
   </info>
@@ -465,7 +465,7 @@
     <access>Native</access>
     <database>socialdb</database>
     <port>3306</port>
-    <username>pandas</username>
+    <username>pandas_kettle</username>
     <password>Encrypted 2be98afc86aa7f294aa17aa71cdd38f99</password>
     <servername />
     <data_tablespace />
@@ -556,98 +556,6 @@
     </hop>
   </order>
   <step>
-    <name>weibo_user_attitude</name>
-    <type>InsertUpdate</type>
-    <description />
-    <distribute>Y</distribute>
-    <custom_distribution />
-    <copies>1</copies>
-    <partitioning>
-      <method>none</method>
-      <schema_name />
-    </partitioning>
-    <connection>newSocialDB</connection>
-    <commit>10000</commit>
-    <update_bypassed>N</update_bypassed>
-    <lookup>
-      <schema />
-      <table>weibo_user_attitude</table>
-      <key>
-        <name>aid</name>
-        <field>aid</field>
-        <condition>=</condition>
-        <name2 />
-      </key>
-      <value>
-        <name>attitude</name>
-        <rename>attitude</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>attitude_mask</name>
-        <rename>attitude_mask</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>attitude_type</name>
-        <rename>attitude_type</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>created_at</name>
-        <rename>created_at</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>last_attitude</name>
-        <rename>last_attitude</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>source</name>
-        <rename>source</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>source_allowclick</name>
-        <rename>source_allowclick</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>source_type</name>
-        <rename>source_type</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>pid</name>
-        <rename>pid</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>uid</name>
-        <rename>uid</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>aid</name>
-        <rename>aid</rename>
-        <update>Y</update>
-      </value>
-    </lookup>
-    <cluster_schema />
-    <remotesteps>
-      <input>
-      </input>
-      <output>
-      </output>
-    </remotesteps>
-    <GUI>
-      <xloc>608</xloc>
-      <yloc>48</yloc>
-      <draw>Y</draw>
-    </GUI>
-  </step>
-  <step>
     <name>MongoDB Input</name>
     <type>MongoDbInput</type>
     <description />
@@ -666,10 +574,10 @@
     <collection>weibo_user_attitude</collection>
     <json_field_name>json</json_field_name>
     <json_query>{'updatedTime':{'$gte':'%%startTime%%','$lte':'%%endTime%%'}}</json_query>
-    <auth_database />
-    <auth_user />
-    <auth_password>Encrypted </auth_password>
-    <auth_mech />
+    <auth_database>weibo</auth_database>
+    <auth_user>weibo_readonly</auth_user>
+    <auth_password>Encrypted 2be98d8ad03c59dbbb91caf74d19ca3c3</auth_password>
+    <auth_mech>SCRAM-SHA-1</auth_mech>
     <auth_kerberos>N</auth_kerberos>
     <connect_timeout />
     <socket_timeout />
@@ -1387,6 +1295,98 @@
     <GUI>
       <xloc>384</xloc>
       <yloc>224</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>weibo_user_attitude</name>
+    <type>InsertUpdate</type>
+    <description />
+    <distribute>Y</distribute>
+    <custom_distribution />
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name />
+    </partitioning>
+    <connection>newSocialDB</connection>
+    <commit>10000</commit>
+    <update_bypassed>N</update_bypassed>
+    <lookup>
+      <schema />
+      <table>weibo_user_attitude</table>
+      <key>
+        <name>aid</name>
+        <field>aid</field>
+        <condition>=</condition>
+        <name2 />
+      </key>
+      <value>
+        <name>attitude</name>
+        <rename>attitude</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>attitude_mask</name>
+        <rename>attitude_mask</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>attitude_type</name>
+        <rename>attitude_type</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>created_at</name>
+        <rename>created_at</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>last_attitude</name>
+        <rename>last_attitude</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>source</name>
+        <rename>source</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>source_allowclick</name>
+        <rename>source_allowclick</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>source_type</name>
+        <rename>source_type</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>pid</name>
+        <rename>pid</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>uid</name>
+        <rename>uid</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>aid</name>
+        <rename>aid</rename>
+        <update>Y</update>
+      </value>
+    </lookup>
+    <cluster_schema />
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>608</xloc>
+      <yloc>48</yloc>
       <draw>Y</draw>
     </GUI>
   </step>

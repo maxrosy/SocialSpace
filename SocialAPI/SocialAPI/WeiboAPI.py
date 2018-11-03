@@ -7,6 +7,7 @@ import sys, time
 from datetime import datetime
 from multiprocessing import Pool
 import urllib
+from json import JSONDecodeError
 
 def doCommentParellelWrapper(*args,**kwargs):
     w = SocialWeiboAPI()
@@ -173,7 +174,13 @@ class SocialWeiboAPI(SocialBasicAPI):
                     tasks = [asyncio.ensure_future(self.getAsyncRequest(url,params_dict,page=i+1), loop=event_loop) for i in range(page-5,page)]
                     event_loop.run_until_complete(asyncio.wait(tasks))
 
-                    result = [task.result() for task in tasks]
+                    result = [] #[task.result() for task in tasks]
+                    for task in tasks:
+                        try:
+                            result.append(task.result())
+                        except JSONDecodeError as e :
+                            self.logger.error(e)
+                            pass
 
                     if not result:
                         raise StopIteration
@@ -294,7 +301,14 @@ class SocialWeiboAPI(SocialBasicAPI):
 
                     tasks = [asyncio.ensure_future(self.getAsyncRequest(url,paramsDict,page=i+1), loop=event_loop) for i in range(page-5,page)]
                     event_loop.run_until_complete(asyncio.wait(tasks))
-                    result = [task.result() for task in tasks]
+
+                    result = []  # [task.result() for task in tasks]
+                    for task in tasks:
+                        try:
+                            result.append(task.result())
+                        except JSONDecodeError as e:
+                            self.logger.error(e)
+                            pass
 
                     for item in result:
                         if not item:
@@ -378,7 +392,13 @@ class SocialWeiboAPI(SocialBasicAPI):
 
                     tasks = [asyncio.ensure_future(self.getAsyncRequest(url,paramsDict,page=i+1), loop=event_loop) for i in range(page-4,page)]
                     event_loop.run_until_complete(asyncio.wait(tasks))
-                    result = [task.result() for task in tasks]
+                    result = []  # [task.result() for task in tasks]
+                    for task in tasks:
+                        try:
+                            result.append(task.result())
+                        except JSONDecodeError as e:
+                            self.logger.error(e)
+                            pass
 
                     for item in result:
                         if not item:
@@ -457,7 +477,13 @@ class SocialWeiboAPI(SocialBasicAPI):
 
                     tasks = [asyncio.ensure_future(self.getAsyncRequest(url,paramsDict,page=i+1), loop=event_loop) for i in range(page-4,page)]
                     event_loop.run_until_complete(asyncio.wait(tasks))
-                    result = [task.result() for task in tasks]
+                    result = []  # [task.result() for task in tasks]
+                    for task in tasks:
+                        try:
+                            result.append(task.result())
+                        except JSONDecodeError as e:
+                            self.logger.error(e)
+                            pass
 
                     for item in result:
                         if not item:
