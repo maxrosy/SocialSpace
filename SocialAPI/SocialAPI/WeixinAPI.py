@@ -16,32 +16,35 @@ class SocialWeixinAPI(SocialBasicAPI):
         super(SocialWeixinAPI, self).__init__()
         self.__apiToken = self.cfp.get('api', 'weibo')
         self.__rootPath = Helper().getRootPath()
-        self.__user = urllib.parse.quote_plus(self.cfp.get('mongodb_weixin','user'))
-        self.__pwd = urllib.parse.quote_plus(self.cfp.get('mongodb_weixin','pwd'))
-        self.__host = self.cfp.get('mongodb','host')
-        self.__port = self.cfp.get('mongodb','port')
-        self.__redisPool = redis.ConnectionPool(host='localhost', port=6379, db=0)
+        self.__mongo_user = urllib.parse.quote_plus(self.cfp.get('mongodb_weixin','user'))
+        self.__mongo_pwd = urllib.parse.quote_plus(self.cfp.get('mongodb_weixin','pwd'))
+        self.__mongo_host = self.cfp.get('mongodb','host')
+        self.__mongo_port = self.cfp.get('mongodb','port')
+        self.__redis_host = self.cfp.get('redis','host')
+        self.__redis_port = self.cfp.get('redis','port')
+        self.__redis_db = self.cfp.get('redis','db')
+        self.__redisPool = redis.ConnectionPool(host=self.__redis_host, port=self.__redis_port, db=self.__redis_db)
         self.r = redis.Redis(connection_pool=self.__redisPool)
 
-        self.__uri = 'mongodb://' + self.__user + ':' + self.__pwd + '@' + self.__host + ':' + self.__port + '/' + 'weixin'
-        self.client = MongoClient(self.__uri)
+        self.__mongo_uri = 'mongodb://' + self.__mongo_user + ':' + self.__mongo_pwd + '@' + self.__mongo_host + ':' + self.__mongo_port + '/' + 'weixin'
+        self.client = MongoClient(self.__mongo_uri)
         #self.client = MongoClient()
 
-    def getComponentAccessToken(self,appId='wx655b00eace11403d',appSecret='aa98e239adde8e58c2cb1d50b250efb2'):
+    def getComponentAccessToken(self,appid,appSecret):
         url = 'https://api.weixin.qq.com/cgi-bin/component/api_component_token'
         client = self.client
         db = client.weixin
         try:
-            COMPONENTVERIFYTICKET = self.r.get(appId + '_'+'COMPONENTVERIFYTICKET')
-            if COMPONENTVERIFYTICKET:
-                postData = {'component_appid':appId,'component_appsecret':appSecret,'component_verify_ticket':COMPONENTVERIFYTICKET.decode()}
+            component_verify_ticket = self.r.get(appid + '_'+'component_verify_ticket')
+            if component_verify_ticket:
+                postData = {'component_appid':appid,'component_appsecret':appSecret,'component_verify_ticket':component_verify_ticket.decode('utf-8')}
                 r = self.postRequest(url,json.dumps(postData))
                 res = r.json()
                 if res.get('errcode') is not None:
                     raise Exception(res.get('errmsg'))
                 component_access_token = res.get('component_access_token')
                 expires_in = res.get('expires_in')
-                self.r.set(appId + '_' + 'component_access_token',component_access_token,expires_in)
+                self.r.set(appid + '_' + 'component_access_token',component_access_token,expires_in)
                 return component_access_token
 
         except Exception as e:
@@ -76,7 +79,6 @@ class SocialWeixinAPI(SocialBasicAPI):
             access_token = res['access_token']
 
             return access_token
-
 
         except Exception as e:
             class_name = self.__class__.__name__

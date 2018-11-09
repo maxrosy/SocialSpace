@@ -28,5 +28,6 @@ if __name__ == '__main__':
 
 	client.close()
 	"""
+
 	weixin = SocialWeixinAPI()
 	access_token = weixin.getComponentAccessToken()
