@@ -1,36 +1,32 @@
-from SocialAPI.SocialAPI.SocialWechatAPI import SocialWechatAPI
-from SocialAPI.SocialAPI.SocialWeiboAPI import SocialWeiboAPI
+from SocialAPI.SocialAPI.WeixinAPI import SocialWeixinAPI
+from SocialAPI.SocialAPI.WeiboAPI import SocialWeiboAPI
 import os
+from SocialAPI.Helper import Helper
+from SocialAPI.Model import Kol
+import datetime,time
+import pandas as pd
+from pymongo import MongoClient
+
 
 if __name__ == '__main__':
-	os.chdir(os.path.dirname(os.path.realpath(__file__)))
-	
-	#wechat=SocialWechatAPI()
-	#b=wechat.getUserSummary('a','b')
-	#c=a.cleanRecords(b)
-	#wechat.writeDataFrameToExcel(b,'./output/wechat.xlsx','Wechat')
-	#wechat.writeDataFrameToCsv(b,'./output/wechat.csv','|')
-	#wechat.syncToDB(b,'pandas','wechat')
 	"""
-	weibo=SocialWeiboAPI()
-	c=weibo.getFriendshipsFollowers()
-	weibo.writeDataFrameToExcel(c,'./output/weibo.xlsx','Weibo')
-	weibo.writeDataFrameToCsv(c,'./output/weibo.csv','|')
-	weibo.syncToDB(c,'pandas','weibo')
-	weibo.writeToS3('friso-test','./output/weibo.csv','share/weibo.csv')
+	weibo = SocialWeiboAPI()
+	#weibo.getStatusRepostTimeline('4257051804582356')
+
+	client = MongoClient()
+	db = client.weibo
+	crawlTable = db.weibo_post_crawl
+
+	posts = crawlTable.find()
+
+	for post in posts:
+		if isinstance(post['createdTime'],int):
+			post['createdTime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(post['createdTime']))
+		if isinstance(post['updatedTime'],int):
+			post['updatedTime'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(post['updatedTime']))
+		crawlTable.update({'_id':post['_id']},{'$set':post})
+
+	client.close()
 	"""
-	
-	weibo=SocialWeiboAPI()
-	weibo.searchStatusesHistoryCreate('a','b')
-	weibo.searchStatusesHistoryCheck()
-	#users, posts = weibo.getStatusesShowBatch()
-	#weibo.writeDataFrameToCsv(users,'./output/weibo_users.csv','|')
-	#weibo.writeDataFrameToCsv(posts,'./output/weibo_posts.csv','|')
-	#weibo.insertToDB('pandas','weibo_user',users)
-	#weibo.insertToDB('pandas','weibo_post',posts)
-	#comments = weibo.getCommentsShow(3)
-	#weibo.writeDataFrameToCsv(comments,'./output/weibo_comments.csv','|')
-	#weibo.insertToDB('pandas','weibo_comment',comments)
-	
-	
-	
+	weixin = SocialWeixinAPI()
+	access_token = weixin.getComponentAccessToken()
