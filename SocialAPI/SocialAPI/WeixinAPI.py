@@ -9,6 +9,7 @@ from datetime import datetime
 from multiprocessing import Pool
 import urllib
 import redis
+from urllib.parse import quote
 
 class SocialWeixinAPI(SocialBasicAPI):
 
@@ -80,6 +81,7 @@ class SocialWeixinAPI(SocialBasicAPI):
                     pre_auth_code = res.get('pre_auth_code')
                     expires_in = res.get('expires_in')
                     self.r.set(appid + '_' + 'pre_auth_code', pre_auth_code, expires_in)
+
                 else:
                     raise Exception('Component Access Token is missing!')
             return pre_auth_code
@@ -93,6 +95,14 @@ class SocialWeixinAPI(SocialBasicAPI):
 
         finally:
             client.close()
+
+    def createAuthUrl(self,appid,appSecret):
+        pre_auth_code = self.getPreAuthCode(appid,appSecret)
+        redirect_url = '47.97.203.126'
+        auth_url = 'https://mp.weixin.qq.com/safe/bindcomponent?action=bindcomponent&no_scan=1&component_appid={}&pre_auth_code={}&redirect_uri={}&auth_type=3#wechat_redirect'\
+                        .format(appid,pre_auth_code,redirect_url)
+        auth_url = quote(auth_url,'utf-8')
+        return auth_url
 
     def getAccessTokenFromController(self,appid,appkey):
         try:
