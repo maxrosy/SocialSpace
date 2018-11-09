@@ -129,7 +129,7 @@ class WeiBoCrawler(object):
             json_data = json.loads(re.search(r"\((?P<data>.*)\)", response.text).group("data"))
         except Exception as e:
             json_data = {}
-            self.logger.error("WeiboLogin get_json_date error: {}".format(e))
+            self.logger.error("WeiboLogin get_json_data error: {}".format(e))
         self.logger.debug("Weibologin get_json_data: {}".format(json_data))
         return json_data
 

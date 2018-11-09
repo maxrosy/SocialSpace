@@ -8,7 +8,7 @@ import json
 from datetime import datetime
 from multiprocessing import Pool
 import urllib
-
+import redis
 
 class SocialWeixinAPI(SocialBasicAPI):
 
@@ -20,10 +20,39 @@ class SocialWeixinAPI(SocialBasicAPI):
         self.__pwd = urllib.parse.quote_plus(self.cfp.get('mongodb_weixin','pwd'))
         self.__host = self.cfp.get('mongodb','host')
         self.__port = self.cfp.get('mongodb','port')
+        self.__redisPool = redis.ConnectionPool(host='localhost', port=6379, db=0)
+        self.r = redis.Redis(connection_pool=self.__redisPool)
 
         self.__uri = 'mongodb://' + self.__user + ':' + self.__pwd + '@' + self.__host + ':' + self.__port + '/' + 'weixin'
         self.client = MongoClient(self.__uri)
         #self.client = MongoClient()
+
+    def getComponentAccessToken(self,appId='wx655b00eace11403d',appSecret='aa98e239adde8e58c2cb1d50b250efb2'):
+        url = 'https://api.weixin.qq.com/cgi-bin/component/api_component_token'
+        client = self.client
+        db = client.weixin
+        try:
+            COMPONENTVERIFYTICKET = self.r.get(appId + '_'+'COMPONENTVERIFYTICKET')
+            if COMPONENTVERIFYTICKET:
+                postData = {'component_appid':appId,'component_appsecret':appSecret,'component_verify_ticket':COMPONENTVERIFYTICKET.decode()}
+                r = self.postRequest(url,json.dumps(postData))
+                res = r.json()
+                if res.get('errcode') is not None:
+                    raise Exception(res.get('errmsg'))
+                component_access_token = res.get('component_access_token')
+                expires_in = res.get('expires_in')
+                self.r.set(appId + '_' + 'component_access_token',component_access_token,expires_in)
+                return component_access_token
+
+        except Exception as e:
+            class_name = self.__class__.__name__
+            function_name = sys._getframe().f_code.co_name
+            msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
+            db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': '','createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
+            self.logger.error(msg)
+
+        finally:
+            client.close()
 
     def getAccessTokenFromController(self,appid,appkey):
         try:
