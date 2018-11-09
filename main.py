@@ -22,7 +22,7 @@ if __name__ == '__main__':
 	
 	weibo=SocialWeiboAPI()
 	weibo.searchStatusesHistoryCreate('a','b')
-	weibo.searchStatusesHistoryCheck()
+	weibo.searchStatusesHistoryCheck('wx655b00eace11403d','aa98e239adde8e58c2cb1d50b250efb2')
 	#users, posts = weibo.getStatusesShowBatch()
 	#weibo.writeDataFrameToCsv(users,'./output/weibo_users.csv','|')
 	#weibo.writeDataFrameToCsv(posts,'./output/weibo_posts.csv','|')
