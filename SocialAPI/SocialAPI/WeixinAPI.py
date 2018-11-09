@@ -37,15 +37,52 @@ class SocialWeixinAPI(SocialBasicAPI):
         try:
             component_verify_ticket = self.r.get(appid + '_'+'component_verify_ticket')
             if component_verify_ticket:
-                postData = {'component_appid':appid,'component_appsecret':appSecret,'component_verify_ticket':component_verify_ticket.decode('utf-8')}
-                r = self.postRequest(url,json.dumps(postData))
-                res = r.json()
-                if res.get('errcode') is not None:
-                    raise Exception(res.get('errmsg'))
-                component_access_token = res.get('component_access_token')
-                expires_in = res.get('expires_in')
-                self.r.set(appid + '_' + 'component_access_token',component_access_token,expires_in)
+                component_access_token = self.r.get(appid + '_' + 'component_access_token')
+                if component_access_token is None:
+                    postData = {'component_appid':appid,'component_appsecret':appSecret,'component_verify_ticket':component_verify_ticket.decode('utf-8')}
+                    r = self.postRequest(url,json.dumps(postData))
+                    res = r.json()
+                    if res.get('errcode') is not None:
+                        raise Exception(res.get('errmsg'))
+                    component_access_token = res.get('component_access_token')
+                    expires_in = res.get('expires_in')
+                    self.r.set(appid + '_' + 'component_access_token',component_access_token,expires_in)
                 return component_access_token
+            else:
+                raise Exception('Component Verify Ticket is missing!')
+
+        except Exception as e:
+            class_name = self.__class__.__name__
+            function_name = sys._getframe().f_code.co_name
+            msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
+            db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': '','createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
+            self.logger.error(msg)
+
+        finally:
+            client.close()
+
+    def getPreAuthCode(self,appid,appSecret):
+        client = self.client
+        db = client.weixin
+
+        try:
+            pre_auth_code = self.r.get(appid + '_' + 'pre_auth_code')
+            if pre_auth_code is None:
+                component_access_token = self.getComponentAccessToken(appid,appSecret)
+                if component_access_token:
+                    url = 'https://api.weixin.qq.com/cgi-bin/component/api_create_preauthcode?component_access_token={}'.format(component_access_token)
+                    postData = {'component_appid': appid}
+
+                    r = self.postRequest(url, json.dumps(postData))
+                    res = r.json()
+                    if res.get('errcode') is not None:
+                        raise Exception(res.get('errmsg'))
+                    pre_auth_code = res.get('pre_auth_code')
+                    expires_in = res.get('expires_in')
+                    self.r.set(appid + '_' + 'pre_auth_code', pre_auth_code, expires_in)
+                else:
+                    raise Exception('Component Access Token is missing!')
+            return pre_auth_code
 
         except Exception as e:
             class_name = self.__class__.__name__
