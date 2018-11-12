@@ -48,6 +48,8 @@ class SocialWeixinAPI(SocialBasicAPI):
                     component_access_token = res.get('component_access_token')
                     expires_in = res.get('expires_in')
                     self.r.set(appid + '_' + 'component_access_token',component_access_token,expires_in)
+                else:
+                    component_access_token = component_access_token.decode('utf-8')
                 return component_access_token
             else:
                 raise Exception('Component Verify Ticket is missing!')
@@ -84,6 +86,8 @@ class SocialWeixinAPI(SocialBasicAPI):
 
                 else:
                     raise Exception('Component Access Token is missing!')
+            else:
+                pre_auth_code = pre_auth_code.decode('utf-8')
             return pre_auth_code
 
         except Exception as e:
