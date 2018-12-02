@@ -145,7 +145,7 @@ class WeiBoCrawler(object):
 
 
     def getImpressions(self,html):
-        matchObj = re.search(u'阅读(\d*)次', html)
+        matchObj = re.search(u'阅读(\d*)', html)
         if matchObj:
             return matchObj.group(1)
         else:
