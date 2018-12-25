@@ -46,7 +46,7 @@ class SocialWeiboAPI(SocialBasicAPI):
         :param uids: seperated by ',', max 50
         :return:
         """
-        self.logger.info("Calling getUserShowBatchOther with uids: {}".format(uids))
+        self.logger_access.info("Calling getUserShowBatchOther with uids: {}".format(uids))
         try:
             client = self.client
             db = client.weibo
@@ -72,15 +72,15 @@ class SocialWeiboAPI(SocialBasicAPI):
                 user['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 result = userTable.update({'id': user['id']},
                                           {'$set': user, '$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},upsert=True)
-                #self.logger.info('User {}: {} '.format(user['id'], result))
-            self.logger.info('{} records have been updated for users {}'.format(len(users),uids))
+                #self.logger_access.info('User {}: {} '.format(user['id'], result))
+            self.logger_access.info('{} records have been updated for users {}'.format(len(users),uids))
             return
 
         except Exception as e:
             class_name = self.__class__.__name__
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
-            self.logger.error(msg)
+            self.logger_error.error(msg)
             db.weibo_error_log.insert({'className':class_name,'functionName':function_name,'params':uids,'createdTime':datetime.now().strftime('%Y-%m-%d %H:%M:%S'),'msg':msg})
         finally:
             client.close()
@@ -94,7 +94,7 @@ class SocialWeiboAPI(SocialBasicAPI):
         :return:
         """
 
-        self.logger.info("Calling getTagsBatchOther function with uids: {}".format(uids))
+        self.logger_access.info("Calling getTagsBatchOther function with uids: {}".format(uids))
         try:
             paramsDict = {}
             paramsDict['uids'] = uids
@@ -118,15 +118,15 @@ class SocialWeiboAPI(SocialBasicAPI):
                 user['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 result = usersTable.update({'id': user['id']},
                                            {'$set': user,'$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%d %H:%M:%S')}}, upsert=True)
-                #self.logger.info('User {}: {} '.format(user['id'], result))
-            self.logger.info('{} records have been updated for users {}'.format(len(result),uids))
+                #self.logger_access.info('User {}: {} '.format(user['id'], result))
+            self.logger_access.info('{} records have been updated for users {}'.format(len(result),uids))
             return
 
         except Exception as e:
             class_name = self.__class__.__name__
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
-            self.logger.error(msg)
+            self.logger_error.error(msg)
             db.weibo_error_log.insert({'className': class_name, 'functionName': function_name, 'params': uids,'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
         finally:
             client.close()
@@ -140,7 +140,7 @@ class SocialWeiboAPI(SocialBasicAPI):
         :return:
         """
 
-        self.logger.info("Calling getStatusesUserTimelineOther with uid: {}".format(uid))
+        self.logger_access.info("Calling getStatusesUserTimelineOther with uid: {}".format(uid))
 
         try:
 
@@ -179,7 +179,7 @@ class SocialWeiboAPI(SocialBasicAPI):
                         try:
                             result.append(task.result())
                         except JSONDecodeError as e :
-                            self.logger.error(e)
+                            self.logger_error.error(e)
                             pass
 
                     if not result:
@@ -196,7 +196,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 
             event_loop.close()
             if not postList:
-                self.logger.info('No post returned in last {} day(s) for user {}'.format(-start_day+1,uid))
+                self.logger_access.info('No post returned in last {} day(s) for user {}'.format(-start_day+1,uid))
                 return
 
             for post in postList:
@@ -206,14 +206,14 @@ class SocialWeiboAPI(SocialBasicAPI):
                 post['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 res = postTable.update({'id': post['id']},
                                            {'$set': post,'$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},upsert=True)
-                #self.logger.info('Post {}: {} '.format(post['id'], res))
-            self.logger.info('{} records have been updated for user {}'.format(len(postList),uid))
+                #self.logger_access.info('Post {}: {} '.format(post['id'], res))
+            self.logger_access.info('{} records have been updated for user {}'.format(len(postList),uid))
 
         except Exception as e:
             class_name = self.__class__.__name__
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
-            self.logger.error(msg)
+            self.logger_error.error(msg)
             db.weibo_error_log.insert({'className': class_name, 'functionName': function_name, 'params': uid,
                                        'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
         finally:
@@ -227,7 +227,7 @@ class SocialWeiboAPI(SocialBasicAPI):
         :param uids: seperated by ',', max 100
         :return:
         """
-        self.logger.info("Calling getUsersCountBatch with uids: {}".format(uids))
+        self.logger_access.info("Calling getUsersCountBatch with uids: {}".format(uids))
         try:
             client = self.client
             db = client.weibo
@@ -251,14 +251,14 @@ class SocialWeiboAPI(SocialBasicAPI):
                 res = userGrowthTable.update({'id':user['id'],'createDay':str(datetime.now().date())},
                                              {'$set': user, '$setOnInsert': {'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
                                              upsert=True)
-                #self.logger.info('User {}: {} '.format(user['id'], res))
-            self.logger.info('{} records have been updated for users {}'.format(len(result),uids))
+                #self.logger_access.info('User {}: {} '.format(user['id'], res))
+            self.logger_access.info('{} records have been updated for users {}'.format(len(result),uids))
 
         except Exception as e:
             class_name = self.__class__.__name__
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
-            self.logger.error(msg)
+            self.logger_error.error(msg)
             db.weibo_error_log.insert({'className': class_name, 'functionName': function_name, 'params': uids,
                                        'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
         finally:
@@ -273,7 +273,7 @@ class SocialWeiboAPI(SocialBasicAPI):
         :param kwargs:
         :return:
         """
-        self.logger.info("Calling getCommentsShow function with mid: {}".format(mid))
+        self.logger_access.info("Calling getCommentsShow function with mid: {}".format(mid))
         try:
             url = 'https://c.api.weibo.com/2/comments/show/all.json'
             page = 0
@@ -307,7 +307,7 @@ class SocialWeiboAPI(SocialBasicAPI):
                         try:
                             result.append(task.result())
                         except JSONDecodeError as e:
-                            self.logger.error(e)
+                            self.logger_error.error(e)
                             pass
 
                     for item in result:
@@ -346,13 +346,13 @@ class SocialWeiboAPI(SocialBasicAPI):
                  #                                               '$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},upsert=True)
 
             res = commentTable.insert_many(commentList)
-            self.logger.info('{} records have been inserted for post {}'.format(len(commentList),mid))
+            self.logger_access.info('{} records have been inserted for post {}'.format(len(commentList),mid))
 
         except Exception as e:
             class_name = self.__class__.__name__
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
-            self.logger.error(msg)
+            self.logger_error.error(msg)
             db.weibo_error_log.insert({'className': class_name, 'functionName': function_name, 'params': mid,
                                        'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
 
@@ -381,7 +381,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             db = client.weibo
             attitudeTable = db.weibo_user_attitude
 
-            self.logger.info("Calling getAttitudesShow function with mid: {}".format(mid))
+            self.logger_access.info("Calling getAttitudesShow function with mid: {}".format(mid))
             asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
             event_loop = asyncio.new_event_loop()
             while loop:
@@ -397,7 +397,7 @@ class SocialWeiboAPI(SocialBasicAPI):
                         try:
                             result.append(task.result())
                         except JSONDecodeError as e:
-                            self.logger.error(e)
+                            self.logger_error.error(e)
                             pass
 
                     for item in result:
@@ -430,14 +430,14 @@ class SocialWeiboAPI(SocialBasicAPI):
                 #res = attitudeTable.update({'id':attitude['id']},{'$set':attitude,
                 #                                                   '$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},upsert=True)
             res = attitudeTable.insert_many(attitudeList)
-            self.logger.info('{} records has been inserted for post {}'.format(len(attitudeList),mid))
-            #self.logger.info('Attitude {}: {}'.format(attitude['id'], res))
+            self.logger_access.info('{} records has been inserted for post {}'.format(len(attitudeList),mid))
+            #self.logger_access.info('Attitude {}: {}'.format(attitude['id'], res))
 
         except Exception as e:
             class_name = self.__class__.__name__
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
-            self.logger.error(msg)
+            self.logger_error.error(msg)
             db.weibo_error_log.insert({'className': class_name, 'functionName': function_name, 'params': mid,
                                        'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
 
@@ -465,7 +465,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             db = client.weibo
             repostTable = db.weibo_user_repost2
 
-            self.logger.info('Calling getStatusRepostTimeline function with mid: {}'.format(mid))
+            self.logger_access.info('Calling getStatusRepostTimeline function with mid: {}'.format(mid))
 
             asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
             event_loop = asyncio.new_event_loop()
@@ -482,7 +482,7 @@ class SocialWeiboAPI(SocialBasicAPI):
                         try:
                             result.append(task.result())
                         except JSONDecodeError as e:
-                            self.logger.error(e)
+                            self.logger_error.error(e)
                             pass
 
                     for item in result:
@@ -516,14 +516,14 @@ class SocialWeiboAPI(SocialBasicAPI):
 
 
             res = repostTable.insert_many(repostList)
-            self.logger.info('{} records has been inserted for post {}'.format(len(repostList),mid))
+            self.logger_access.info('{} records has been inserted for post {}'.format(len(repostList),mid))
 
 
         except Exception as e:
             class_name = self.__class__.__name__
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
-            self.logger.error(msg)
+            self.logger_error.error(msg)
             db.weibo_error_log.insert({'className': class_name, 'functionName': function_name, 'params': mid,
                                        'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
 

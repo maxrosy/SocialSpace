@@ -59,7 +59,7 @@ class SocialWeixinAPI(SocialBasicAPI):
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
             db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': '','createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
-            self.logger.error(msg)
+            self.logger_error.error(msg)
 
         finally:
             client.close()
@@ -95,7 +95,7 @@ class SocialWeixinAPI(SocialBasicAPI):
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
             db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': '','createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
-            self.logger.error(msg)
+            self.logger_error.error(msg)
 
         finally:
             client.close()
@@ -136,7 +136,7 @@ class SocialWeixinAPI(SocialBasicAPI):
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
             db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': '','createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
-            self.logger.error(msg)
+            self.logger_error.error(msg)
 
         finally:
             client.close()
@@ -146,7 +146,7 @@ class SocialWeixinAPI(SocialBasicAPI):
         data = {'begin_date': begin_date, 'end_date': end_date}
         postData = json.dumps(data)
         try:
-            self.logger.info('Calling getUserCimulate API for account {} from {} to {}'.format(account_name,begin_date,end_date))
+            self.logger_access.info('Calling getUserCimulate API for account {} from {} to {}'.format(account_name,begin_date,end_date))
             client = self.client
             db = client.weixin
             userTable = db.weixin_user_cumulate
@@ -168,7 +168,7 @@ class SocialWeixinAPI(SocialBasicAPI):
             class_name = self.__class__.__name__
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
-            self.logger.error(msg)
+            self.logger_error.error(msg)
             db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': account_name+','+begin_date+','+end_date,'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
         finally:
             client.close()
@@ -178,7 +178,7 @@ class SocialWeixinAPI(SocialBasicAPI):
         data = {'begin_date': begin_date, 'end_date': end_date}
         postData = json.dumps(data)
         try:
-            self.logger.info('Calling getArticleTotal API for account {} from {} to {}'.format(account_name, begin_date, end_date))
+            self.logger_access.info('Calling getArticleTotal API for account {} from {} to {}'.format(account_name, begin_date, end_date))
             client = self.client
             db = client.weixin
             postTable = db.weixin_post
@@ -201,7 +201,7 @@ class SocialWeixinAPI(SocialBasicAPI):
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
             db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': account_name+','+begin_date+','+end_date,'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
-            self.logger.error(msg)
+            self.logger_error.error(msg)
 
         finally:
             client.close()
@@ -211,7 +211,7 @@ class SocialWeixinAPI(SocialBasicAPI):
         data = {'begin_date': begin_date, 'end_date': end_date}
         postData = json.dumps(data)
         try:
-            self.logger.info('Calling getUpstreamMsg API for account {} from {} to {}'.format(account_name, begin_date, end_date))
+            self.logger_access.info('Calling getUpstreamMsg API for account {} from {} to {}'.format(account_name, begin_date, end_date))
             client = self.client
             db = client.weixin
             msgTable = db.weixin_upstream_msg
@@ -234,7 +234,7 @@ class SocialWeixinAPI(SocialBasicAPI):
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
             db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': account_name+','+begin_date+','+end_date,'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
-            self.logger.error(msg)
+            self.logger_error.error(msg)
         finally:
             client.close()
 
