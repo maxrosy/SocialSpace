@@ -104,7 +104,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             result = await self.getAsyncRequest(url, paramsDict)
 
             if not result:
-                self.logger.warning("No data returned for uids:{}".format(uids))
+                self.logger_access.warning("No data returned for uids:{}".format(uids))
                 return
 
             client = MongoClient()
@@ -186,7 +186,7 @@ class SocialWeiboAPI(SocialBasicAPI):
                         raise StopIteration
                     for item in result:
                         if item.get('error_code') is not None:
-                            raise Exception('Error Code: {}, Error Msg: {}'.format(item.get('error_code'), item.get('error')))
+                            raise Exception('Uid: {}, Error Code: {}, Error Msg: {}'.format(uid, item.get('error_code'), item.get('error')))
                         statuses = item.get('statuses')
                         if not statuses:
                             raise StopIteration
@@ -240,7 +240,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             result = await self.getAsyncRequest(url, params_dict)
 
             if not result:
-                self.logger.warning('No data returned for uids - {}'.format(uids))
+                self.logger_access.warning('No data returned for uids - {}'.format(uids))
                 return
 
             for user in result:
@@ -314,7 +314,7 @@ class SocialWeiboAPI(SocialBasicAPI):
                         if not item:
                             raise StopIteration
                         if item.get('error_code') is not None:
-                            raise Exception('Error Code: {}, Error Msg: {}'.format(item.get('error_code'), item.get('error')))
+                            raise Exception('Post: {}, Error Code: {}, Error Msg: {}'.format(mid, item.get('error_code'), item.get('error')))
                         comments = item.get('comments')
                         if not comments:
                             raise StopIteration
@@ -327,7 +327,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             event_loop.close()
 
             if not commentList:
-                self.logger.warning("No data to update for post {}".format(mid))
+                self.logger_access.warning("No data to update for post {}".format(mid))
                 return
 
 
@@ -404,7 +404,7 @@ class SocialWeiboAPI(SocialBasicAPI):
                         if not item:
                             raise StopIteration
                         if item.get('error_code') is not None:
-                            raise Exception('Error Code: {}, Error Msg: {}'.format(item.get('error_code'), item.get('error')))
+                            raise Exception('Post: {}, Error Code: {}, Error Msg: {}'.format(mid, item.get('error_code'), item.get('error')))
                         attitudes = item.get('attitudes')
                         if not attitudes:
                             raise StopIteration
@@ -413,7 +413,7 @@ class SocialWeiboAPI(SocialBasicAPI):
                     loop = False
             event_loop.close()
             if not attitudeList:
-                self.logger.warning("No data to update for post {}".format(mid))
+                self.logger_access.warning("No data to update for post {}".format(mid))
                 return
 
             for attitude in attitudeList:
@@ -489,7 +489,7 @@ class SocialWeiboAPI(SocialBasicAPI):
                         if not item:
                             raise StopIteration
                         if item.get('error_code') is not None:
-                            raise Exception('Error Code: {}, Error Msg: {}'.format(item.get('error_code'), item.get('error')))
+                            raise Exception('Post: {}, Error Code: {}, Error Msg: {}'.format(mid, item.get('error_code'), item.get('error')))
                         reposts = item.get('reposts')
                         if not reposts:
                             raise StopIteration
@@ -499,7 +499,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             event_loop.close()
 
             if not repostList:
-                self.logger.warning("No data to update for post {}".format(mid))
+                self.logger_access.warning("No data to update for post {}".format(mid))
                 return
             for repost in repostList:
                 repost['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')

@@ -1,12 +1,9 @@
 from pymongo import MongoClient
-import asyncio
-import uvloop
 from .SocialBasicAPI import SocialBasicAPI
 from SocialAPI.Helper import Helper
 import sys, time
 import json
 from datetime import datetime
-from multiprocessing import Pool
 import urllib
 import redis
 from urllib.parse import quote
@@ -146,7 +143,7 @@ class SocialWeixinAPI(SocialBasicAPI):
         data = {'begin_date': begin_date, 'end_date': end_date}
         postData = json.dumps(data)
         try:
-            self.logger_access.info('Calling getUserCimulate API for account {} from {} to {}'.format(account_name,begin_date,end_date))
+            self.logger_access.info('Calling getUserCumulate API for account {} from {} to {}'.format(account_name,begin_date,end_date))
             client = self.client
             db = client.weixin
             userTable = db.weixin_user_cumulate

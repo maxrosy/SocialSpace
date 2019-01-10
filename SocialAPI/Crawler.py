@@ -24,8 +24,9 @@ class WeiBoCrawler(object):
         self.user_nick = None
 
         self.__rootPath = Helper().getRootPath()
-        self.logger = Logger(self.__rootPath + '/conf/logging.conf', 'simpleExample').createLogger()
-
+        #self.logger = Logger(self.__rootPath + '/conf/logging.conf', 'simpleExample').createLogger()
+        self.logger_access = Logger(self.__rootPath + '/conf/logging.conf', 'logger_access').createLogger()
+        self.logger_error = Logger(self.__rootPath + '/conf/logging.conf', 'logger_error').createLogger()
         self.session = requests.Session()
         self.session.headers.update({"User-Agent": "Mozilla/5.0 (Windows NT 6.3; WOW64; rv:41.0) Gecko/20100101 Firefox/41.0"})
         self.session.get("http://weibo.com/login.php")
@@ -39,7 +40,7 @@ class WeiBoCrawler(object):
         self.pass_word = pass_word
         self.user_uniqueid = None
         self.user_nick = None
-        self.logger.info('Login in process for {}'.format(user_name))
+        self.logger_access.info('Login in process for {}'.format(user_name))
         # get json data
         s_user_name = self.get_username()
         json_data = self.get_json_data(su_value=s_user_name)
@@ -95,12 +96,12 @@ class WeiBoCrawler(object):
             if json_data_2["result"] is True:
                 self.user_uniqueid = json_data_2["userinfo"]["uniqueid"]
                 self.user_nick = json_data_2["userinfo"]["displayname"]
-                self.logger.info("WeiboLogin succeeded: {}".format(json_data_2))
+                self.logger_access.info("WeiboLogin succeeded: {}".format(json_data_2))
             else:
-                self.logger.error("WeiboLogin failed: {}".format(json_data_2))
+                self.logger_error.error("WeiboLogin failed: {}".format(json_data_2))
 
         else:
-            self.logger.error("WeiboLogin failed: {}".format(json_data_1))
+            self.logger_error.error("WeiboLogin failed: {}".format(json_data_1))
         return True if self.user_uniqueid and self.user_nick else False
 
     def get_username(self):
@@ -129,8 +130,8 @@ class WeiBoCrawler(object):
             json_data = json.loads(re.search(r"\((?P<data>.*)\)", response.text).group("data"))
         except Exception as e:
             json_data = {}
-            self.logger.error("WeiboLogin get_json_data error: {}".format(e))
-        self.logger.debug("Weibologin get_json_data: {}".format(json_data))
+            self.logger_error.error("WeiboLogin get_json_data error: {}".format(e))
+        self.logger_access.debug("Weibologin get_json_data: {}".format(json_data))
         return json_data
 
     def get_password(self, servertime, nonce, pubkey):
@@ -181,8 +182,8 @@ class WeiBoCrawler(object):
     def crawlPage(self,url):
         response = self.session.get(url)
         if response.status_code == 200:
-            self.logger.info("Crawl page {} succeeded".format(url))
+            self.logger_access.info("Crawl page {} succeeded".format(url))
             return response.text
         else:
-            self.logger.error("Crawl page failed - ".format(response.reason))
+            self.logger_error.error("Crawl page failed - ".format(response.reason))
 
