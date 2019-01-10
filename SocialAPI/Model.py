@@ -62,3 +62,6 @@ class Kol(Base):
 
 class WeixinAccount(Base):
     __table__ = Table('weixin_account',metadata,autoload=True)
+
+class IdataAccount(Base):
+    __table__ = Table('idata_account',metadata,autoload=True)
