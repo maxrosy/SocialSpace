@@ -16,6 +16,8 @@ from ..Model import engine
 from sqlalchemy.orm import sessionmaker
 from SocialAPI.Helper import Helper
 import aiohttp
+import json
+import asyncio
 
 
 
@@ -39,16 +41,18 @@ class SocialBasicAPI(object):
 		r = requests.post(url, data=postData)
 		return r
 		
-	def getRequest(self,url,paramsDict={},stream=False):
-		
-		r = requests.get(url, params=paramsDict, stream=stream)
+	def getRequest(self,url,paramsDict={},stream=False,**kwargs):
+		params = dict(paramsDict,**kwargs)
+		r = requests.get(url, params=params, stream=stream)
 		return r
 
 	async def getAsyncRequest(self,url, paramsDict={}, **kwargs):
 		params = dict(paramsDict,**kwargs)
 		async with aiohttp.ClientSession() as session:
 			async with session.get(url, params=params) as r:
-				return await r.json()
+				#return await r.json()
+				data = await r.read()
+				return json.loads(data)
 
 	def encodeElement(self,text):
 
