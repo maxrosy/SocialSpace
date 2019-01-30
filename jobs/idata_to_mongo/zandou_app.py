@@ -2,7 +2,7 @@ from SocialAPI.SocialAPI.IdataAPI import IdataAPI
 from SocialAPI.Helper import Helper
 from SocialAPI.Model import IdataAccount
 import datetime
-import time
+import threading
 
 
 if __name__ == '__main__':
@@ -12,16 +12,27 @@ if __name__ == '__main__':
 
     session = idata.createSession()
     accountInfo = session.query(IdataAccount.appCode, IdataAccount.type).filter(IdataAccount.status == 1).all()
-    #accountInfo = [('hupu','comment')]
+    #accountInfo = [('zhihu','answer')]
+    session.close()
 
-    createBeginDate = (datetime.date.today()+ datetime.timedelta(days=-1)).strftime("%Y-%m-%d")
+    createBeginDate = (datetime.date.today()+ datetime.timedelta(days=-7)).strftime("%Y-%m-%d")
     #createEndDate = createBeginDate
     createEndDate = datetime.date.today().strftime("%Y-%m-%d")
     #createBeginDate = '2019-01-09'
     #createEndDate = '2019-01-09'
+    """
     for account in accountInfo:
         idata.getZanDouData(createBeginDate,createEndDate,size=100,appCode=account[0],type=account[1])
-        time.sleep(0.5)
+    """
+    threads = []
 
+    for account in accountInfo:
+        t = threading.Thread(target=idata.getZanDouData, args=(createBeginDate,createEndDate,), kwargs={'size':100,'appCode':account[0],'type':account[1]})
+        threads.append(t)
 
-    session.close()
+    for t in threads:
+        t.start()
+        while True:
+            if len(threading.enumerate()) <20:
+                break
+
