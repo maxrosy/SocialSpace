@@ -40,6 +40,7 @@ class IdataAPI(SocialBasicAPI):
             tableName = paramsDict.get('appCode') + '_' + paramsDict.get('type')
             postTable = db[tableName]
 
+            # Create Indexes if new
             if not postTable.index_information() and paramsDict.get('type') in ('answer','reply','comment'):
                 postTable.create_index([('id', 1)])
                 postTable.create_index([('publishDate',-1)])
@@ -47,7 +48,7 @@ class IdataAPI(SocialBasicAPI):
                 postTable.create_index([('id',1),('ref_date',-1)],unique=True)
                 postTable.create_index([('publishDate', -1)])
 
-            postList = []
+            postList = list()
 
             loop = True
 
@@ -55,11 +56,12 @@ class IdataAPI(SocialBasicAPI):
                 try:
                     r = self.getRequest(url, paramsDict)
                     res = r.json()
-                    
+
+                    # PageToken returned but next page missing
                     if paramsDict.get('pageToken') and res['retcode'] == '100002':
-                        raise Exception('Next Page not Found!')
+                        raise Exception('Next Page {} not Found! - {}'.format(paramsDict.get('pageToken'),tableName))
                     if res['retcode'] != '000000':
-                        raise Exception(res['message'])
+                        raise Exception('{} - {}'.format(res['message'],tableName))
 
                     # Remove html column, coz it is too long and useless
                     if tableName in ('weixin_post', 'weixinpro_post'):
@@ -68,8 +70,10 @@ class IdataAPI(SocialBasicAPI):
                         postList += postDataFrame.to_dict('records')
                     else:
                         postList += res['data']
+
                     self.logger_access.info('{} records have been fetched. Totally {} records - {}'.format(len(postList),res['total'],tableName))
-                    time.sleep(0.5)
+                    time.sleep(0.1)
+
                     if not res['hasNext']:
                         raise StopIteration
                     paramsDict['pageToken'] = res['pageToken']
@@ -102,12 +106,12 @@ class IdataAPI(SocialBasicAPI):
                     result = postTable.update_one({'id': post['id']},
                                                   {'$set': post, '$setOnInsert': {
                                                       'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
-                                                  upsert=True)
+                                                upsert=True)
                 else:
                     result = postTable.update_one({'id': post['id'],'ref_date':post['ref_date']},
                                             {'$set': post, '$setOnInsert': {
                                               'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
-                                          upsert=True)
+                                                upsert=True)
 
 
         except Exception as e:
