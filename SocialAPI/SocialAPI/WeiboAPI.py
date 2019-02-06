@@ -81,7 +81,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
             self.logger_error.error(msg)
-            db.weibo_error_log.insert({'className':class_name,'functionName':function_name,'params':uids,'createdTime':datetime.now().strftime('%Y-%m-%d %H:%M:%S'),'msg':msg})
+            db.weibo_error_log.insert({'className':class_name,'functionName':function_name,'params':uids,'createdTime':datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),'msg':msg})
         finally:
             client.close()
 
@@ -127,7 +127,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
             self.logger_error.error(msg)
-            db.weibo_error_log.insert({'className': class_name, 'functionName': function_name, 'params': uids,'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
+            db.weibo_error_log.insert({'className': class_name, 'functionName': function_name, 'params': uids,'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
         finally:
             client.close()
 
@@ -215,7 +215,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
             self.logger_error.error(msg)
             db.weibo_error_log.insert({'className': class_name, 'functionName': function_name, 'params': uid,
-                                       'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
+                                       'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
         finally:
             client.close()
 
@@ -260,7 +260,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
             self.logger_error.error(msg)
             db.weibo_error_log.insert({'className': class_name, 'functionName': function_name, 'params': uids,
-                                       'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
+                                       'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
         finally:
             client.close()
 
@@ -354,10 +354,10 @@ class SocialWeiboAPI(SocialBasicAPI):
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
             self.logger_error.error(msg)
             db.weibo_error_log.insert({'className': class_name, 'functionName': function_name, 'params': mid,
-                                       'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
+                                       'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
 
 
-    def getAttitudesShow(self,mid,**kwargs):
+    def getAttitudesShow(self,mid,pageStart=1,pageRange=5,pageLimit=20,**kwargs):
         """
         Documentation
         http://open.weibo.com/wiki/C/2/attitudes/show/biz
@@ -369,30 +369,33 @@ class SocialWeiboAPI(SocialBasicAPI):
 
         try:
             url = 'https://c.api.weibo.com/2/attitudes/show/biz.json'
-            page = 0
+            page = pageStart
             loop = True
-            attitudeList = []
-    
+
             paramsDict = kwargs
             paramsDict['access_token'] = self.__apiToken
             paramsDict['id'] = mid
 
             client = self.client
             db = client.weibo
-            attitudeTable = db.weibo_user_attitude
+            attitudeTable = db.weibo_user_attitude_new
+            if not attitudeTable.index_information():
+                attitudeTable.create_index([('id', 1)],unique=True)
 
             self.logger_access.info("Calling getAttitudesShow function with mid: {}".format(mid))
             asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
             event_loop = asyncio.new_event_loop()
             while loop:
                 try:
-                    page += 4
-                    if page > 20:
+                    attitudeList = list()
+                    if pageLimit and page > pageLimit:
+                        #print('Stop at page {}'.format(page))
                         raise StopIteration
-
-                    tasks = [asyncio.ensure_future(self.getAsyncRequest(url,paramsDict,page=i+1), loop=event_loop) for i in range(page-4,page)]
+                    page += pageRange
+                    self.logger_access.info('Running from page {} to page {}'.format(page-pageRange,page-1))
+                    tasks = [asyncio.ensure_future(self.getAsyncRequest(url,paramsDict,page=i), loop=event_loop) for i in range(page-pageRange,page)]
                     event_loop.run_until_complete(asyncio.wait(tasks))
-                    result = []  # [task.result() for task in tasks]
+                    result = list()  # [task.result() for task in tasks]
                     for task in tasks:
                         try:
                             result.append(task.result())
@@ -407,31 +410,44 @@ class SocialWeiboAPI(SocialBasicAPI):
                             raise Exception('Post: {}, Error Code: {}, Error Msg: {}'.format(mid, item.get('error_code'), item.get('error')))
                         attitudes = item.get('attitudes')
                         if not attitudes:
-                            raise StopIteration
+                            self.logger_error.error('Missing attitude items')
+                            class_name = self.__class__.__name__
+                            function_name = sys._getframe().f_code.co_name
+                            msg = 'From page {} to page {} missing attitude items'.format(page-pageRange,page-1)
+                            db.weibo_error_log.insert(
+                                {'className': class_name, 'functionName': function_name, 'params': mid,
+                                 'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
+                            continue
+                            #raise StopIteration
                         attitudeList += attitudes
+
+                    if not attitudeList:
+                        raise StopIteration
+                    for attitude in attitudeList:
+                        attitude['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        #attitude['createdTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        if attitude.get('created_at'):
+                            attitude['created_at_timestamp'] = int(
+                                time.mktime(time.strptime(attitude['created_at'], "%a %b %d %H:%M:%S %z %Y")))
+                            attitude['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S',
+                                                                   time.localtime(attitude['created_at_timestamp']))
+                        if attitude.get('user'):
+                            if not attitude.get('user').get('european_user'):
+                                attitude['user']['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.strptime(
+                                    attitude['user']['created_at'], "%a %b %d %H:%M:%S %z %Y"))
+                        if attitude['status']:
+                            attitude['status']['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.strptime(
+                                attitude['status']['created_at'], "%a %b %d %H:%M:%S %z %Y"))
+                        res = attitudeTable.update({'id':attitude['id']},{'$set':attitude,
+                                            '$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%dT%H:%M:%S')}},upsert=True)
+
+
+                    #res = attitudeTable.insert_many(attitudeList)
+                    self.logger_access.info('{} records has been inserted for post {}'.format(len(attitudeList), mid))
                 except StopIteration:
                     loop = False
-            event_loop.close()
-            if not attitudeList:
-                self.logger_access.warning("No data to update for post {}".format(mid))
-                return
 
-            for attitude in attitudeList:
-                attitude['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                attitude['createdTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                if attitude.get('created_at'):
-                    attitude['created_at_timestamp'] = int(time.mktime(time.strptime(attitude['created_at'], "%a %b %d %H:%M:%S %z %Y")))
-                    attitude['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(attitude['created_at_timestamp']))
-                if attitude.get('user'):
-                    if not attitude.get('user').get('european_user'):
-                        attitude['user']['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.strptime(attitude['user']['created_at'],"%a %b %d %H:%M:%S %z %Y"))
-                if attitude['status']:
-                    attitude['status']['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S',time.strptime(attitude['status']['created_at'],"%a %b %d %H:%M:%S %z %Y"))
-                #res = attitudeTable.update({'id':attitude['id']},{'$set':attitude,
-                #                                                   '$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},upsert=True)
-            res = attitudeTable.insert_many(attitudeList)
-            self.logger_access.info('{} records has been inserted for post {}'.format(len(attitudeList),mid))
-            #self.logger_access.info('Attitude {}: {}'.format(attitude['id'], res))
+            event_loop.close()
 
         except Exception as e:
             class_name = self.__class__.__name__
@@ -439,7 +455,33 @@ class SocialWeiboAPI(SocialBasicAPI):
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
             self.logger_error.error(msg)
             db.weibo_error_log.insert({'className': class_name, 'functionName': function_name, 'params': mid,
-                                       'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
+                                       'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
+
+    def exportAttitudesShowUids(self,urls):
+        myHelper = Helper()
+        client = self.client
+        db = client.weibo
+        userTable = db.weibo_user_attitude_new
+
+        for url in urls:
+            matchObj = re.search(r'/(\w+)$',url)
+            if matchObj:
+                mid = matchObj.group(1)
+            else:
+                self.logger_error.error('URL is invalid - {}'.format(url))
+            id = myHelper.convertMidtoId(mid)
+            uids = userTable.find({'status.id':id},{'id':1,'user.id':1})
+            filepath = self.__rootPath + '/output/weibo/attitude/' + str(id) +'.txt'
+
+            with open(filepath,'w+') as f:
+                for user in uids:
+                    try:
+                        uid = str(user['user']['id']) + '\n'
+                        f.write(uid)
+                    except Exception as e:
+                        msg = e + ' - ' + str(user['id'])
+                        print(msg)
+
 
     def getStatusRepostTimeline(self,mid,**kwargs):
         """
@@ -525,7 +567,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
             self.logger_error.error(msg)
             db.weibo_error_log.insert({'className': class_name, 'functionName': function_name, 'params': mid,
-                                       'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
+                                       'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
 
 
     def doParallel(self,funcName,dataSet):
