@@ -6,6 +6,8 @@ from datetime import datetime
 import urllib
 from urllib.parse import quote
 import pandas as pd
+from pymongo import UpdateOne
+from pymongo.errors import BulkWriteError
 
 class IdataAPI(SocialBasicAPI):
 
@@ -93,7 +95,7 @@ class IdataAPI(SocialBasicAPI):
                 postList = postDataFrame.to_dict('records')
                 print('{} records after dedup - {}'.format(len(postList),tableName))
 
-
+            update_operations = list()
             for post in postList:
                 if not post.get('id'):
                     self.logger_error.error('ID missing with post{} for {}'.format(post,tableName))
@@ -103,16 +105,34 @@ class IdataAPI(SocialBasicAPI):
                 post['ref_date'] = time.strftime('%Y-%m-%d',x)
 
                 if paramsDict.get('type') in ('answer', 'reply', 'comment'):
+                    op = UpdateOne({'id': post['id']},
+                                                  {'$set': post, '$setOnInsert': {
+                                                      'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
+                                                upsert=True)
+                    """
                     result = postTable.update_one({'id': post['id']},
                                                   {'$set': post, '$setOnInsert': {
                                                       'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
                                                 upsert=True)
+                    """
                 else:
-                    result = postTable.update_one({'id': post['id'],'ref_date':post['ref_date']},
+                    op = UpdateOne({'id': post['id'],'ref_date':post['ref_date']},
                                             {'$set': post, '$setOnInsert': {
                                               'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
                                                 upsert=True)
 
+                    """
+                    result = postTable.update_one({'id': post['id'],'ref_date':post['ref_date']},
+                                            {'$set': post, '$setOnInsert': {
+                                              'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
+                                                upsert=True)
+                    """
+                update_operations.append(op)
+
+            postTable.bulk_write(update_operations,ordered=False,bypass_document_validation=False)
+
+        except BulkWriteError as e:
+            raise Exception(e.details)
 
         except Exception as e:
             class_name = self.__class__.__name__
@@ -121,3 +141,4 @@ class IdataAPI(SocialBasicAPI):
             db.idata_error_log.insert({'className': class_name, 'functionName': function_name, 'params': kwargs,
                                         'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
             self.logger_error.error(msg)
+            exit(1)
