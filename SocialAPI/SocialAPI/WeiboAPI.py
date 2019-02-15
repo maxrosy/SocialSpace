@@ -8,6 +8,12 @@ from datetime import datetime
 from multiprocessing import Pool
 import urllib
 from json import JSONDecodeError
+from pymongo import UpdateOne
+from pymongo.errors import BulkWriteError
+import re
+import hashlib
+from zipfile import ZipFile
+import os
 
 def doCommentParellelWrapper(*args,**kwargs):
     w = SocialWeiboAPI()
@@ -35,8 +41,6 @@ class SocialWeiboAPI(SocialBasicAPI):
 
         self.__uri = 'mongodb://' + self.__user + ':' + self.__pwd + '@' + self.__host + ':' + self.__port + '/' + 'weibo'
         self.client = MongoClient(self.__uri)
-        #self.client = MongoClient()
-
 
     async def getUserShowBatchOther(self, uids):
         """
@@ -64,17 +68,22 @@ class SocialWeiboAPI(SocialBasicAPI):
                 raise Exception("No data returned for uids-{}".format(uids))
 
 
-            # users = usersTable.insert_many(users)
+            update_operations = list()
             for user in users:
                 if user.get('created_at'):
                     user['created_at_timestamp'] = int(time.mktime(time.strptime(user['created_at'], "%a %b %d %H:%M:%S %z %Y")))
                     user['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(user['created_at_timestamp']))
                 user['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                result = userTable.update({'id': user['id']},
+                op = UpdateOne({'id': user['id']},
                                           {'$set': user, '$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},upsert=True)
-                #self.logger_access.info('User {}: {} '.format(user['id'], result))
+                update_operations.append(op)
+
+            userTable.bulk_write(update_operations,ordered=False,bypass_document_validation=False)
+
             self.logger_access.info('{} records have been updated for users {}'.format(len(users),uids))
             return
+        except BulkWriteError as e:
+            raise Exception(e.details)
 
         except Exception as e:
             class_name = self.__class__.__name__
@@ -82,6 +91,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
             self.logger_error.error(msg)
             db.weibo_error_log.insert({'className':class_name,'functionName':function_name,'params':uids,'createdTime':datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),'msg':msg})
+
         finally:
             client.close()
 
@@ -109,18 +119,25 @@ class SocialWeiboAPI(SocialBasicAPI):
 
             client = MongoClient()
             db = client.weibo
-            usersTable = db.weibo_user_tag
+            userTable = db.weibo_user_tag
             # users = usersTable.insert_many(users)
+
+            update_operations = list()
             for user in result:
                 if user.get('created_at'):
                     user['created_at_timestamp'] = int(time.mktime(time.strptime(user['created_at'], "%a %b %d %H:%M:%S %z %Y")))
                     user['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(user['created_at_timestamp']))
                 user['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                result = usersTable.update({'id': user['id']},
+                op = UpdateOne({'id': user['id']},
                                            {'$set': user,'$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%d %H:%M:%S')}}, upsert=True)
-                #self.logger_access.info('User {}: {} '.format(user['id'], result))
+                update_operations.append(op)
+
+            userTable.bulk_write(update_operations, ordered=False, bypass_document_validation=False)
             self.logger_access.info('{} records have been updated for users {}'.format(len(result),uids))
             return
+
+        except BulkWriteError as e:
+            raise Exception(e.details)
 
         except Exception as e:
             class_name = self.__class__.__name__
@@ -128,10 +145,11 @@ class SocialWeiboAPI(SocialBasicAPI):
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
             self.logger_error.error(msg)
             db.weibo_error_log.insert({'className': class_name, 'functionName': function_name, 'params': uids,'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
+
         finally:
             client.close()
 
-    def getUserTimelineOther(self,uid,**kwargs):
+    def getUserTimelineOther(self,uid,startpage=0,pageRange=5,**kwargs):
         """
         Documentation
         http://open.weibo.com/wiki/C/2/statuses/user_timeline/other
@@ -144,9 +162,9 @@ class SocialWeiboAPI(SocialBasicAPI):
 
         try:
 
-            page = 0
+            page = startpage
             loop = True
-            postList = []
+            postList = list()
 
             params_dict = kwargs
             params_dict['access_token'] = self.__apiToken
@@ -157,6 +175,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             #params_dict['start_time'] = self.getTimeStamp('2018-01-01 00:00:00')
             #params_dict['end_time'] = self.getTimeStamp('2018-01-01 00:00:00')
             if params_dict.get('end_day'):
+                end_day = params_dict.get('end_day')
                 params_dict['end_time'] = self.getTimeStamp(self.getStrTime(end_day))
             url = 'https://c.api.weibo.com/2/statuses/user_timeline/other.json'
 
@@ -169,7 +188,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             event_loop = asyncio.new_event_loop()
             while loop:
                 try:
-                    page += 5
+                    page += pageRange
 
                     tasks = [asyncio.ensure_future(self.getAsyncRequest(url,params_dict,page=i+1), loop=event_loop) for i in range(page-5,page)]
                     event_loop.run_until_complete(asyncio.wait(tasks))
@@ -199,15 +218,22 @@ class SocialWeiboAPI(SocialBasicAPI):
                 self.logger_access.info('No post returned in last {} day(s) for user {}'.format(-start_day+1,uid))
                 return
 
+            update_operations = list()
             for post in postList:
                 if post.get('created_at'):
                     post['created_at_timestamp'] = int(time.mktime(time.strptime(post['created_at'], "%a %b %d %H:%M:%S %z %Y")))
                     post['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(post['created_at_timestamp']))
                 post['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                res = postTable.update({'id': post['id']},
+
+                op = UpdateOne({'id': post['id']},
                                            {'$set': post,'$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},upsert=True)
-                #self.logger_access.info('Post {}: {} '.format(post['id'], res))
+                update_operations.append(op)
+
+            postTable.bulk_write(update_operations, ordered=False, bypass_document_validation=False)
             self.logger_access.info('{} records have been updated for user {}'.format(len(postList),uid))
+
+        except BulkWriteError as e:
+            raise Exception(e.details)
 
         except Exception as e:
             class_name = self.__class__.__name__
@@ -243,16 +269,22 @@ class SocialWeiboAPI(SocialBasicAPI):
                 self.logger_access.warning('No data returned for uids - {}'.format(uids))
                 return
 
+            update_operations = list()
             for user in result:
                 if user.get('created_at'):
                     user['created_at_timestamp'] = int(time.mktime(time.strptime(user['created_at'], "%a %b %d %H:%M:%S %z %Y")))
                     user['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(user['created_at_timestamp']))
                 user['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                res = userGrowthTable.update({'id':user['id'],'createDay':str(datetime.now().date())},
+                op = UpdateOne({'id':user['id'],'createDay':str(datetime.now().date())},
                                              {'$set': user, '$setOnInsert': {'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
                                              upsert=True)
-                #self.logger_access.info('User {}: {} '.format(user['id'], res))
+                update_operations.append(op)
+
+            userGrowthTable.bulk_write(update_operations, ordered=False, bypass_document_validation=False)
             self.logger_access.info('{} records have been updated for users {}'.format(len(result),uids))
+
+        except BulkWriteError as e:
+            raise Exception(e.details)
 
         except Exception as e:
             class_name = self.__class__.__name__
@@ -265,19 +297,22 @@ class SocialWeiboAPI(SocialBasicAPI):
             client.close()
 
 
-    def getCommentsShow(self,mid,**kwargs):
+    def getCommentsShow(self,mid,startPage=1,pageRange=5,pageLimit=20,**kwargs):
         """
         Documentation
         http://open.weibo.com/wiki/C/2/comments/show/all
-        :param id:
+        :param mid:
+        :param startPage
+        :param pageRange
+        :param pageLimit
         :param kwargs:
         :return:
         """
         self.logger_access.info("Calling getCommentsShow function with mid: {}".format(mid))
         try:
             url = 'https://c.api.weibo.com/2/comments/show/all.json'
-            page = 0
-            commentList = []
+            page = startPage
+            commentList = list()
             loop = True
             
             paramsDict = kwargs
@@ -286,20 +321,17 @@ class SocialWeiboAPI(SocialBasicAPI):
 
             client = self.client
             db = client.weibo
-            commentTable = db.weibo_user_comment
+            commentTable = db.weibo_user_comment_davidbackham
 
             asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
             event_loop = asyncio.new_event_loop()
             while loop:
                 try:
-
-
-                    page += 5
-
-                    if page >20:
+                    page += pageRange
+                    if pageLimit and page >pageLimit:
                         raise StopIteration
 
-                    tasks = [asyncio.ensure_future(self.getAsyncRequest(url,paramsDict,page=i+1), loop=event_loop) for i in range(page-5,page)]
+                    tasks = [asyncio.ensure_future(self.getAsyncRequest(url,paramsDict,page=i), loop=event_loop) for i in range(page-pageRange,page)]
                     event_loop.run_until_complete(asyncio.wait(tasks))
 
                     result = []  # [task.result() for task in tasks]
@@ -330,10 +362,9 @@ class SocialWeiboAPI(SocialBasicAPI):
                 self.logger_access.warning("No data to update for post {}".format(mid))
                 return
 
-
+            update_operations = list()
             for comment in commentList:
                 comment['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                comment['createdTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 if comment.get('created_at'):
                     comment['created_at_timestamp'] = int(time.mktime(time.strptime(comment['created_at'], "%a %b %d %H:%M:%S %z %Y")))
                     comment['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(comment['created_at_timestamp']))
@@ -344,9 +375,16 @@ class SocialWeiboAPI(SocialBasicAPI):
                     comment['status']['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S',time.strptime(comment['status']['created_at'], "%a %b %d %H:%M:%S %z %Y"))
                 #res = commentTable.update({'id':comment['id']},{'$set':comment,
                  #                                               '$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},upsert=True)
+                op = UpdateOne({'id':comment['id']},{'$set':comment,
+                                                               '$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},upsert=True)
+                update_operations.append(op)
 
-            res = commentTable.insert_many(commentList)
+            #res = commentTable.insert_many(commentList)
+            commentTable.bulk_write(update_operations,ordered=False,bypass_document_validation=False)
             self.logger_access.info('{} records have been inserted for post {}'.format(len(commentList),mid))
+
+        except BulkWriteError as e:
+            raise Exception(e.details)
 
         except Exception as e:
             class_name = self.__class__.__name__
@@ -355,7 +393,8 @@ class SocialWeiboAPI(SocialBasicAPI):
             self.logger_error.error(msg)
             db.weibo_error_log.insert({'className': class_name, 'functionName': function_name, 'params': mid,
                                        'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
-
+        finally:
+            client.close()
 
     def getAttitudesShow(self,mid,pageStart=1,pageRange=5,pageLimit=20,**kwargs):
         """
@@ -423,6 +462,8 @@ class SocialWeiboAPI(SocialBasicAPI):
 
                     if not attitudeList:
                         raise StopIteration
+
+                    update_operations = list()
                     for attitude in attitudeList:
                         attitude['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                         #attitude['createdTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -438,16 +479,22 @@ class SocialWeiboAPI(SocialBasicAPI):
                         if attitude['status']:
                             attitude['status']['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.strptime(
                                 attitude['status']['created_at'], "%a %b %d %H:%M:%S %z %Y"))
+                        op = UpdateOne({'id':attitude['id']},{'$set':attitude,
+                                            '$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%dT%H:%M:%S')}},upsert=True)
+                        update_operations.append(op)
+                        """
                         res = attitudeTable.update({'id':attitude['id']},{'$set':attitude,
                                             '$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%dT%H:%M:%S')}},upsert=True)
-
-
-                    #res = attitudeTable.insert_many(attitudeList)
+                        """
+                    attitudeTable.bulk_write(update_operations,ordered=False,bypass_document_validation=False)
                     self.logger_access.info('{} records has been inserted for post {}'.format(len(attitudeList), mid))
                 except StopIteration:
                     loop = False
 
             event_loop.close()
+
+        except BulkWriteError as e:
+            raise Exception(e.details)
 
         except Exception as e:
             class_name = self.__class__.__name__
@@ -456,6 +503,8 @@ class SocialWeiboAPI(SocialBasicAPI):
             self.logger_error.error(msg)
             db.weibo_error_log.insert({'className': class_name, 'functionName': function_name, 'params': mid,
                                        'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
+        finally:
+            client.close()
 
     def exportAttitudesShowUids(self,urls):
         myHelper = Helper()
@@ -483,21 +532,20 @@ class SocialWeiboAPI(SocialBasicAPI):
                         print(msg)
 
 
-    def getStatusRepostTimeline(self,mid,**kwargs):
+    def getStatusRepostTimeline(self,mid,pageStart=1,pageRange=5,pageLimit=20,**kwargs):
         """
         Documentation
         http://open.weibo.com/wiki/C/2/statuses/repost_timeline/all
         :param mid:
-        :param latest:
         :param kwargs:
         :return:
         """
 
         try:
             url = 'https://c.api.weibo.com/2/statuses/repost_timeline/all.json'
-            page = 0
+            page = pageStart
             loop = True
-            repostList = []
+            repostList = list()
 
             paramsDict = kwargs
             paramsDict['access_token'] = self.__apiToken
@@ -513,11 +561,11 @@ class SocialWeiboAPI(SocialBasicAPI):
             event_loop = asyncio.new_event_loop()
             while loop:
                 try:
-                    page += 4
-                    if page > 20:
+                    page += pageRange
+                    if pageLimit and page > pageLimit:
                         raise StopIteration
 
-                    tasks = [asyncio.ensure_future(self.getAsyncRequest(url,paramsDict,page=i+1), loop=event_loop) for i in range(page-4,page)]
+                    tasks = [asyncio.ensure_future(self.getAsyncRequest(url,paramsDict,page=i), loop=event_loop) for i in range(page-pageRange,page)]
                     event_loop.run_until_complete(asyncio.wait(tasks))
                     result = []  # [task.result() for task in tasks]
                     for task in tasks:
@@ -569,6 +617,260 @@ class SocialWeiboAPI(SocialBasicAPI):
             db.weibo_error_log.insert({'className': class_name, 'functionName': function_name, 'params': mid,
                                        'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
 
+        finally:
+            client.close()
+
+    def getStatusesMentionsOther(self, uid, pageStart=1,pageRange=5,pageLimit=20,**kwargs):
+        """
+        Documentaion
+        https://open.weibo.com/wiki/C/2/statuses/mentions/other
+
+        :param uid:
+        :param kwargs:
+        :return:
+        """
+        self.logger_access.info("Calling searchStatusesHistoryCreate function")
+        try:
+            client = self.client
+            db = client.weibo
+            mentionTable = db.weibo_post_mentions
+            page = pageStart
+            loop = True
+            mentionList = list()
+
+            paramsDict = kwargs
+            paramsDict['access_token'] = self.__apiToken
+            paramsDict['uid'] = uid
+
+            url = 'https://c.api.weibo.com/2/statuses/mentions/other.json'
+
+
+            asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+            event_loop = asyncio.new_event_loop()
+            while loop:
+                try:
+                    page += pageRange
+                    if pageLimit and page > pageLimit:
+                        raise StopIteration
+
+                    tasks = [asyncio.ensure_future(self.getAsyncRequest(url, paramsDict, page=i), loop=event_loop) for i
+                             in range(page - pageRange, page)]
+                    event_loop.run_until_complete(asyncio.wait(tasks))
+
+                    result = []  # [task.result() for task in tasks]
+                    for task in tasks:
+                        try:
+                            result.append(task.result())
+                        except JSONDecodeError as e:
+                            self.logger_error.error(e)
+                            pass
+
+                    for item in result:
+                        if not item:
+                            raise StopIteration
+                        if item.get('error_code') is not None:
+                            raise Exception(
+                                'User: {}, Error Code: {}, Error Msg: {}'.format(uid, item.get('error_code'),
+                                                                                 item.get('error')))
+                        mentions = item.get('statuses')
+                        if not mentions:
+                            raise StopIteration
+                        mentionList += mentions
+
+                except StopIteration:
+                    loop = False
+
+
+            if not mentionList:
+                self.logger_access.warning("No data to update for user {}".format(uid))
+                return
+            update_operations = list()
+            for mention in mentionList:
+                mention['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                if mention.get('created_at'):
+                    mention['created_at_timestamp'] = int(
+                        time.mktime(time.strptime(mention['created_at'], "%a %b %d %H:%M:%S %z %Y")))
+                    mention['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S',
+                                                          time.localtime(mention['created_at_timestamp']))
+                if mention.get('user'):
+                    if not mention.get('user').get('european_user'):
+                        mention['user']['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S',time.strptime(mention['user']['created_at'], "%a %b %d %H:%M:%S %z %Y"))
+
+                op = UpdateOne({'id': mention['id']}, {'$set': mention,
+                                                       '$setOnInsert': {
+                                                           'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},upsert=True)
+                update_operations.append(op)
+
+            mentionTable.bulk_write(update_operations, ordered=False, bypass_document_validation=False)
+            self.logger_access.info('{} records have been inserted for user {}'.format(len(mentionList), uid))
+
+        except BulkWriteError as e:
+            raise Exception(e.details)
+
+        except Exception as e:
+            class_name = self.__class__.__name__
+            function_name = sys._getframe().f_code.co_name
+            msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
+            self.logger_error.error(msg)
+            db.weibo_error_log.insert({'className': class_name, 'functionName': function_name, 'params': mid,
+                                       'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
+        finally:
+            client.close()
+            event_loop.close()
+
+    def searchStatusesHistoryCreate(self, starttime, endtime, **kwargs):
+        """
+        Documentation
+        http://open.weibo.com/wiki/C/2/search/statuses/historical/create
+
+        :param starttime: '%Y-%m-%d %H:%M:%S'
+        :param endtime: '%Y-%m-%d %H:%M:%S'
+        :param kwargs: q, province and ids at least on of the three is required
+        :return:
+        """
+        self.logger_access.info("Calling searchStatusesHistoryCreate function")
+        try:
+            client = self.client
+            db = client.weibo
+            history_create_table = db.weibo_search_statuses_history_create
+
+            paramsDict = kwargs
+            paramsDict['access_token'] = self.__apiToken
+            paramsDict['starttime'] = self.getTimeStamp(starttime, 'ms')
+            paramsDict['endtime'] = self.getTimeStamp(endtime, 'ms')
+
+            url = 'https://c.api.weibo.com/2/search/statuses/historical/create.json'
+
+            result = self.postRequest(url, paramsDict)
+            result = result.json()
+
+            if result.get('error_code') is not None:
+                raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
+            result['status'] = False
+            result['updatedTime'] = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+            history_create_table.update({'task_id': result['task_id']},{'$set': result,'$setOnInsert': {'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S')}},upsert = True)
+
+
+            self.logger_access.info("Task {} is created.".format(result['task_id']))
+
+        except Exception as e:
+            self.logger_error.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
+            exit(1)
+        finally:
+            client.close()
+
+    def searchStatusesHistoryCheck(self):
+        """
+        Documentation
+        http://open.weibo.com/wiki/C/2/search/statuses/historical/check
+        """
+        self.logger_access.info("Calling searchStatusesHistoryCheck function")
+        try:
+            url = 'https://c.api.weibo.com/2/search/statuses/historical/check.json'
+            finishedTasks = list()
+            # Get task which is not downloaded yet
+            client = self.client
+            db = client.weibo
+            history_create_table = db.weibo_search_statuses_history_create
+
+            for task in history_create_table.find({'status':False}):
+                timestamp = int(time.time() * 1000)
+                taskId = task['task_id']
+                id = task['id']
+                secretKey = task['secret_key']
+                pw = str(id) + secretKey + str(timestamp)
+                paramsDict = {'access_token': self.__apiToken, 'task_id': taskId, 'timestamp': timestamp,
+                              'signature': hashlib.md5(pw.encode('utf-8')).hexdigest()}
+                result = self.getRequest(url, paramsDict)
+                result = result.json()
+
+                if result.get('error_code') is not None:
+                    raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
+                if result.get('status') is True:
+                    self.searchStatusesHistoryDownload(taskId, id, secretKey)
+                    self.logger_access.info("Task {} is done and returns {} records".format(taskId, result.get('count')))
+
+                    finishedTasks.append(result)
+
+            if finishedTasks:
+                try:
+                    for task in finishedTasks:
+                        task['updatedTime'] = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+                        history_create_table.update({'task_id': task['task_id']}, {'$set': task, '$setOnInsert': {
+                            'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S')}}, upsert=True)
+                except Exception as e:
+                    self.logger_error.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
+                    exit(1)
+                finally:
+                    pass
+
+            return finishedTasks
+
+        except Exception as e:
+            self.logger_error.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
+            exit(1)
+
+    def searchStatusesHistoryDownload(self, taskId, id, secretKey, chunkSize=1024):
+        """
+        Documentation
+        http://open.weibo.com/wiki/C/2/search/statuses/historical/download
+        """
+        self.logger_access.info("Calling searchStatusesHistoryDownload function")
+        try:
+            client = self.client
+            db = client.weibo
+            historyTable = db.weibo_search_statuses_history_result
+            url = 'https://c.api.weibo.com/2/search/statuses/historical/download.json'
+            timestamp = int(time.time() * 1000)
+            pw = str(id) + secretKey + str(timestamp)
+            paramsDict = {'access_token': self.__apiToken, 'task_id': taskId, 'timestamp': timestamp,
+                          'signature': hashlib.md5(pw.encode('utf-8')).hexdigest()}
+
+            result = self.getRequest(url, paramsDict)
+
+            if not result.ok:
+                raise Exception('Error Code: {}, Error Msg: {}'.format(result.status_code, result.reason))
+
+            downloadUrl = result.url
+
+            r = self.getRequest(downloadUrl)
+
+            # Download zip file
+            localzipFile = self.__rootPath + '/output/{}.zip'.format(taskId)
+            with open(localzipFile, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=chunkSize):
+                    f.write(chunk)
+
+            fileInfo = os.stat(localzipFile)
+            self.logger_access.info('{} is downloaded with {} bytes'.format(localzipFile, fileInfo.st_size))
+
+            # Read log file and write into db
+            update_operations = list()
+            extractFile = '{}.log'.format(taskId)
+            with ZipFile(localzipFile) as myzip:
+                pwd = str(taskId) + secretKey
+                with myzip.open(extractFile, pwd=pwd.encode('utf-8')) as myfile:
+                    post_lists = myfile.read().splitlines()
+                    posts = [eval(post_list.decode()) for post_list in post_lists]
+            for post in posts:
+                op = UpdateOne({'mid': post['mid']},
+                                   {'$set': post,
+                                    '$setOnInsert': {'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
+                                   upsert=True)
+                update_operations.append(op)
+
+            historyTable.bulk_write(update_operations, ordered=False, bypass_document_validation=False)
+            return
+
+        except BulkWriteError as e:
+            raise Exception(e.details)
+
+        except Exception as e:
+            self.logger_error.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
+            exit(1)
+
+        finally:
+            client.close()
 
     def doParallel(self,funcName,dataSet):
         try:
