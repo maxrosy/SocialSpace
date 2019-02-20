@@ -179,11 +179,18 @@ class WeiBoCrawler(object):
         else:
             return 0
 
-    def crawlPage(self,url):
-        response = self.session.get(url)
-        if response.status_code == 200:
-            self.logger_access.info("Crawl page {} succeeded".format(url))
-            return response.text
-        else:
-            self.logger_error.error("Crawl page failed - ".format(response.reason))
+    def crawlPage(self,url,failure_retry_times=3):
+        for i in range(failure_retry_times):
+            try:
+                response = self.session.get(url)
+                if response.status_code == 200:
+                    self.logger_access.info("Crawl page {} succeeded".format(url))
+                    return response.text
+                else:
+                    self.logger_error.error("Crawl page {} failed - {}".format(url,response.reason))
+            except requests.exceptions.ChunkedEncodingError as e:
+                msg = str(e) + '-' + 'Crawl page {} connection failed, try again'.format(url)
+                self.logger_error.error(msg)
+            except Exception as e:
+                self.logger_error.error(e)
 
