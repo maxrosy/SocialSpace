@@ -160,8 +160,14 @@ class SocialWeiboAPI(SocialBasicAPI):
 
         self.logger_access.info("Calling getStatusesUserTimelineOther with uid: {}".format(uid))
 
-        try:
+        client = self.client
+        db = client.weibo
+        postTable = db.weibo_user_post
 
+        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+        event_loop = asyncio.new_event_loop()
+
+        try:
             page = startpage
             loop = True
             postList = list()
@@ -180,12 +186,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             url = 'https://c.api.weibo.com/2/statuses/user_timeline/other.json'
 
 
-            client = self.client
-            db = client.weibo
-            postTable = db.weibo_user_post
 
-            asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-            event_loop = asyncio.new_event_loop()
             while loop:
                 try:
                     page += pageRange
@@ -213,7 +214,6 @@ class SocialWeiboAPI(SocialBasicAPI):
                 except StopIteration:
                     loop = False
 
-            event_loop.close()
             if not postList:
                 self.logger_access.info('No post returned in last {} day(s) for user {}'.format(-start_day+1,uid))
                 return
@@ -244,6 +244,7 @@ class SocialWeiboAPI(SocialBasicAPI):
                                        'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
         finally:
             client.close()
+            event_loop.close()
 
     async def getUsersCountBatch(self, uids):
         """
@@ -254,10 +255,12 @@ class SocialWeiboAPI(SocialBasicAPI):
         :return:
         """
         self.logger_access.info("Calling getUsersCountBatch with uids: {}".format(uids))
+
+        client = self.client
+        db = client.weibo
+        userGrowthTable = db.weibo_user_growth
+
         try:
-            client = self.client
-            db = client.weibo
-            userGrowthTable = db.weibo_user_growth
 
             params_dict = {'access_token': self.__apiToken, 'uids': uids}
 
@@ -309,6 +312,13 @@ class SocialWeiboAPI(SocialBasicAPI):
         :return:
         """
         self.logger_access.info("Calling getCommentsShow function with mid: {}".format(mid))
+
+        client = self.client
+        db = client.weibo
+        commentTable = db.weibo_user_comment_davidbackham
+        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+        event_loop = asyncio.new_event_loop()
+
         try:
             url = 'https://c.api.weibo.com/2/comments/show/all.json'
             page = startPage
@@ -319,12 +329,6 @@ class SocialWeiboAPI(SocialBasicAPI):
             paramsDict['access_token'] = self.__apiToken
             paramsDict['id'] = mid
 
-            client = self.client
-            db = client.weibo
-            commentTable = db.weibo_user_comment_davidbackham
-
-            asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-            event_loop = asyncio.new_event_loop()
             while loop:
                 try:
                     page += pageRange
@@ -355,8 +359,6 @@ class SocialWeiboAPI(SocialBasicAPI):
 
                 except StopIteration:
                     loop = False
-
-            event_loop.close()
 
             if not commentList:
                 self.logger_access.warning("No data to update for post {}".format(mid))
@@ -395,6 +397,8 @@ class SocialWeiboAPI(SocialBasicAPI):
                                        'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
         finally:
             client.close()
+            event_loop.close()
+
 
     def getAttitudesShow(self,mid,pageStart=1,pageRange=5,pageLimit=20,**kwargs):
         """
@@ -405,6 +409,12 @@ class SocialWeiboAPI(SocialBasicAPI):
         :param kwargs: count
         :return:
         """
+        client = self.client
+        db = client.weibo
+        attitudeTable = db.weibo_user_attitude_new
+
+        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+        event_loop = asyncio.new_event_loop()
 
         try:
             url = 'https://c.api.weibo.com/2/attitudes/show/biz.json'
@@ -415,15 +425,12 @@ class SocialWeiboAPI(SocialBasicAPI):
             paramsDict['access_token'] = self.__apiToken
             paramsDict['id'] = mid
 
-            client = self.client
-            db = client.weibo
-            attitudeTable = db.weibo_user_attitude_new
+
             if not attitudeTable.index_information():
                 attitudeTable.create_index([('id', 1)],unique=True)
 
             self.logger_access.info("Calling getAttitudesShow function with mid: {}".format(mid))
-            asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-            event_loop = asyncio.new_event_loop()
+
             while loop:
                 try:
                     attitudeList = list()
@@ -491,8 +498,6 @@ class SocialWeiboAPI(SocialBasicAPI):
                 except StopIteration:
                     loop = False
 
-            event_loop.close()
-
         except BulkWriteError as e:
             raise Exception(e.details)
 
@@ -505,6 +510,7 @@ class SocialWeiboAPI(SocialBasicAPI):
                                        'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
         finally:
             client.close()
+            event_loop.close()
 
     def exportAttitudesShowUids(self,urls):
         myHelper = Helper()
@@ -540,6 +546,9 @@ class SocialWeiboAPI(SocialBasicAPI):
         :param kwargs:
         :return:
         """
+        client = self.client
+        db = client.weibo
+        repostTable = db.weibo_user_repost2
 
         try:
             url = 'https://c.api.weibo.com/2/statuses/repost_timeline/all.json'
@@ -551,9 +560,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             paramsDict['access_token'] = self.__apiToken
             paramsDict['id'] = mid
 
-            client = self.client
-            db = client.weibo
-            repostTable = db.weibo_user_repost2
+
 
             self.logger_access.info('Calling getStatusRepostTimeline function with mid: {}'.format(mid))
 
@@ -586,7 +593,7 @@ class SocialWeiboAPI(SocialBasicAPI):
                         repostList += reposts
                 except StopIteration:
                     loop = False
-            event_loop.close()
+
 
             if not repostList:
                 self.logger_access.warning("No data to update for post {}".format(mid))
@@ -619,6 +626,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 
         finally:
             client.close()
+            event_loop.close()
 
     def getStatusesMentionsOther(self, uid, pageStart=1,pageRange=5,pageLimit=20,**kwargs):
         """
@@ -630,10 +638,16 @@ class SocialWeiboAPI(SocialBasicAPI):
         :return:
         """
         self.logger_access.info("Calling searchStatusesHistoryCreate function")
+
+        client = self.client
+        db = client.weibo
+        mentionTable = db.weibo_post_mentions
+
+        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+        event_loop = asyncio.new_event_loop()
+
         try:
-            client = self.client
-            db = client.weibo
-            mentionTable = db.weibo_post_mentions
+
             page = pageStart
             loop = True
             mentionList = list()
@@ -644,9 +658,6 @@ class SocialWeiboAPI(SocialBasicAPI):
 
             url = 'https://c.api.weibo.com/2/statuses/mentions/other.json'
 
-
-            asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-            event_loop = asyncio.new_event_loop()
             while loop:
                 try:
                     page += pageRange
@@ -729,11 +740,12 @@ class SocialWeiboAPI(SocialBasicAPI):
         :return:
         """
         self.logger_access.info("Calling searchStatusesHistoryCreate function")
-        try:
-            client = self.client
-            db = client.weibo
-            history_create_table = db.weibo_search_statuses_history_create
 
+        client = self.client
+        db = client.weibo
+        history_create_table = db.weibo_search_statuses_history_create
+
+        try:
             paramsDict = kwargs
             paramsDict['access_token'] = self.__apiToken
             paramsDict['starttime'] = self.getTimeStamp(starttime, 'ms')
@@ -778,6 +790,7 @@ class SocialWeiboAPI(SocialBasicAPI):
                 taskId = task['task_id']
                 id = task['id']
                 secretKey = task['secret_key']
+                q = task['q']
                 pw = str(id) + secretKey + str(timestamp)
                 paramsDict = {'access_token': self.__apiToken, 'task_id': taskId, 'timestamp': timestamp,
                               'signature': hashlib.md5(pw.encode('utf-8')).hexdigest()}
@@ -787,7 +800,7 @@ class SocialWeiboAPI(SocialBasicAPI):
                 if result.get('error_code') is not None:
                     raise Exception('Error Code: {}, Error Msg: {}'.format(result.get('error_code'), result.get('error')))
                 if result.get('status') is True:
-                    self.searchStatusesHistoryDownload(taskId, id, secretKey)
+                    self.searchStatusesHistoryDownload(task)
                     self.logger_access.info("Task {} is done and returns {} records".format(taskId, result.get('count')))
 
                     finishedTasks.append(result)
@@ -810,20 +823,24 @@ class SocialWeiboAPI(SocialBasicAPI):
             self.logger_error.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
             exit(1)
 
-    def searchStatusesHistoryDownload(self, taskId, id, secretKey, chunkSize=1024):
+    def searchStatusesHistoryDownload(self,task,chunkSize=1024,batchSize=10000):
         """
         Documentation
         http://open.weibo.com/wiki/C/2/search/statuses/historical/download
         """
         self.logger_access.info("Calling searchStatusesHistoryDownload function")
+        client = self.client
+        db = client.weibo
+        historyTable = db.weibo_search_statuses_history_result_2
+
         try:
-            client = self.client
-            db = client.weibo
-            historyTable = db.weibo_search_statuses_history_result
+            if not historyTable.index_information():
+                historyTable.create_index([('mid', 1)])
+
             url = 'https://c.api.weibo.com/2/search/statuses/historical/download.json'
             timestamp = int(time.time() * 1000)
-            pw = str(id) + secretKey + str(timestamp)
-            paramsDict = {'access_token': self.__apiToken, 'task_id': taskId, 'timestamp': timestamp,
+            pw = str(task['id']) + task['secret_key'] + str(timestamp)
+            paramsDict = {'access_token': self.__apiToken, 'task_id': task['task_id'], 'timestamp': timestamp,
                           'signature': hashlib.md5(pw.encode('utf-8')).hexdigest()}
 
             result = self.getRequest(url, paramsDict)
@@ -836,7 +853,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             r = self.getRequest(downloadUrl)
 
             # Download zip file
-            localzipFile = self.__rootPath + '/output/{}.zip'.format(taskId)
+            localzipFile = self.__rootPath + '/output/{}.zip'.format(task['task_id'])
             with open(localzipFile, 'wb') as f:
                 for chunk in r.iter_content(chunk_size=chunkSize):
                     f.write(chunk)
@@ -846,24 +863,31 @@ class SocialWeiboAPI(SocialBasicAPI):
 
             # Read log file and write into db
             update_operations = list()
-            extractFile = '{}.log'.format(taskId)
+            extractFile = '{}.log'.format(task['task_id'])
             with ZipFile(localzipFile) as myzip:
-                pwd = str(taskId) + secretKey
+                pwd = str(task['task_id']) + task['secret_key']
                 with myzip.open(extractFile, pwd=pwd.encode('utf-8')) as myfile:
-                    post_lists = myfile.read().splitlines()
-                    posts = [eval(post_list.decode()) for post_list in post_lists]
-            for post in posts:
-                op = UpdateOne({'mid': post['mid']},
+                    for post in myfile:
+                        post = eval(post.decode())
+                        post['q'] = task['q']
+                        # This is a bug of weibo api
+                        post['blog_url'] = post['blog_url ']
+                        post.pop('blog_url ')
+
+                        op = UpdateOne({'mid': post['mid']},
                                    {'$set': post,
-                                    '$setOnInsert': {'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
-                                   upsert=True)
-                update_operations.append(op)
-
-            historyTable.bulk_write(update_operations, ordered=False, bypass_document_validation=False)
-            return
-
-        except BulkWriteError as e:
-            raise Exception(e.details)
+                                    #'$rename':{'blog_url ':'blog_url'},
+                                    '$setOnInsert': {'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+                                    },
+                                   upsert=True
+                               )
+                        update_operations.append(op)
+                        if len(update_operations) == batchSize:
+                            historyTable.bulk_write(update_operations, ordered=False, bypass_document_validation=False)
+                            update_operations.clear()
+                    if update_operations:
+                        historyTable.bulk_write(update_operations, ordered=False, bypass_document_validation=False)
+                        update_operations.clear()
 
         except Exception as e:
             self.logger_error.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
