@@ -32,7 +32,7 @@ class WeiBoCrawler(object):
         self.session.get("http://weibo.com/login.php")
         return
 
-    def login(self, user_name, pass_word):
+    def login(self, user_name, pass_word,failure_retry_times=3):
         """
         login weibo.com, return True or False
         """
@@ -41,68 +41,72 @@ class WeiBoCrawler(object):
         self.user_uniqueid = None
         self.user_nick = None
         self.logger_access.info('Login in process for {}'.format(user_name))
-        # get json data
-        s_user_name = self.get_username()
-        json_data = self.get_json_data(su_value=s_user_name)
-        if not json_data:
-            return False
-        s_pass_word = self.get_password(json_data["servertime"], json_data["nonce"], json_data["pubkey"])
+        for i in range(failure_retry_times):
+            try:
+                # get json data
+                s_user_name = self.get_username()
+                json_data = self.get_json_data(su_value=s_user_name)
+                if not json_data:
+                    return False
+                s_pass_word = self.get_password(json_data["servertime"], json_data["nonce"], json_data["pubkey"])
 
-        # make post_data
-        post_data = {
-            "entry": "weibo",
-            "gateway": "1",
-            "from": "",
-            "savestate": "7",
-            "userticket": "1",
-            "vsnf": "1",
-            "service": "miniblog",
-            "encoding": "UTF-8",
-            "pwencode": "rsa2",
-            "sr": "1280*800",
-            "prelt": "529",
-            "url": "http://weibo.com/ajaxlogin.php?framelogin=1&callback=parent.sinaSSOController.feedBackUrlCallBack",
-            "rsakv": json_data["rsakv"],
-            "servertime": json_data["servertime"],
-            "nonce": json_data["nonce"],
-            "su": s_user_name,
-            "sp": s_pass_word,
-            "returntype": "TEXT",
-        }
+                # make post_data
+                post_data = {
+                    "entry": "weibo",
+                    "gateway": "1",
+                    "from": "",
+                    "savestate": "7",
+                    "userticket": "1",
+                    "vsnf": "1",
+                    "service": "miniblog",
+                    "encoding": "UTF-8",
+                    "pwencode": "rsa2",
+                    "sr": "1280*800",
+                    "prelt": "529",
+                    "url": "http://weibo.com/ajaxlogin.php?framelogin=1&callback=parent.sinaSSOController.feedBackUrlCallBack",
+                    "rsakv": json_data["rsakv"],
+                    "servertime": json_data["servertime"],
+                    "nonce": json_data["nonce"],
+                    "su": s_user_name,
+                    "sp": s_pass_word,
+                    "returntype": "TEXT",
+                }
 
-        # get captcha code
-        if json_data["showpin"] == 1:
-            url = "http://login.sina.com.cn/cgi/pin.php?r=%d&s=0&p=%s" % (int(time.time()), json_data["pcid"])
-            with open("/home/panther/Downloads/captcha.jpeg", "wb") as file_out:
-                file_out.write(self.session.get(url).content)
-            file_out.close()
-            code = input("请输入验证码:")
-            post_data["pcid"] = json_data["pcid"]
-            post_data["door"] = code
+                # get captcha code
+                if json_data["showpin"] == 1:
+                    url = "http://login.sina.com.cn/cgi/pin.php?r=%d&s=0&p=%s" % (int(time.time()), json_data["pcid"])
+                    with open("/home/panther/Downloads/captcha.jpeg", "wb") as file_out:
+                        file_out.write(self.session.get(url).content)
+                    file_out.close()
+                    code = input("请输入验证码:")
+                    post_data["pcid"] = json_data["pcid"]
+                    post_data["door"] = code
 
-        # login weibo.com
-        login_url_1 = "http://login.sina.com.cn/sso/login.php?client=ssologin.js(v1.4.18)&_=%d" % int(time.time())
-        json_data_1 = self.session.post(login_url_1, data=post_data).json()
-        if json_data_1["retcode"] == "0":
-            params = {
-                "callback": "sinaSSOController.callbackLoginStatus",
-                "client": "ssologin.js(v1.4.18)",
-                "ticket": json_data_1["ticket"],
-                "ssosavestate": int(time.time()),
-                "_": int(time.time()*1000),
-            }
-            response = self.session.get("https://passport.weibo.com/wbsso/login", params=params)
-            json_data_2 = json.loads(re.search(r"\((?P<result>.*)\)", response.text).group("result"))
-            if json_data_2["result"] is True:
-                self.user_uniqueid = json_data_2["userinfo"]["uniqueid"]
-                self.user_nick = json_data_2["userinfo"]["displayname"]
-                self.logger_access.info("WeiboLogin succeeded: {}".format(json_data_2))
-            else:
-                self.logger_error.error("WeiboLogin failed: {}".format(json_data_2))
+                # login weibo.com
+                login_url_1 = "http://login.sina.com.cn/sso/login.php?client=ssologin.js(v1.4.18)&_=%d" % int(time.time())
+                json_data_1 = self.session.post(login_url_1, data=post_data).json()
+                if json_data_1["retcode"] == "0":
+                    params = {
+                        "callback": "sinaSSOController.callbackLoginStatus",
+                        "client": "ssologin.js(v1.4.18)",
+                        "ticket": json_data_1["ticket"],
+                        "ssosavestate": int(time.time()),
+                        "_": int(time.time()*1000),
+                    }
+                    response = self.session.get("https://passport.weibo.com/wbsso/login", params=params)
+                    json_data_2 = json.loads(re.search(r"\((?P<result>.*)\)", response.text).group("result"))
+                    if json_data_2["result"] is True:
+                        self.user_uniqueid = json_data_2["userinfo"]["uniqueid"]
+                        self.user_nick = json_data_2["userinfo"]["displayname"]
+                        self.logger_access.info("WeiboLogin succeeded: {}".format(json_data_2))
+                    else:
+                        self.logger_error.error("WeiboLogin failed: {}".format(json_data_2))
 
-        else:
-            self.logger_error.error("WeiboLogin failed: {}".format(json_data_1))
-        return True if self.user_uniqueid and self.user_nick else False
+                else:
+                    self.logger_error.error("WeiboLogin failed: {}".format(json_data_1))
+                return True if self.user_uniqueid and self.user_nick else False
+            except Exception as e:
+                self.logger_error.error('WeiboLogin failed: {}, try again'.format(e))
 
     def get_username(self):
         """
