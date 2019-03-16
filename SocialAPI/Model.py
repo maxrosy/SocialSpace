@@ -8,11 +8,11 @@ from SocialAPI.Helper import Helper
 rootPath = Helper().getRootPath()
 cfp = configparser.ConfigParser()
 cfp.read(rootPath + '/conf/social.conf')
-username = cfp.get('db','user')
-password = cfp.get('db','password')
-host = cfp.get('db','host')
-port = cfp.get('db','port')
-db = cfp.get('db','db')
+username = cfp.get('mysql','user')
+password = cfp.get('mysql','password')
+host = cfp.get('mysql','host')
+port = cfp.get('mysql','port')
+db = cfp.get('mysql','db')
 
 dblink = "mysql+mysqldb://{}:{}@{}:{}/{}?charset=utf8mb4".format(username,password,host,port,db)
 

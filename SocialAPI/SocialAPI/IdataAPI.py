@@ -8,6 +8,7 @@ from urllib.parse import quote
 import pandas as pd
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
+import requests
 
 class IdataAPI(SocialBasicAPI):
 
@@ -23,7 +24,6 @@ class IdataAPI(SocialBasicAPI):
 
         self.__mongo_uri = 'mongodb://' + self.__mongo_user + ':' + self.__mongo_pwd + '@' + self.__mongo_host + ':' + self.__mongo_port + '/' + 'idata'
         self.client = MongoClient(self.__mongo_uri)
-        #self.client = MongoClient()
 
     def getZanDouData(self, createBeginDate, createEndDate, **kwargs):
 
@@ -50,12 +50,12 @@ class IdataAPI(SocialBasicAPI):
                 postTable.create_index([('id',1),('ref_date',-1)],unique=True)
                 postTable.create_index([('publishDate', -1)])
 
-            postList = list()
 
             loop = True
-
+            total_posts = 0
             while loop:
                 try:
+                    postList = list()
                     r = self.getRequest(url, paramsDict)
                     res = r.json()
 
@@ -73,7 +73,45 @@ class IdataAPI(SocialBasicAPI):
                     else:
                         postList += res['data']
 
-                    self.logger_access.info('{} records have been fetched. Totally {} records - {}'.format(len(postList),res['total'],tableName))
+                    if not postList:
+                        self.logger_access.info(
+                            'No post returned between {} and {} for {}'.format(createBeginDate, createEndDate,
+                                                                               tableName))
+                        return
+
+                    if paramsDict.get('type') in ('answer', 'reply', 'comment'):
+                        print('{} records before dedup - {}'.format(len(postList), tableName))
+                        postDataFrame = pd.DataFrame(postList)
+                        postDataFrame.drop_duplicates('id', inplace=True)
+                        postList = postDataFrame.to_dict('records')
+                        print('{} records after dedup - {}'.format(len(postList), tableName))
+
+                    update_operations = list()
+                    for post in postList:
+                        if not post.get('id'):
+                            self.logger_error.error('ID missing with post{} for {}'.format(post, tableName))
+                            continue
+                        post['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        x = time.localtime(post['createDate'])
+                        post['ref_date'] = time.strftime('%Y-%m-%d', x)
+
+                        if paramsDict.get('type') in ('answer', 'reply', 'comment'):
+                            op = UpdateOne({'id': post['id']},
+                                           {'$set': post, '$setOnInsert': {
+                                               'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
+                                           upsert=True)
+
+                        else:
+                            op = UpdateOne({'id': post['id'], 'ref_date': post['ref_date']},
+                                           {'$set': post, '$setOnInsert': {
+                                               'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
+                                           upsert=True)
+
+                        update_operations.append(op)
+
+                    postTable.bulk_write(update_operations, ordered=False, bypass_document_validation=False)
+                    total_posts += len(postList)
+                    self.logger_access.info('{} records have been fetched. Totally {} records - {}'.format(total_posts,res['total'],tableName))
                     time.sleep(0.1)
 
                     if not res['hasNext']:
@@ -83,53 +121,6 @@ class IdataAPI(SocialBasicAPI):
 
                 except StopIteration:
                     loop = False
-
-            if not postList:
-                self.logger_access.info('No post returned between {} and {} for {}'.format(createBeginDate,createEndDate,tableName))
-                return
-
-            if paramsDict.get('type') in ('answer','reply','comment'):
-                print('{} records before dedup - {}'.format(len(postList),tableName))
-                postDataFrame = pd.DataFrame(postList)
-                postDataFrame.drop_duplicates('id', inplace=True)
-                postList = postDataFrame.to_dict('records')
-                print('{} records after dedup - {}'.format(len(postList),tableName))
-
-            update_operations = list()
-            for post in postList:
-                if not post.get('id'):
-                    self.logger_error.error('ID missing with post{} for {}'.format(post,tableName))
-                    continue
-                post['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                x = time.localtime(post['createDate'])
-                post['ref_date'] = time.strftime('%Y-%m-%d',x)
-
-                if paramsDict.get('type') in ('answer', 'reply', 'comment'):
-                    op = UpdateOne({'id': post['id']},
-                                                  {'$set': post, '$setOnInsert': {
-                                                      'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
-                                                upsert=True)
-                    """
-                    result = postTable.update_one({'id': post['id']},
-                                                  {'$set': post, '$setOnInsert': {
-                                                      'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
-                                                upsert=True)
-                    """
-                else:
-                    op = UpdateOne({'id': post['id'],'ref_date':post['ref_date']},
-                                            {'$set': post, '$setOnInsert': {
-                                              'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
-                                                upsert=True)
-
-                    """
-                    result = postTable.update_one({'id': post['id'],'ref_date':post['ref_date']},
-                                            {'$set': post, '$setOnInsert': {
-                                              'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
-                                                upsert=True)
-                    """
-                update_operations.append(op)
-
-            postTable.bulk_write(update_operations,ordered=False,bypass_document_validation=False)
 
         except BulkWriteError as e:
             raise Exception(e.details)
