@@ -65,3 +65,6 @@ class WeixinAccount(Base):
 
 class IdataAccount(Base):
     __table__ = Table('idata_account',metadata,autoload=True)
+
+class WeiboBrandSearch(Base):
+    __table__ = Table('weibo_brand_search',metadata,autoload=True)
