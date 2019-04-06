@@ -19,7 +19,7 @@ if __name__ == '__main__':
 
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     loop = asyncio.new_event_loop()
-    tasks = [asyncio.ensure_future(weibo.getTagsBatchOther(uids),loop=loop) for uids in uidGroup]
+    tasks = [asyncio.ensure_future(weibo.get_tags_batch_other(uids),loop=loop) for uids in uidGroup]
     loop.run_until_complete(asyncio.wait(tasks))
     #result = [task.result() for task in tasks]
 

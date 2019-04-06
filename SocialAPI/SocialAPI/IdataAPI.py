@@ -25,7 +25,7 @@ class IdataAPI(SocialBasicAPI):
         self.__mongo_uri = 'mongodb://' + self.__mongo_user + ':' + self.__mongo_pwd + '@' + self.__mongo_host + ':' + self.__mongo_port + '/' + 'idata'
         self.client = MongoClient(self.__mongo_uri)
 
-    def getZanDouData(self, createBeginDate, createEndDate, **kwargs):
+    def get_zandou_data(self, createBeginDate, createEndDate, **kwargs):
 
         self.logger_access.info("Calling getZanDouData with params {}".format(kwargs))
         try:
@@ -80,11 +80,11 @@ class IdataAPI(SocialBasicAPI):
                         return
 
                     if paramsDict.get('type') in ('answer', 'reply', 'comment'):
-                        print('{} records before dedup - {}'.format(len(postList), tableName))
+                        #print('{} records before dedup - {}'.format(len(postList), tableName))
                         postDataFrame = pd.DataFrame(postList)
                         postDataFrame.drop_duplicates('id', inplace=True)
                         postList = postDataFrame.to_dict('records')
-                        print('{} records after dedup - {}'.format(len(postList), tableName))
+                        #print('{} records after dedup - {}'.format(len(postList), tableName))
 
                     update_operations = list()
                     for post in postList:

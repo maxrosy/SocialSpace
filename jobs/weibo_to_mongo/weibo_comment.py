@@ -10,12 +10,10 @@ if __name__ == '__main__':
     rootPath = Helper().getRootPath()
 
     weibo = SocialWeiboAPI()
-    session = weibo.createSession()
     client = weibo.client
     db = client.weibo
     postTable = db.weibo_user_post
-    commentTable = db.weibo_user_comment
-
+    """    
     startTime = weibo.getStrTime(-7)
     startTimeStamp = weibo.getTimeStamp(startTime)
     uids = session.query(Kol.uid).all()
@@ -50,3 +48,8 @@ if __name__ == '__main__':
 
     weibo.doParallel('comment',commentPostList)
     weibo._client.close()
+    """
+
+    posts = postTable.find({'uid':3312008743},{'mid':1})
+    for post in posts:
+        weibo.get_comments_show(post['mid'],count=200)

@@ -3,6 +3,7 @@ from SocialAPI.SocialAPI.WeiboAPI import SocialWeiboAPI
 from SocialAPI.Helper import Helper
 from SocialAPI.Model import Kol
 import threading
+import time
 
 if __name__ == '__main__':
     rootPath = Helper().getRootPath()
@@ -12,14 +13,15 @@ if __name__ == '__main__':
     uids = session.query(Kol.uid).all()
     uids = [str(uid[0]) for uid in uids]
     session.close()
+    #uids = ['1465136035']
     """
     for uid in uids:
-        weibo.getUserTimelineOther(uid,start_day=-2,count=100)
+        weibo.getUserTimelineOtherTest(uid,start_day=-2,count=100)
     """
     threads = []
-
+    
     for uid in uids:
-        t = threading.Thread(target=weibo.getUserTimelineOther, args=(uid,), kwargs={'start_day':-7,'count': 50})
+        t = threading.Thread(target=weibo.get_user_timeline_other, args=(uid,), kwargs={'start_day':-7,'count': 50})
         threads.append(t)
 
     for t in threads:

@@ -16,7 +16,7 @@ from ..Model import engine
 from sqlalchemy.orm import sessionmaker
 from SocialAPI.Helper import Helper
 import aiohttp
-import json
+import json,simplejson
 import asyncio
 
 
@@ -29,10 +29,10 @@ class SocialBasicAPI(object):
 		self.cfp.read(self.__rootPath + '/conf/social.conf')
 		self.logger_access = Logger(self.__rootPath + '/conf/logging.conf','logger_access').createLogger()
 		self.logger_error = Logger(self.__rootPath + '/conf/logging.conf','logger_error').createLogger()
-		self.__username = self.cfp.get('db','user')
-		self.__password = self.cfp.get('db','password')
-		self.__host = self.cfp.get('db','host')
-		self.__port = int(self.cfp.get('db','port'))
+		#self.__username = self.cfp.get('db','user')
+		#self.__password = self.cfp.get('db','password')
+		#self.__host = self.cfp.get('db','host')
+		#self.__port = int(self.cfp.get('db','port'))
 		#self.__db = self.cfp.get('db','db')
 		#self.__table = self.cfp.get('db','table')
 		
@@ -52,7 +52,7 @@ class SocialBasicAPI(object):
 			async with session.get(url, params=params) as r:
 				#return await r.json()
 				data = await r.read()
-				return json.loads(data)
+				return simplejson.loads(data,strict=False)
 
 	def encodeElement(self,text):
 

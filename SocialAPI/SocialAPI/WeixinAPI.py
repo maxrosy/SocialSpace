@@ -28,6 +28,7 @@ class SocialWeixinAPI(SocialBasicAPI):
         self.client = MongoClient(self.__mongo_uri)
         #self.client = MongoClient()
 
+    # Step 2
     def getComponentAccessToken(self,appid,appSecret):
         url = 'https://api.weixin.qq.com/cgi-bin/component/api_component_token'
         client = self.client
@@ -55,12 +56,13 @@ class SocialWeixinAPI(SocialBasicAPI):
             class_name = self.__class__.__name__
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
-            db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': '','createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
+            db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': '','createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
             self.logger_error.error(msg)
 
         finally:
             client.close()
 
+    # Step 3
     def getPreAuthCode(self,appid,appSecret):
         client = self.client
         db = client.weixin
@@ -91,7 +93,7 @@ class SocialWeixinAPI(SocialBasicAPI):
             class_name = self.__class__.__name__
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
-            db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': '','createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
+            db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': '','createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
             self.logger_error.error(msg)
 
         finally:
@@ -99,10 +101,10 @@ class SocialWeixinAPI(SocialBasicAPI):
 
     def createAuthUrl(self,appid,appSecret):
         pre_auth_code = self.getPreAuthCode(appid,appSecret)
-        redirect_url = '47.97.203.126'
+        redirect_url = '47.97.203.126/callback/event'
         auth_url = 'https://mp.weixin.qq.com/safe/bindcomponent?action=bindcomponent&no_scan=1&component_appid={}&pre_auth_code={}&redirect_uri={}&auth_type=3#wechat_redirect'\
                         .format(appid,pre_auth_code,redirect_url)
-        auth_url = quote(auth_url,'utf-8')
+        #auth_url = quote(auth_url,'utf-8')
         return auth_url
 
     def getAccessTokenFromController(self,appid,appkey):
@@ -132,7 +134,7 @@ class SocialWeixinAPI(SocialBasicAPI):
             class_name = self.__class__.__name__
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
-            db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': '','createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
+            db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': '','createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
             self.logger_error.error(msg)
 
         finally:
@@ -166,7 +168,7 @@ class SocialWeixinAPI(SocialBasicAPI):
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
             self.logger_error.error(msg)
-            db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': account_name+','+begin_date+','+end_date,'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
+            db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': account_name+','+begin_date+','+end_date,'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
         finally:
             client.close()
 
@@ -197,7 +199,7 @@ class SocialWeixinAPI(SocialBasicAPI):
             class_name = self.__class__.__name__
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
-            db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': account_name+','+begin_date+','+end_date,'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
+            db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': account_name+','+begin_date+','+end_date,'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
             self.logger_error.error(msg)
 
         finally:
@@ -230,7 +232,7 @@ class SocialWeixinAPI(SocialBasicAPI):
             class_name = self.__class__.__name__
             function_name = sys._getframe().f_code.co_name
             msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
-            db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': account_name+','+begin_date+','+end_date,'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'msg': msg})
+            db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': account_name+','+begin_date+','+end_date,'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
             self.logger_error.error(msg)
         finally:
             client.close()

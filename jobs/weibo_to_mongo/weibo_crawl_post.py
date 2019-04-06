@@ -23,7 +23,7 @@ if __name__ == '__main__':
     userDict = {}
     userInfo = session.query(Kol.uid,Kol.username,Kol.pw).filter(Kol.status == 1, Kol.crawl_status==1).all()
 
-    #userInfo = session.query(Kol.uid,Kol.username,Kol.pw).filter(Kol.uid==1893799562).all()
+    #userInfo = session.query(Kol.uid,Kol.username,Kol.pw).filter(Kol.uid==2036201132).all()
 
     for user in userInfo:
         userDict[user[0]] = (user[1],user[2])
@@ -42,7 +42,7 @@ if __name__ == '__main__':
         weiboCrawler.login(userDict[uid][0],userDict[uid][1])
 
         for pid in pids:
-        #for pid in [4280834628947131,4072850115792537]:
+        #for pid in [4312910043806040]:
             mid = myHelper.convertIdtoMid(pid)
             url = 'https://weibo.com/'+ str(uid) + '/' + str(mid)
             html = weiboCrawler.crawlPage(url)
@@ -56,7 +56,7 @@ if __name__ == '__main__':
 
     for post in result:
         post['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')#int(time.time())
-        res = crawlTable.update({'pid':post['pid'],'crawlDate':time.strftime("%Y-%m-%d", time.localtime())},
+        res = crawlTable.update_one({'pid':post['pid'],'crawlDate':time.strftime("%Y-%m-%d", time.localtime())},
                                 {'$set': post, '$setOnInsert': {'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}}, upsert=True)
     client.close()
     session.close()

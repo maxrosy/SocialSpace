@@ -7,7 +7,7 @@ import threading
 if __name__ =='__main__':
     weibo = SocialWeiboAPI()
     session = weibo.createSession()
-    uids = session.query(Kol.uid).filter_by(status=1).all()
+    uids = session.query(Kol.uid).all()
     uid_list = [uid[0] for uid in uids]
     df_uid_list = pd.DataFrame(uid_list).rename(columns={0:'uid'})
     session.close()
@@ -16,6 +16,7 @@ if __name__ =='__main__':
     db = client.weibo
     mention_table = db.weibo_post_mention
 
+    # get the latest mention post as the starting point
     pipeline = [
         {'$group': {'_id': '$uid_mentioned', 'since_id': {'$max': '$id'}, 'count': {'$sum': 1}}}
     ]
@@ -31,7 +32,9 @@ if __name__ =='__main__':
         df['since_id'] = 0
 
     uid_mention_list = df[['uid', 'since_id']].to_dict('records')
-
+    """
+    uid_mention_list = [{'uid':1006421732,'since_id':4325734551722946}]
+    """
     weibo.doParallel('mention', uid_mention_list)
 
     #for item in uid_mention_list:
