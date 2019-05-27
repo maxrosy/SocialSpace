@@ -13,7 +13,7 @@ if __name__ == '__main__':
     uids = session.query(Kol.uid).all()
     uids = [str(uid[0]) for uid in uids]
     session.close()
-    #uids = ['1465136035']
+    #uids = ['5339305113','6883966016','1594052081','1747506517','1793285524','1647720105']
     """
     for uid in uids:
         weibo.getUserTimelineOtherTest(uid,start_day=-2,count=100)

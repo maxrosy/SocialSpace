@@ -68,3 +68,9 @@ class IdataAccount(Base):
 
 class WeiboBrandSearch(Base):
     __table__ = Table('weibo_brand_search',metadata,autoload=True)
+
+class WeiboLastMentionedPost(Base):
+    #__table__ = Table('weibo_last_mentioned_post',metadata,autoload=True)
+    __tablename__ ='weibo_last_mentioned_post'
+    uid = Column(BIGINT,primary_key=true)
+    since_id = Column(VARCHAR(128))

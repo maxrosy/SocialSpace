@@ -194,7 +194,7 @@ class SocialWeiboAPI(SocialBasicAPI):
                     if page_limit and page >page_limit:
                         raise StopIteration
                     page += page_range
-                    tasks = [asyncio.ensure_future(self.getAsyncRequest(url,paramsDict,page=i), loop=event_loop) for i in range(page-page_range,page)]
+                    tasks = [asyncio.ensure_future(self.getAsyncRequest(url,params_dict,page=i), loop=event_loop) for i in range(page-page_range,page)]
                     event_loop.run_until_complete(asyncio.wait(tasks))
 
                     result = [] #[task.result() for task in tasks]
@@ -644,7 +644,8 @@ class SocialWeiboAPI(SocialBasicAPI):
 
         client = self.client
         db = client.weibo
-        mentionTable = db.weibo_post_mention
+        mention_table = db.weibo_post_mention
+        user_table = db.weibo_user_info
 
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
         event_loop = asyncio.new_event_loop()
@@ -695,7 +696,8 @@ class SocialWeiboAPI(SocialBasicAPI):
                 except StopIteration:
                     loop = False
 
-                update_operations = list()
+                update_operations_mention = list()
+                update_operations_user = list()
                 for mention in mentionList:
                     mention['uid_mentioned'] = uid
                     mention['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -709,15 +711,27 @@ class SocialWeiboAPI(SocialBasicAPI):
                         if not mention.get('user').get('european_user'):
                             mention['user']['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.strptime(
                                 mention['user']['created_at'], "%a %b %d %H:%M:%S %z %Y"))
+                            mention_user = mention['user']
+                            mention_user['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                            op_user = UpdateOne({'id':mention_user['id']},
+                                                {'$set':mention_user,
+                                                 '$setOnInsert': {
+                                                     'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+                                                 }, upsert=True)
+                            update_operations_user.append(op_user)
 
-                    op = UpdateOne({'id': mention['id'], 'uid_mentioned': mention['uid_mentioned']},
+                    op_mention = UpdateOne({'id': mention['id'], 'uid_mentioned': mention['uid_mentioned']},
                                    {'$set': mention,
                                     '$setOnInsert': {
                                         'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
                                    upsert=True)
-                    update_operations.append(op)
-                if update_operations:
-                    mentionTable.bulk_write(update_operations, ordered=False, bypass_document_validation=False)
+
+                    update_operations_mention.append(op_mention)
+
+                if update_operations_user:
+                    user_table.bulk_write(update_operations_user, ordered=False, bypass_document_validation=False)
+                if update_operations_mention:
+                    mention_table.bulk_write(update_operations_mention, ordered=False, bypass_document_validation=False)
                 self.logger_access.info(
                     '{} records have been inserted for user {}'.format(len(mentionList), uid))
 
@@ -737,11 +751,12 @@ class SocialWeiboAPI(SocialBasicAPI):
 
     def search_statuses_limited(self,start_time, end_time, q,page_start=1, page_range=5, page_limit=None,**kwargs):
 
-        self.logger_access.info("Calling search_statuses_limited function for {} from {} to {}".format(q,start_time,end_time))
+        self.logger_access.info("Calling search_statuses_limited function for {} from {} to {}".format(q[1],start_time,end_time))
 
         client = self.client
         db = client.weibo
         search_table = db.weibo_search_statuses_limited
+        user_table = db.weibo_user_info
 
         loop = True
 
@@ -750,7 +765,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             paramsDict['access_token'] = self.__apiToken
             paramsDict['starttime'] = self.getTimeStamp(start_time, 's')
             paramsDict['endtime'] = self.getTimeStamp(end_time, 's')
-            paramsDict['q'] = q
+            paramsDict['q'] = q[1]
             page = page_start
             post_list = list()
             url = 'https://c.api.weibo.com/2/search/statuses/limited.json'
@@ -791,9 +806,11 @@ class SocialWeiboAPI(SocialBasicAPI):
                 except StopIteration:
                     loop = False
 
-            update_operations = list()
+            update_operations_post = list()
+            update_operations_user = list()
             for post in post_list:
-                post['q'] = q
+                post['q_id'] = q[0]
+                post['q'] = q[1]
                 post['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 if post.get('created_at'):
                     post['created_at_timestamp'] = int(
@@ -804,15 +821,25 @@ class SocialWeiboAPI(SocialBasicAPI):
                     if not post.get('user').get('european_user'):
                         post['user']['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.strptime(
                             post['user']['created_at'], "%a %b %d %H:%M:%S %z %Y"))
-
+                        post_user = post['user']
+                        post_user['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        op_user = UpdateOne({'id': post_user['id']},
+                                            {'$set': post_user,
+                                             '$setOnInsert': {
+                                                 'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+                                             }, upsert=True)
+                        update_operations_user.append(op_user)
                 op = UpdateOne({'id': post['id']},
                                {'$set': post,
                                 '$setOnInsert': {
                                     'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
                                upsert=True)
-                update_operations.append(op)
-            if update_operations:
-                search_table.bulk_write(update_operations, ordered=False, bypass_document_validation=False)
+                update_operations_post.append(op)
+
+            if update_operations_user:
+                user_table.bulk_write(update_operations_user, ordered=False, bypass_document_validation=False)
+            if update_operations_post:
+                search_table.bulk_write(update_operations_post, ordered=False, bypass_document_validation=False)
             #self.logger_access.info(str(res.bulk_api_result))
         except Exception as e:
             class_name = self.__class__.__name__

@@ -12,10 +12,10 @@ if __name__ == '__main__':
 
     session = idata.createSession()
     accountInfo = session.query(IdataAccount.appCode, IdataAccount.type).filter(IdataAccount.status == 1).all()
-    #accountInfo = [('zhihu','answer')]
+    #accountInfo = [('zhihu','comment')]
     session.close()
 
-    createBeginDate = (datetime.date.today()+ datetime.timedelta(days=-7)).strftime("%Y-%m-%d")
+    createBeginDate = (datetime.date.today()+ datetime.timedelta(days=-1)).strftime("%Y-%m-%d")
     #createEndDate = createBeginDate
     createEndDate = datetime.date.today().strftime("%Y-%m-%d")
     #createBeginDate = '2019-01-09'
@@ -27,12 +27,12 @@ if __name__ == '__main__':
     threads = []
 
     for account in accountInfo:
-        t = threading.Thread(target=idata.getZanDouData, args=(createBeginDate,createEndDate,), kwargs={'size':100,'appCode':account[0],'type':account[1]})
+        t = threading.Thread(target=idata.get_zandou_data, args=(createBeginDate,createEndDate,), kwargs={'size':1000,'appCode':account[0],'type':account[1]})
         threads.append(t)
 
     for t in threads:
         t.start()
         while True:
-            if len(threading.enumerate()) <20:
+            if len(threading.enumerate()) <5:
                 break
 

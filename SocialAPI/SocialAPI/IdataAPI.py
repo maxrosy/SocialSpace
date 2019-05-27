@@ -46,9 +46,11 @@ class IdataAPI(SocialBasicAPI):
             if not postTable.index_information() and paramsDict.get('type') in ('answer','reply','comment'):
                 postTable.create_index([('id', 1)])
                 postTable.create_index([('publishDate',-1)])
+                postTable.create_index([('updatedTime',-1)])
             elif not postTable.index_information() and paramsDict.get('type') not in ('answer','reply','comment'):
                 postTable.create_index([('id',1),('ref_date',-1)],unique=True)
                 postTable.create_index([('publishDate', -1)])
+                postTable.create_index([('updatedTime', -1)])
 
 
             loop = True
@@ -113,6 +115,27 @@ class IdataAPI(SocialBasicAPI):
                     total_posts += len(postList)
                     self.logger_access.info('{} records have been fetched. Totally {} records - {}'.format(total_posts,res['total'],tableName))
                     time.sleep(0.1)
+
+                    # Summarize the ecomm product so as to make it easy to get sku options
+                    if paramsDict.get('type') in ('product'):
+                        summary_table_name = tableName + '_summary'
+                        summary_table = db[summary_table_name]
+                        postDataFrame = pd.DataFrame(postList)
+                        postDataFrame.drop_duplicates('id', inplace=True)
+                        postList = postDataFrame.to_dict('records')
+                        update_operations = list()
+                        for post in postList:
+                            post['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                            op = UpdateOne({'id': post['id']},
+                                           {'$set': post, '$setOnInsert': {
+                                               'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
+                                           upsert=True)
+
+                            update_operations.append(op)
+
+                        summary_table.bulk_write(update_operations, ordered=False, bypass_document_validation=False)
+                        time.sleep(0.1)
+
 
                     if not res['hasNext']:
                         raise StopIteration

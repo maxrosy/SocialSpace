@@ -1,5 +1,5 @@
 from SocialAPI.SocialAPI.WeiboAPI import SocialWeiboAPI
-from SocialAPI.Model import Kol
+from SocialAPI.Model import Kol, WeiboLastMentionedPost
 import pandas as pd
 import numpy as np
 import threading
@@ -7,11 +7,9 @@ import threading
 if __name__ =='__main__':
     weibo = SocialWeiboAPI()
     session = weibo.createSession()
-    uids = session.query(Kol.uid).all()
-    uid_list = [uid[0] for uid in uids]
-    df_uid_list = pd.DataFrame(uid_list).rename(columns={0:'uid'})
+    uid_list = session.query(WeiboLastMentionedPost.uid,WeiboLastMentionedPost.since_id).all()
     session.close()
-
+    """
     client = weibo.client
     db = client.weibo
     mention_table = db.weibo_post_mention
@@ -32,9 +30,10 @@ if __name__ =='__main__':
         df['since_id'] = 0
 
     uid_mention_list = df[['uid', 'since_id']].to_dict('records')
+    
+    #uid_mention_list = [{'uid':1006421732,'since_id':4325734551722946}]
     """
-    uid_mention_list = [{'uid':1006421732,'since_id':4325734551722946}]
-    """
+    uid_mention_list = [{'uid':x[0], 'since_id':x[1]} for x in uid_list]
     weibo.doParallel('mention', uid_mention_list)
 
     #for item in uid_mention_list:
