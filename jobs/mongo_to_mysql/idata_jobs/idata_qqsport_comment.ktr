@@ -21,9 +21,9 @@
     </parameters>
     <log>
       <trans-log-table>
-        <connection />
+        <connection>kettle_log_db</connection>
         <schema />
-        <table />
+        <table>transformation_log</table>
         <size_limit_lines />
         <interval />
         <timeout_days />
@@ -283,9 +283,9 @@
         </field>
       </channel-log-table>
       <step-log-table>
-        <connection />
+        <connection>kettle_log_db</connection>
         <schema />
-        <table />
+        <table>step_log</table>
         <timeout_days />
         <field>
           <id>ID_BATCH</id>
@@ -452,18 +452,18 @@
     <created_user>-</created_user>
     <created_date>2019/05/07 20:53:06.770</created_date>
     <modified_user>-</modified_user>
-    <modified_date>2019/05/07 21:15:52.359</modified_date>
-    <key_for_session_key />
+    <modified_date>2019/06/30 18:15:18.614</modified_date>
+    <key_for_session_key>H4sIAAAAAAAAAAMAAAAAAAAAAAA=</key_for_session_key>
     <is_key_private>N</is_key_private>
   </info>
   <notepads>
   </notepads>
   <connection>
-    <name>newSocialDB</name>
+    <name>kettle_log_db</name>
     <server>localhost</server>
     <type>MYSQL</type>
     <access>Native</access>
-    <database>socialdb</database>
+    <database>kettle_log</database>
     <port>3306</port>
     <username>pandas_kettle</username>
     <password>Encrypted 2be98afc86aa7f294aa17aa71cdd38f99</password>
@@ -481,7 +481,7 @@
       </attribute>
       <attribute>
         <code>EXTRA_OPTION_MYSQL.serverTimezone</code>
-        <attribute>CST</attribute>
+        <attribute>Asia/Shanghai</attribute>
       </attribute>
       <attribute>
         <code>EXTRA_OPTION_MYSQL.useCompression</code>
@@ -534,6 +534,93 @@
       <attribute>
         <code>USE_POOLING</code>
         <attribute>N</attribute>
+      </attribute>
+    </attributes>
+  </connection>
+  <connection>
+    <name>newSocialDB</name>
+    <server>localhost</server>
+    <type>MYSQL</type>
+    <access>Native</access>
+    <database>socialdb</database>
+    <port>3306</port>
+    <username>pandas_kettle</username>
+    <password>Encrypted 2be98afc86aa7f294aa17aa71cdd38f99</password>
+    <servername />
+    <data_tablespace />
+    <index_tablespace />
+    <attributes>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.characterEncoding</code>
+        <attribute>utf8</attribute>
+      </attribute>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.rewriteBatchedStatements</code>
+        <attribute>true</attribute>
+      </attribute>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.serverTimeZone</code>
+        <attribute>Asia/Shanghai</attribute>
+      </attribute>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.useCompression</code>
+        <attribute>true</attribute>
+      </attribute>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.useServerPrepStmts</code>
+        <attribute>false</attribute>
+      </attribute>
+      <attribute>
+        <code>FORCE_IDENTIFIERS_TO_LOWERCASE</code>
+        <attribute>N</attribute>
+      </attribute>
+      <attribute>
+        <code>FORCE_IDENTIFIERS_TO_UPPERCASE</code>
+        <attribute>N</attribute>
+      </attribute>
+      <attribute>
+        <code>INITIAL_POOL_SIZE</code>
+        <attribute>5</attribute>
+      </attribute>
+      <attribute>
+        <code>IS_CLUSTERED</code>
+        <attribute>N</attribute>
+      </attribute>
+      <attribute>
+        <code>MAXIMUM_POOL_SIZE</code>
+        <attribute>60</attribute>
+      </attribute>
+      <attribute>
+        <code>PORT_NUMBER</code>
+        <attribute>3306</attribute>
+      </attribute>
+      <attribute>
+        <code>PRESERVE_RESERVED_WORD_CASE</code>
+        <attribute>Y</attribute>
+      </attribute>
+      <attribute>
+        <code>QUOTE_ALL_FIELDS</code>
+        <attribute>N</attribute>
+      </attribute>
+      <attribute>
+        <code>SQL_CONNECT</code>
+        <attribute>set names utf8mb4;</attribute>
+      </attribute>
+      <attribute>
+        <code>STREAM_RESULTS</code>
+        <attribute>Y</attribute>
+      </attribute>
+      <attribute>
+        <code>SUPPORTS_BOOLEAN_DATA_TYPE</code>
+        <attribute>Y</attribute>
+      </attribute>
+      <attribute>
+        <code>SUPPORTS_TIMESTAMP_DATA_TYPE</code>
+        <attribute>Y</attribute>
+      </attribute>
+      <attribute>
+        <code>USE_POOLING</code>
+        <attribute>Y</attribute>
       </attribute>
     </attributes>
   </connection>
@@ -796,55 +883,42 @@
       </field>
       <field>
         <name>ref_date</name>
-        <rename />
       </field>
       <field>
         <name>appCode</name>
-        <rename />
       </field>
       <field>
         <name>commentCount</name>
-        <rename />
       </field>
       <field>
         <name>commenterId</name>
-        <rename />
       </field>
       <field>
         <name>commenterScreenName</name>
-        <rename />
       </field>
       <field>
         <name>content</name>
-        <rename />
       </field>
       <field>
         <name>imageUrls</name>
-        <rename />
       </field>
       <field>
         <name>likeCount</name>
-        <rename />
       </field>
       <field>
         <name>publishDate</name>
-        <rename />
       </field>
       <field>
         <name>referId</name>
-        <rename />
       </field>
       <field>
         <name>source</name>
-        <rename />
       </field>
       <field>
         <name>tags</name>
-        <rename />
       </field>
       <field>
         <name>url</name>
-        <rename />
       </field>
       <select_unspecified>N</select_unspecified>
     </fields>

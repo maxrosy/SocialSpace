@@ -21,9 +21,9 @@
     </parameters>
     <log>
       <trans-log-table>
-        <connection />
+        <connection>kettle_log_db</connection>
         <schema />
-        <table />
+        <table>transformation_log</table>
         <size_limit_lines />
         <interval />
         <timeout_days />
@@ -283,9 +283,9 @@
         </field>
       </channel-log-table>
       <step-log-table>
-        <connection />
+        <connection>kettle_log_db</connection>
         <schema />
-        <table />
+        <table>step_log</table>
         <timeout_days />
         <field>
           <id>ID_BATCH</id>
@@ -452,18 +452,18 @@
     <created_user>-</created_user>
     <created_date>2019/05/01 14:43:47.110</created_date>
     <modified_user>-</modified_user>
-    <modified_date>2019/05/01 18:34:36.429</modified_date>
-    <key_for_session_key />
+    <modified_date>2019/06/30 18:00:35.957</modified_date>
+    <key_for_session_key>H4sIAAAAAAAAAAMAAAAAAAAAAAA=</key_for_session_key>
     <is_key_private>N</is_key_private>
   </info>
   <notepads>
   </notepads>
   <connection>
-    <name>newSocialDB</name>
+    <name>kettle_log_db</name>
     <server>localhost</server>
     <type>MYSQL</type>
     <access>Native</access>
-    <database>socialdb</database>
+    <database>kettle_log</database>
     <port>3306</port>
     <username>pandas_kettle</username>
     <password>Encrypted 2be98afc86aa7f294aa17aa71cdd38f99</password>
@@ -478,6 +478,10 @@
       <attribute>
         <code>EXTRA_OPTION_MYSQL.rewriteBatchedStatements</code>
         <attribute>true</attribute>
+      </attribute>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.serverTimezone</code>
+        <attribute>Asia/Shanghai</attribute>
       </attribute>
       <attribute>
         <code>EXTRA_OPTION_MYSQL.useCompression</code>
@@ -533,6 +537,93 @@
       </attribute>
     </attributes>
   </connection>
+  <connection>
+    <name>newSocialDB</name>
+    <server>localhost</server>
+    <type>MYSQL</type>
+    <access>Native</access>
+    <database>socialdb</database>
+    <port>3306</port>
+    <username>pandas_kettle</username>
+    <password>Encrypted 2be98afc86aa7f294aa17aa71cdd38f99</password>
+    <servername />
+    <data_tablespace />
+    <index_tablespace />
+    <attributes>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.characterEncoding</code>
+        <attribute>utf8</attribute>
+      </attribute>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.rewriteBatchedStatements</code>
+        <attribute>true</attribute>
+      </attribute>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.serverTimeZone</code>
+        <attribute>Asia/Shanghai</attribute>
+      </attribute>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.useCompression</code>
+        <attribute>true</attribute>
+      </attribute>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.useServerPrepStmts</code>
+        <attribute>false</attribute>
+      </attribute>
+      <attribute>
+        <code>FORCE_IDENTIFIERS_TO_LOWERCASE</code>
+        <attribute>N</attribute>
+      </attribute>
+      <attribute>
+        <code>FORCE_IDENTIFIERS_TO_UPPERCASE</code>
+        <attribute>N</attribute>
+      </attribute>
+      <attribute>
+        <code>INITIAL_POOL_SIZE</code>
+        <attribute>5</attribute>
+      </attribute>
+      <attribute>
+        <code>IS_CLUSTERED</code>
+        <attribute>N</attribute>
+      </attribute>
+      <attribute>
+        <code>MAXIMUM_POOL_SIZE</code>
+        <attribute>60</attribute>
+      </attribute>
+      <attribute>
+        <code>PORT_NUMBER</code>
+        <attribute>3306</attribute>
+      </attribute>
+      <attribute>
+        <code>PRESERVE_RESERVED_WORD_CASE</code>
+        <attribute>Y</attribute>
+      </attribute>
+      <attribute>
+        <code>QUOTE_ALL_FIELDS</code>
+        <attribute>N</attribute>
+      </attribute>
+      <attribute>
+        <code>SQL_CONNECT</code>
+        <attribute>set names utf8mb4;</attribute>
+      </attribute>
+      <attribute>
+        <code>STREAM_RESULTS</code>
+        <attribute>Y</attribute>
+      </attribute>
+      <attribute>
+        <code>SUPPORTS_BOOLEAN_DATA_TYPE</code>
+        <attribute>Y</attribute>
+      </attribute>
+      <attribute>
+        <code>SUPPORTS_TIMESTAMP_DATA_TYPE</code>
+        <attribute>Y</attribute>
+      </attribute>
+      <attribute>
+        <code>USE_POOLING</code>
+        <attribute>Y</attribute>
+      </attribute>
+    </attributes>
+  </connection>
   <order>
     <hop>
       <from>MongoDB Input</from>
@@ -544,7 +635,68 @@
       <to>Insert / Update</to>
       <enabled>Y</enabled>
     </hop>
+    <hop>
+      <from>Select values</from>
+      <to>Unique rows (HashSet)</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Unique rows (HashSet)</from>
+      <to>Filter rows</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Filter rows</from>
+      <to>Insert / Update 2</to>
+      <enabled>Y</enabled>
+    </hop>
   </order>
+  <step>
+    <name>Filter rows</name>
+    <type>FilterRows</type>
+    <description />
+    <distribute>Y</distribute>
+    <custom_distribution />
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name />
+    </partitioning>
+    <send_true_to>Insert / Update 2</send_true_to>
+    <send_false_to />
+    <compare>
+      <condition>
+        <negated>N</negated>
+        <conditions>
+          <condition>
+            <negated>N</negated>
+            <leftvalue>content</leftvalue>
+            <function>IS NOT NULL</function>
+            <rightvalue />
+          </condition>
+          <condition>
+            <negated>N</negated>
+            <operator>OR</operator>
+            <leftvalue>title</leftvalue>
+            <function>IS NOT NULL</function>
+            <rightvalue />
+          </condition>
+        </conditions>
+      </condition>
+    </compare>
+    <cluster_schema />
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>576</xloc>
+      <yloc>256</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
   <step>
     <name>Insert / Update</name>
     <type>InsertUpdate</type>
@@ -565,13 +717,13 @@
       <key>
         <name>article_id</name>
         <field>article_id</field>
-        <condition />
+        <condition>=</condition>
         <name2 />
       </key>
       <key>
         <name>ref_date</name>
         <field>ref_date</field>
-        <condition />
+        <condition>=</condition>
         <name2 />
       </key>
       <value>
@@ -587,11 +739,6 @@
       <value>
         <name>comment_count</name>
         <rename>comment_count</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>content</name>
-        <rename>content</rename>
         <update>Y</update>
       </value>
       <value>
@@ -663,8 +810,65 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>561</xloc>
-      <yloc>348</yloc>
+      <xloc>656</xloc>
+      <yloc>96</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>Insert / Update 2</name>
+    <type>InsertUpdate</type>
+    <description />
+    <distribute>Y</distribute>
+    <custom_distribution />
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name />
+    </partitioning>
+    <connection>newSocialDB</connection>
+    <commit>10000</commit>
+    <update_bypassed>Y</update_bypassed>
+    <lookup>
+      <schema />
+      <table>idata_article_article_content_detail</table>
+      <key>
+        <name>article_id</name>
+        <field>article_id</field>
+        <condition>=</condition>
+        <name2 />
+      </key>
+      <value>
+        <name>article_id</name>
+        <rename>article_id</rename>
+        <update>N</update>
+      </value>
+      <value>
+        <name>content</name>
+        <rename>content</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>publishDate</name>
+        <rename>publishDate</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>title</name>
+        <rename>title</rename>
+        <update>Y</update>
+      </value>
+    </lookup>
+    <cluster_schema />
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>752</xloc>
+      <yloc>224</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -812,63 +1016,48 @@
       </field>
       <field>
         <name>ref_date</name>
-        <rename />
       </field>
       <field>
         <name>appCode</name>
-        <rename />
       </field>
       <field>
         <name>comment_count</name>
-        <rename />
       </field>
       <field>
         <name>content</name>
-        <rename />
       </field>
       <field>
         <name>imageUrls</name>
-        <rename />
       </field>
       <field>
         <name>likeCount</name>
-        <rename />
       </field>
       <field>
         <name>posterId</name>
-        <rename />
       </field>
       <field>
         <name>posterScreenName</name>
-        <rename />
       </field>
       <field>
         <name>publishDate</name>
-        <rename />
       </field>
       <field>
         <name>title</name>
-        <rename />
       </field>
       <field>
         <name>url</name>
-        <rename />
       </field>
       <field>
         <name>catDist1</name>
-        <rename />
       </field>
       <field>
         <name>catDist2</name>
-        <rename />
       </field>
       <field>
         <name>catLabel2</name>
-        <rename />
       </field>
       <field>
         <name>viewCount</name>
-        <rename />
       </field>
       <select_unspecified>N</select_unspecified>
     </fields>
@@ -882,6 +1071,38 @@
     <GUI>
       <xloc>401</xloc>
       <yloc>224</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>Unique rows (HashSet)</name>
+    <type>UniqueRowsByHashSet</type>
+    <description />
+    <distribute>Y</distribute>
+    <custom_distribution />
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name />
+    </partitioning>
+    <store_values>N</store_values>
+    <reject_duplicate_row>N</reject_duplicate_row>
+    <error_description />
+    <fields>
+      <field>
+        <name>article_id</name>
+      </field>
+    </fields>
+    <cluster_schema />
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>464</xloc>
+      <yloc>288</yloc>
       <draw>Y</draw>
     </GUI>
   </step>

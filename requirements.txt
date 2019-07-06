@@ -7,7 +7,7 @@ backcall==0.1.0
 beautifulsoup4==4.7.1
 bleach==3.1.0
 boto3==1.9.95
-botocore==1.12.95
+botocore==1.12.156
 certifi==2019.3.9
 chardet==3.0.4
 Click==7.0
@@ -16,7 +16,7 @@ decorator==4.3.2
 defusedxml==0.5.0
 docutils==0.14
 dukpy==0.2.2
-elasticsearch==6.3.1
+elasticsearch==7.0.0
 entrypoints==0.3
 et-xmlfile==1.0.1
 Flask==1.0.2
@@ -36,7 +36,7 @@ javascripthon==0.10
 jdcal==1.4
 jedi==0.13.2
 jieba==0.39
-Jinja2==2.10
+Jinja2==2.10.1
 jmespath==0.9.3
 jsonschema==3.0.1
 jupyter==1.0.0
@@ -64,7 +64,7 @@ pandocfilters==1.4.2
 parso==0.3.3
 pexpect==4.6.0
 pickleshare==0.7.5
-Pillow==5.4.1
+Pillow==6.0.0
 prometheus-client==0.5.0
 prompt-toolkit==2.0.7
 ptyprocess==0.6.0
@@ -82,7 +82,7 @@ pytz==2018.9
 pyzmq==18.0.1
 qtconsole==4.4.3
 redis==3.2.0
-requests==2.21.0
+requests==2.22.0
 rsa==4.0
 s3transfer==0.2.0
 sanic==19.3.1
@@ -99,7 +99,7 @@ tqdm==4.30.0
 traitlets==4.3.2
 typing-extensions==3.7.2
 ujson==1.35
-urllib3==1.24.1
+urllib3==1.25.3
 uvloop==0.12.2
 uWSGI==2.0.18
 wcwidth==0.1.7
