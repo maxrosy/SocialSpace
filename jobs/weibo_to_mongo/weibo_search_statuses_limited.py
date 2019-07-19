@@ -15,6 +15,6 @@ if __name__ =='__main__':
     date_time = datetime.datetime.now() + datetime.timedelta(hours=-1)
     start_time = date_time.strftime("%Y-%m-%d %H:00:00")
     end_time = date_time.strftime("%Y-%m-%d %H:59:59")
-    
+
     for q in brand_queries:
         weibo.search_statuses_limited(start_time, end_time, q=q, hasori=1, dup=0, count=50)

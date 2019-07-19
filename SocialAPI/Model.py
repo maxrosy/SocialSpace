@@ -74,3 +74,11 @@ class WeiboLastMentionedPost(Base):
     __tablename__ ='weibo_last_mentioned_post'
     uid = Column(BIGINT,primary_key=true)
     since_id = Column(VARCHAR(128))
+
+class WeiboUserInfo(Base):
+    __table__ = Table('weibo_user_info',metadata,autoload=True)
+
+class MonsterWeiboPost(Base):
+    #__table__ = Table('monster_posts_weibo_2',metadata,autoload=True)
+    __tablename__ ='monster_posts_weibo'
+    post_id = Column(BIGINT,primary_key=true)

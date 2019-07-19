@@ -120,7 +120,7 @@ class SocialWeiboAPI(SocialBasicAPI):
                 self.logger_access.warning("No data returned for uids:{}".format(uids))
                 return
 
-            client = MongoClient()
+            client = self.client
             db = client.weibo
             userTable = db.weibo_user_tag
             # users = usersTable.insert_many(users)
@@ -414,7 +414,7 @@ class SocialWeiboAPI(SocialBasicAPI):
         """
         client = self.client
         db = client.weibo
-        attitudeTable = db.weibo_user_attitude_new
+        attitudeTable = db.weibo_user_attitude
 
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
         event_loop = asyncio.new_event_loop()
@@ -459,6 +459,7 @@ class SocialWeiboAPI(SocialBasicAPI):
                             raise Exception('Post: {}, Error Code: {}, Error Msg: {}'.format(mid, item.get('error_code'), item.get('error')))
                         attitudes = item.get('attitudes')
                         if not attitudes:
+                            """
                             self.logger_error.error('Missing attitude items')
                             class_name = self.__class__.__name__
                             function_name = sys._getframe().f_code.co_name
@@ -467,7 +468,8 @@ class SocialWeiboAPI(SocialBasicAPI):
                                 {'className': class_name, 'functionName': function_name, 'params': mid,
                                  'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
                             continue
-                            #raise StopIteration
+                            """
+                            raise StopIteration
                         attitudeList += attitudes
 
                     if not attitudeList:

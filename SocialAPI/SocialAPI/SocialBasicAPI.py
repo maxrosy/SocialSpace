@@ -50,6 +50,7 @@ class SocialBasicAPI(object):
 		params = dict(paramsDict,**kwargs)
 		async with aiohttp.ClientSession() as session:
 			async with session.get(url, params=params) as r:
+				await asyncio.sleep(0.5) # otherwise causing connection issue with Weibo
 				#return await r.json()
 				data = await r.read()
 				return simplejson.loads(data,strict=False)

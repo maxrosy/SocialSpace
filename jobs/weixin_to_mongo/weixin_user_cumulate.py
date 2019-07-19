@@ -10,8 +10,8 @@ if __name__ == '__main__':
 
     session = weixin.createSession()
     accountInfo = session.query(WeixinAccount.appid,WeixinAccount.appkey,WeixinAccount.account_name).all()
-    #first_date = datetime.strptime("2018-10-28", "%Y-%m-%d")
-    #last_date = datetime.strptime("2018-10-29", "%Y-%m-%d")
+    #first_date = datetime.datetime.strptime("2018-11-07", "%Y-%m-%d")
+    #last_date = datetime.datetime.strptime("2018-11-07", "%Y-%m-%d")
     first_date = datetime.date.today() + datetime.timedelta(-1)
     last_date = datetime.date.today() + datetime.timedelta(-1)
 

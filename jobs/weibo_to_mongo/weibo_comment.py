@@ -1,6 +1,6 @@
 from SocialAPI.SocialAPI.WeiboAPI import SocialWeiboAPI
 from SocialAPI.Helper import Helper
-from SocialAPI.Model import Kol
+from SocialAPI.Model import Kol,MonsterWeiboPost
 import pandas as pd
 import numpy as np
 
@@ -10,10 +10,12 @@ if __name__ == '__main__':
     rootPath = Helper().getRootPath()
 
     weibo = SocialWeiboAPI()
+    session = weibo.createSession()
     client = weibo.client
     db = client.weibo
     postTable = db.weibo_user_post
-    """    
+    commentTable = db.weibo_user_comment
+
     startTime = weibo.getStrTime(-7)
     startTimeStamp = weibo.getTimeStamp(startTime)
     uids = session.query(Kol.uid).all()
@@ -24,6 +26,12 @@ if __name__ == '__main__':
     pList = [pid['id'] for pid in pidList]
 
     df_commentsInPost = pd.DataFrame(list(pidList))
+    """
+    pids = session.query(MonsterWeiboPost.post_id).all()
+    pList = [pid[0] for pid in pids]
+    # pList = [4147480004230641]
+    df_commentsInPost = pd.DataFrame({'id': pList})
+    """
     pipeline = [
         {'$match': {'status.id': {'$in': pList}}},
         {'$group': {'_id': '$status.id', 'since_id': {'$max': '$id'}, 'count': {'$sum': 1}}}
@@ -36,20 +44,11 @@ if __name__ == '__main__':
         df = df_commentsInPost.merge(df_commentsInComment, left_on='id', right_on='_id', how='left')
         df['since_id'] = df['since_id'].replace(np.nan, 0)
         df['count'] = df['count'].replace(np.nan, 0)
-        df = df[df['comments_count'] > df['count']]
+        #df = df[df['comments_count'] > df['count']]
+        commentPostList = df[['id', 'since_id']].to_dict('records')
     else:
         df = df_commentsInPost
         df['since_id'] = 0
-
-
-
-    commentPostList = df[['id', 'since_id']].to_dict('records')
-
+        commentPostList = df.to_dict('records')
 
     weibo.doParallel('comment',commentPostList)
-    weibo._client.close()
-    """
-
-    posts = postTable.find({'uid':3312008743},{'mid':1})
-    for post in posts:
-        weibo.get_comments_show(post['mid'],count=200)
