@@ -1,31 +1,25 @@
-import pandas as pd
 from SocialAPI.SocialAPI.WeiboAPI import SocialWeiboAPI
-from SocialAPI.Helper import Helper
-from SocialAPI.Model import Kol
+from sqlalchemy.sql import exists
+from SocialAPI.Model import MasterUid,MasterUidInitial
 import threading
-from sqlalchemy import and_
-import time
+import datetime
 
-if __name__ == '__main__':
-    rootPath = Helper().getRootPath()
 
+def get_weibo_post(uids,start_day=-7,count_num=50):
     weibo = SocialWeiboAPI()
-    session = weibo.createSession()
-    uids = session.query(Kol.uid).all()
-    uids = [str(uid[0]) for uid in uids]
-    session.close()
-    #uids = ['5339305113','6883966016','1594052081','1747506517','1793285524','1647720105']
-    """
-    for uid in uids:
-        weibo.getUserTimelineOtherTest(uid,start_day=-2,count=100)
-    """
-    threads = []
-    #start_day = -1638  #2019-06-25  1637 2015-01-01
-    #end_day = start_day+14
-    for uid in uids:
-        t = threading.Thread(target=weibo.get_user_timeline_other, args=(uid,), kwargs={'start_day':-7,'count': 50})
-        #t = threading.Thread(target=weibo.get_user_timeline_other, args=(uid,), kwargs={'start_day':start_day,'end_day':end_day,'count': 50})
 
+    threads = []
+
+    for user in uids:
+        uid = user.get('uid')
+        if user.get('start_day') and isinstance(user.get('start_day'), datetime.datetime):
+            start_day_num = (user.get('start_day') - datetime.datetime.now()).days
+        elif user.get('start_day') and isinstance(user.get('start_day'),int):
+            start_day_num = user.get('start_day')
+        else:
+            start_day_num = start_day
+        t = threading.Thread(target=weibo.get_user_timeline_other, args=(uid,),
+                             kwargs={'start_day': start_day_num, 'count': count_num})
         threads.append(t)
 
     for t in threads:
@@ -33,3 +27,33 @@ if __name__ == '__main__':
         while True:
             if len(threading.enumerate()) < 20:
                 break
+
+def weibo_post_initial():
+    try:
+        weibo = SocialWeiboAPI()
+        session = weibo.createSession()
+        uids = session.query(MasterUidInitial.uid, MasterUidInitial.crawl_from) \
+            .filter(~exists().where(MasterUid.uid == MasterUidInitial.uid)) \
+            .all()
+        uids = [{'uid': str(_[0]), 'start_day': _[1]} for _ in uids]
+        get_weibo_post(uids)
+
+    finally:
+        session.close()
+
+def weibo_post_daily(start_day=-7):
+    try:
+        weibo = SocialWeiboAPI()
+        session = weibo.createSession()
+        uids = session.query(MasterUid.uid)\
+            .filter(MasterUid.crawl_master==1,MasterUid.crawl_post==1)\
+            .all()
+        uids = [{'uid':str(_[0]),'start_day':start_day} for _ in uids]
+        get_weibo_post(uids)
+
+    finally:
+        session.close()
+
+if __name__ == '__main__':
+    #weibo_post_initial()
+    weibo_post_daily()

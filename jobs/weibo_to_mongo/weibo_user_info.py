@@ -1,18 +1,15 @@
-import pandas as pd
 from SocialAPI.SocialAPI.WeiboAPI import SocialWeiboAPI
-from SocialAPI.Helper import Helper
 import asyncio
 import uvloop
 from datetime import datetime
-from SocialAPI.Model import Kol
-import os
+from SocialAPI.Model import MasterUid
+
 
 if __name__ == '__main__':
-    rootPath = Helper().getRootPath()
 
     weibo = SocialWeiboAPI()
     session = weibo.createSession()
-    uids = session.query(Kol.uid).all()
+    uids = session.query(MasterUid.uid).filter(MasterUid.crawl_master==1).all()
     uidList = [str(uid[0]) for uid in uids]
     #uidList = ['1828260462']
     uidGroup = [','.join(uidList[i:i + 50]) for i in range(0, len(uidList), 50)]
