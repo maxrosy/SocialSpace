@@ -1,6 +1,6 @@
 <transformation>
   <info>
-    <name>idata_hupu_post</name>
+    <name>idata_toutiao_video</name>
     <description />
     <extended_description />
     <trans_version />
@@ -448,16 +448,16 @@
         <proxy_hostname />
         <proxy_port />
         <non_proxy_hosts />
-        <master>N</master>
+        <master>Y</master>
         <sslMode>N</sslMode>
       </slaveserver>
     </slaveservers>
     <clusterschemas>
     </clusterschemas>
     <created_user>-</created_user>
-    <created_date>2019/05/01 22:33:34.185</created_date>
+    <created_date>2019/08/08 22:28:10.150</created_date>
     <modified_user>-</modified_user>
-    <modified_date>2019/08/15 21:12:30.467</modified_date>
+    <modified_date>2019/08/15 21:27:40.523</modified_date>
     <key_for_session_key>H4sIAAAAAAAAAAMAAAAAAAAAAAA=</key_for_session_key>
     <is_key_private>N</is_key_private>
   </info>
@@ -665,10 +665,10 @@
     <update_bypassed>N</update_bypassed>
     <lookup>
       <schema />
-      <table>idata_hupu_post</table>
+      <table>idata_toutiao_video</table>
       <key>
-        <name>post_id</name>
-        <field>post_id</field>
+        <name>vid</name>
+        <field>vid</field>
         <condition>=</condition>
         <name2 />
       </key>
@@ -679,18 +679,23 @@
         <name2 />
       </key>
       <value>
+        <name>vid</name>
+        <rename>vid</rename>
+        <update>N</update>
+      </value>
+      <value>
         <name>ref_date</name>
         <rename>ref_date</rename>
         <update>N</update>
       </value>
       <value>
-        <name>title</name>
-        <rename>title</rename>
+        <name>description</name>
+        <rename>description</rename>
         <update>Y</update>
       </value>
       <value>
-        <name>content</name>
-        <rename>content</rename>
+        <name>title</name>
+        <rename>title</rename>
         <update>Y</update>
       </value>
       <value>
@@ -699,33 +704,13 @@
         <update>Y</update>
       </value>
       <value>
-        <name>post_id</name>
-        <rename>post_id</rename>
-        <update>N</update>
-      </value>
-      <value>
-        <name>publish_date</name>
-        <rename>publishDate</rename>
+        <name>updatedTime</name>
+        <rename>updatedTime</rename>
         <update>Y</update>
       </value>
       <value>
-        <name>like_count</name>
-        <rename>likeCount</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>app_code</name>
-        <rename>appCode</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>cat_path_key</name>
-        <rename>catPathKey</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>poster_id</name>
-        <rename>posterId</rename>
+        <name>createdTime</name>
+        <rename>createdTime</rename>
         <update>Y</update>
       </value>
       <value>
@@ -734,8 +719,13 @@
         <update>Y</update>
       </value>
       <value>
-        <name>share_count</name>
-        <rename>shareCount</rename>
+        <name>cover_url</name>
+        <rename>coverUrl</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>like_count</name>
+        <rename>likeCount</rename>
         <update>Y</update>
       </value>
       <value>
@@ -744,8 +734,13 @@
         <update>Y</update>
       </value>
       <value>
-        <name>image_urls</name>
-        <rename>imageUrls</rename>
+        <name>publish_date</name>
+        <rename>publishDate</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>view_count</name>
+        <rename>viewCount</rename>
         <update>Y</update>
       </value>
     </lookup>
@@ -757,8 +752,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>543</xloc>
-      <yloc>389</yloc>
+      <xloc>695</xloc>
+      <yloc>291</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -778,7 +773,7 @@
     <use_all_replica_members>N</use_all_replica_members>
     <db_name>idata</db_name>
     <fields_name />
-    <collection>hupu_post</collection>
+    <collection>toutiao_video</collection>
     <json_field_name>json</json_field_name>
     <json_query>{$or:[{'updatedTime':{'$gte':'%%startTime%%','$lte':'%%endTime%%'}},{'_id':{'$in':%%ids%%}}]}</json_query>
     <auth_database>idata</auth_database>
@@ -795,48 +790,13 @@
     <execute_for_each_row>N</execute_for_each_row>
     <mongo_fields>
       <mongo_field>
-        <field_name>publishDate</field_name>
-        <field_path>$.publishDate</field_path>
-        <field_type>Integer</field_type>
+        <field_name>id</field_name>
+        <field_path>$.id</field_path>
+        <field_type>String</field_type>
       </mongo_field>
       <mongo_field>
         <field_name>ref_date</field_name>
         <field_path>$.ref_date</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>likeCount</field_name>
-        <field_path>$.likeCount</field_path>
-        <field_type>Integer</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>appCode</field_name>
-        <field_path>$.appCode</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>catPathKey</field_name>
-        <field_path>$.catPathKey</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>title</field_name>
-        <field_path>$.title</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>content</field_name>
-        <field_path>$.content</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>posterId</field_name>
-        <field_path>$.posterId</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>url</field_name>
-        <field_path>$.url</field_path>
         <field_type>String</field_type>
       </mongo_field>
       <mongo_field>
@@ -845,8 +805,18 @@
         <field_type>Integer</field_type>
       </mongo_field>
       <mongo_field>
-        <field_name>shareCount</field_name>
-        <field_path>$.shareCount</field_path>
+        <field_name>coverUrl</field_name>
+        <field_path>$.coverUrl</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>description</field_name>
+        <field_path>$.description</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>likeCount</field_name>
+        <field_path>$.likeCount</field_path>
         <field_type>Integer</field_type>
       </mongo_field>
       <mongo_field>
@@ -855,13 +825,43 @@
         <field_type>String</field_type>
       </mongo_field>
       <mongo_field>
-        <field_name>imageUrls</field_name>
-        <field_path>$.imageUrls</field_path>
+        <field_name>publishDate</field_name>
+        <field_path>$.publishDate</field_path>
+        <field_type>Integer</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>title</field_name>
+        <field_path>$.title</field_path>
         <field_type>String</field_type>
       </mongo_field>
       <mongo_field>
-        <field_name>id</field_name>
-        <field_path>$.id</field_path>
+        <field_name>url</field_name>
+        <field_path>$.url</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>viewCount</field_name>
+        <field_path>$.viewCount</field_path>
+        <field_type>Integer</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>updatedTime</field_name>
+        <field_path>$.updatedTime</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>publishDateStr</field_name>
+        <field_path>$.publishDateStr</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>createdTime</field_name>
+        <field_path>$.createdTime</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>_id</field_name>
+        <field_path>$._id</field_path>
         <field_type>String</field_type>
       </mongo_field>
     </mongo_fields>
@@ -873,8 +873,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>183</xloc>
-      <yloc>265</yloc>
+      <xloc>335</xloc>
+      <yloc>167</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -891,47 +891,50 @@
     </partitioning>
     <fields>
       <field>
-        <name>publishDate</name>
+        <name>id</name>
+        <rename>vid</rename>
       </field>
       <field>
         <name>ref_date</name>
       </field>
       <field>
-        <name>likeCount</name>
-      </field>
-      <field>
-        <name>appCode</name>
-      </field>
-      <field>
-        <name>catPathKey</name>
-      </field>
-      <field>
-        <name>title</name>
-      </field>
-      <field>
-        <name>content</name>
-      </field>
-      <field>
-        <name>posterId</name>
-      </field>
-      <field>
-        <name>url</name>
-      </field>
-      <field>
         <name>commentCount</name>
       </field>
       <field>
-        <name>shareCount</name>
+        <name>coverUrl</name>
+      </field>
+      <field>
+        <name>description</name>
+      </field>
+      <field>
+        <name>likeCount</name>
       </field>
       <field>
         <name>posterScreenName</name>
       </field>
       <field>
-        <name>imageUrls</name>
+        <name>publishDate</name>
       </field>
       <field>
-        <name>id</name>
-        <rename>post_id</rename>
+        <name>title</name>
+      </field>
+      <field>
+        <name>url</name>
+      </field>
+      <field>
+        <name>viewCount</name>
+      </field>
+      <field>
+        <name>updatedTime</name>
+      </field>
+      <field>
+        <name>publishDateStr</name>
+      </field>
+      <field>
+        <name>createdTime</name>
+      </field>
+      <field>
+        <name>_id</name>
       </field>
       <select_unspecified>N</select_unspecified>
     </fields>
@@ -943,8 +946,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>383</xloc>
-      <yloc>265</yloc>
+      <xloc>535</xloc>
+      <yloc>167</yloc>
       <draw>Y</draw>
     </GUI>
   </step>

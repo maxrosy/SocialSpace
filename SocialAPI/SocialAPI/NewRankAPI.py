@@ -24,13 +24,13 @@ class NewRankAPI(SocialBasicAPI):
         self.__mongo_uri = 'mongodb://' + self.__mongo_user + ':' + self.__mongo_pwd + '@' + self.__mongo_host + ':' + self.__mongo_port + '/' + 'newrank'
         self.client = MongoClient(self.__mongo_uri)
 
-    def get_wexin_account_article_content(self,account,from_time,to_time,**kwargs):
+    def get_weixin_account_article_content(self,account,from_time,to_time,**kwargs):
         self.logger_access.info("Calling Idata with params {}".format(kwargs))
         client = self.client
         db = client['newrank']
         try:
 
-            url = self.__newrank_url + '/weixin/data/combine/search_content'
+            url = self.__newrank_url + '/weixin/account/articles_content'
             headers = {"Content-Type": "application/x-www-form-urlencoded;charset=utf-8",'Key':self.__apiToken}
 
             paramsDict = kwargs.copy()
@@ -40,6 +40,7 @@ class NewRankAPI(SocialBasicAPI):
             tableName = paramsDict.get('app') + '_' + paramsDict.get('function')
             paramsDict.pop('app')
             paramsDict.pop('function')
+            paramsDict.pop('pagelimit')
 
             page_limit = kwargs.get('pagelimit',5)
             page_num = 1
@@ -59,8 +60,11 @@ class NewRankAPI(SocialBasicAPI):
                     res = r.json()
 
                     if res.get('code') != 0:
-                        raise Exception(res.get('msg'))
-                    if res.get('code') in (1500,1502,1503,1504):
+                        if res.get('code') == 1203:
+                            raise StopIteration
+                        else:
+                            raise Exception(res.get('msg'))
+                    if res.get('code') in (1500,1502,1503,1504): #System Errors
                         retry_num += 1
                         continue
                     postList += res['data']
@@ -70,15 +74,15 @@ class NewRankAPI(SocialBasicAPI):
                         self.logger_access.info(
                             'No post returned for {}'.format(tableName))
                         return
-
-                    self.update_mongodb(postList, **kwargs)
+                    lookup_keys = ['sn']
+                    self.update_mongodb(postList, lookup_keys,**kwargs)
                     total_posts += len(postList)
                     self.logger_access.info(
                         '{} records have been fetched. Totally {} records - {}'.format(len(postList), total_posts,
                                                                                        tableName))
                     time.sleep(0.1)
-                except Exception as e:
-                    print(e)
+                except StopIteration:
+                    loop=False
                 finally:
                     pass
         except Exception as e:
@@ -125,7 +129,10 @@ class NewRankAPI(SocialBasicAPI):
                     res = r.json()
 
                     if res.get('code') != 0:
-                        raise Exception(res.get('msg'))
+                        if res.get('code') == 1203:
+                            raise StopIteration
+                        else:
+                            raise Exception(res.get('msg'))
                     if res.get('code') in (1500,1502,1503,1504):
                         retry_num += 1
                         continue
@@ -136,17 +143,15 @@ class NewRankAPI(SocialBasicAPI):
                         self.logger_access.info(
                             'No post returned for {}'.format(tableName))
                         return
-
-                    self.update_mongodb(postList, **kwargs)
+                    lookup_keys = ['url']
+                    self.update_mongodb(postList, lookup_keys,**kwargs)
                     total_posts += len(postList)
                     self.logger_access.info(
                         '{} records have been fetched. Totally {} records - {}'.format(len(postList), total_posts,
                                                                                        tableName))
                     time.sleep(0.1)
-                except Exception as e:
-                    print(e)
-                finally:
-                    pass
+                except StopIteration:
+                    loop = False
         except Exception as e:
             class_name = self.__class__.__name__
             function_name = sys._getframe().f_code.co_name
@@ -157,7 +162,7 @@ class NewRankAPI(SocialBasicAPI):
             exit(1)
 
 
-    def update_mongodb(self,postList, **kwargs):
+    def update_mongodb(self,postList, lookup_keys,**kwargs):
         try:
             client = self.client
             db = client['newrank']
@@ -169,8 +174,10 @@ class NewRankAPI(SocialBasicAPI):
             for post in postList:
 
                 post['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-                op = UpdateOne({'url': post['url']},
+                lookup_dict = {}
+                for _ in lookup_keys:
+                    lookup_dict[_] = post[_]
+                op = UpdateOne(lookup_dict,
                                {'$set': post, '$setOnInsert': {
                                    'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
                                upsert=True)

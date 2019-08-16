@@ -318,7 +318,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 
         client = self.client
         db = client.weibo
-        commentTable = db.weibo_user_comment_davidbackham
+        commentTable = db.weibo_user_comment
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
         event_loop = asyncio.new_event_loop()
 
@@ -1028,7 +1028,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 
             for i, item in enumerate(dataSet):
                 if funcName == 'comment':
-                    result.append(p.apply_async(func=doCommentParellelWrapper,args=(str(int(item['id'])),),kwds=dict(since_id=str(int(item['since_id'])),count=200)))
+                    result.append(p.apply_async(func=doCommentParellelWrapper,args=(str(int(item['id'])),),kwds=dict(since_id=str(int(item['since_id'])),count=100)))
                 elif funcName == 'attitude':
                     result.append(p.apply_async(func=doAttitudeParellelWrapper,args=(str(int(item['id'])),),kwds=dict(since_id=str(int(item['since_id'])),count=100)))
                 elif funcName == 'repost':

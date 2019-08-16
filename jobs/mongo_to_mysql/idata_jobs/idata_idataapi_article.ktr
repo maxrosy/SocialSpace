@@ -1,6 +1,6 @@
 <transformation>
   <info>
-    <name>idata_hupu_post</name>
+    <name>idata_article_article</name>
     <description />
     <extended_description />
     <trans_version />
@@ -455,9 +455,9 @@
     <clusterschemas>
     </clusterschemas>
     <created_user>-</created_user>
-    <created_date>2019/05/01 22:33:34.185</created_date>
+    <created_date>2019/05/01 14:43:47.110</created_date>
     <modified_user>-</modified_user>
-    <modified_date>2019/08/15 21:12:30.467</modified_date>
+    <modified_date>2019/08/15 20:51:43.191</modified_date>
     <key_for_session_key>H4sIAAAAAAAAAAMAAAAAAAAAAAA=</key_for_session_key>
     <is_key_private>N</is_key_private>
   </info>
@@ -648,7 +648,68 @@
       <to>Insert / Update</to>
       <enabled>Y</enabled>
     </hop>
+    <hop>
+      <from>Select values</from>
+      <to>Unique rows (HashSet)</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Unique rows (HashSet)</from>
+      <to>Filter rows</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Filter rows</from>
+      <to>Insert / Update 2</to>
+      <enabled>Y</enabled>
+    </hop>
   </order>
+  <step>
+    <name>Filter rows</name>
+    <type>FilterRows</type>
+    <description />
+    <distribute>Y</distribute>
+    <custom_distribution />
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name />
+    </partitioning>
+    <send_true_to>Insert / Update 2</send_true_to>
+    <send_false_to />
+    <compare>
+      <condition>
+        <negated>N</negated>
+        <conditions>
+          <condition>
+            <negated>N</negated>
+            <leftvalue>content</leftvalue>
+            <function>IS NOT NULL</function>
+            <rightvalue />
+          </condition>
+          <condition>
+            <negated>N</negated>
+            <operator>OR</operator>
+            <leftvalue>title</leftvalue>
+            <function>IS NOT NULL</function>
+            <rightvalue />
+          </condition>
+        </conditions>
+      </condition>
+    </compare>
+    <cluster_schema />
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>576</xloc>
+      <yloc>256</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
   <step>
     <name>Insert / Update</name>
     <type>InsertUpdate</type>
@@ -665,10 +726,10 @@
     <update_bypassed>N</update_bypassed>
     <lookup>
       <schema />
-      <table>idata_hupu_post</table>
+      <table>idata_article_article</table>
       <key>
-        <name>post_id</name>
-        <field>post_id</field>
+        <name>article_id</name>
+        <field>article_id</field>
         <condition>=</condition>
         <name2 />
       </key>
@@ -679,18 +740,23 @@
         <name2 />
       </key>
       <value>
+        <name>article_id</name>
+        <rename>article_id</rename>
+        <update>N</update>
+      </value>
+      <value>
         <name>ref_date</name>
         <rename>ref_date</rename>
         <update>N</update>
       </value>
       <value>
-        <name>title</name>
-        <rename>title</rename>
+        <name>comment_count</name>
+        <rename>comment_count</rename>
         <update>Y</update>
       </value>
       <value>
-        <name>content</name>
-        <rename>content</rename>
+        <name>title</name>
+        <rename>title</rename>
         <update>Y</update>
       </value>
       <value>
@@ -699,13 +765,13 @@
         <update>Y</update>
       </value>
       <value>
-        <name>post_id</name>
-        <rename>post_id</rename>
-        <update>N</update>
+        <name>app_code</name>
+        <rename>appCode</rename>
+        <update>Y</update>
       </value>
       <value>
-        <name>publish_date</name>
-        <rename>publishDate</rename>
+        <name>image_urls</name>
+        <rename>imageUrls</rename>
         <update>Y</update>
       </value>
       <value>
@@ -714,28 +780,8 @@
         <update>Y</update>
       </value>
       <value>
-        <name>app_code</name>
-        <rename>appCode</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>cat_path_key</name>
-        <rename>catPathKey</rename>
-        <update>Y</update>
-      </value>
-      <value>
         <name>poster_id</name>
         <rename>posterId</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>comment_count</name>
-        <rename>commentCount</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>share_count</name>
-        <rename>shareCount</rename>
         <update>Y</update>
       </value>
       <value>
@@ -744,8 +790,28 @@
         <update>Y</update>
       </value>
       <value>
-        <name>image_urls</name>
-        <rename>imageUrls</rename>
+        <name>publish_date</name>
+        <rename>publishDate</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>cat_dist_1</name>
+        <rename>catDist1</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>cat_dist_2</name>
+        <rename>catDist2</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>cat_label_2</name>
+        <rename>catLabel2</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>view_count</name>
+        <rename>viewCount</rename>
         <update>Y</update>
       </value>
     </lookup>
@@ -757,8 +823,65 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>543</xloc>
-      <yloc>389</yloc>
+      <xloc>656</xloc>
+      <yloc>96</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>Insert / Update 2</name>
+    <type>InsertUpdate</type>
+    <description />
+    <distribute>Y</distribute>
+    <custom_distribution />
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name />
+    </partitioning>
+    <connection>newSocialDB</connection>
+    <commit>10000</commit>
+    <update_bypassed>Y</update_bypassed>
+    <lookup>
+      <schema />
+      <table>idata_article_article_content_detail</table>
+      <key>
+        <name>article_id</name>
+        <field>article_id</field>
+        <condition>=</condition>
+        <name2 />
+      </key>
+      <value>
+        <name>article_id</name>
+        <rename>article_id</rename>
+        <update>N</update>
+      </value>
+      <value>
+        <name>content</name>
+        <rename>content</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>publishDate</name>
+        <rename>publishDate</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>title</name>
+        <rename>title</rename>
+        <update>Y</update>
+      </value>
+    </lookup>
+    <cluster_schema />
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>752</xloc>
+      <yloc>224</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -778,7 +901,7 @@
     <use_all_replica_members>N</use_all_replica_members>
     <db_name>idata</db_name>
     <fields_name />
-    <collection>hupu_post</collection>
+    <collection>idataapi_article</collection>
     <json_field_name>json</json_field_name>
     <json_query>{$or:[{'updatedTime':{'$gte':'%%startTime%%','$lte':'%%endTime%%'}},{'_id':{'$in':%%ids%%}}]}</json_query>
     <auth_database>idata</auth_database>
@@ -795,9 +918,9 @@
     <execute_for_each_row>N</execute_for_each_row>
     <mongo_fields>
       <mongo_field>
-        <field_name>publishDate</field_name>
-        <field_path>$.publishDate</field_path>
-        <field_type>Integer</field_type>
+        <field_name>id</field_name>
+        <field_path>$.id</field_path>
+        <field_type>String</field_type>
       </mongo_field>
       <mongo_field>
         <field_name>ref_date</field_name>
@@ -805,53 +928,18 @@
         <field_type>String</field_type>
       </mongo_field>
       <mongo_field>
-        <field_name>likeCount</field_name>
-        <field_path>$.likeCount</field_path>
-        <field_type>Integer</field_type>
-      </mongo_field>
-      <mongo_field>
         <field_name>appCode</field_name>
         <field_path>$.appCode</field_path>
         <field_type>String</field_type>
       </mongo_field>
       <mongo_field>
-        <field_name>catPathKey</field_name>
-        <field_path>$.catPathKey</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>title</field_name>
-        <field_path>$.title</field_path>
-        <field_type>String</field_type>
+        <field_name>comment_count</field_name>
+        <field_path>$.comment_count</field_path>
+        <field_type>Integer</field_type>
       </mongo_field>
       <mongo_field>
         <field_name>content</field_name>
         <field_path>$.content</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>posterId</field_name>
-        <field_path>$.posterId</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>url</field_name>
-        <field_path>$.url</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>commentCount</field_name>
-        <field_path>$.commentCount</field_path>
-        <field_type>Integer</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>shareCount</field_name>
-        <field_path>$.shareCount</field_path>
-        <field_type>Integer</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>posterScreenName</field_name>
-        <field_path>$.posterScreenName</field_path>
         <field_type>String</field_type>
       </mongo_field>
       <mongo_field>
@@ -860,9 +948,54 @@
         <field_type>String</field_type>
       </mongo_field>
       <mongo_field>
-        <field_name>id</field_name>
-        <field_path>$.id</field_path>
+        <field_name>likeCount</field_name>
+        <field_path>$.likeCount</field_path>
+        <field_type>Integer</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>posterId</field_name>
+        <field_path>$.posterId</field_path>
         <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>posterScreenName</field_name>
+        <field_path>$.posterScreenName</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>publishDate</field_name>
+        <field_path>$.publishDate</field_path>
+        <field_type>Integer</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>title</field_name>
+        <field_path>$.title</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>url</field_name>
+        <field_path>$.url</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>catDist1</field_name>
+        <field_path>$.catDist1</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>catDist2</field_name>
+        <field_path>$.catDist2</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>catLabel2</field_name>
+        <field_path>$.catLabel2</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>viewCount</field_name>
+        <field_path>$.viewCount</field_path>
+        <field_type>Integer</field_type>
       </mongo_field>
     </mongo_fields>
     <cluster_schema />
@@ -873,8 +1006,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>183</xloc>
-      <yloc>265</yloc>
+      <xloc>201</xloc>
+      <yloc>224</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -891,47 +1024,53 @@
     </partitioning>
     <fields>
       <field>
-        <name>publishDate</name>
+        <name>id</name>
+        <rename>article_id</rename>
       </field>
       <field>
         <name>ref_date</name>
       </field>
       <field>
-        <name>likeCount</name>
-      </field>
-      <field>
         <name>appCode</name>
       </field>
       <field>
-        <name>catPathKey</name>
-      </field>
-      <field>
-        <name>title</name>
+        <name>comment_count</name>
       </field>
       <field>
         <name>content</name>
       </field>
       <field>
+        <name>imageUrls</name>
+      </field>
+      <field>
+        <name>likeCount</name>
+      </field>
+      <field>
         <name>posterId</name>
-      </field>
-      <field>
-        <name>url</name>
-      </field>
-      <field>
-        <name>commentCount</name>
-      </field>
-      <field>
-        <name>shareCount</name>
       </field>
       <field>
         <name>posterScreenName</name>
       </field>
       <field>
-        <name>imageUrls</name>
+        <name>publishDate</name>
       </field>
       <field>
-        <name>id</name>
-        <rename>post_id</rename>
+        <name>title</name>
+      </field>
+      <field>
+        <name>url</name>
+      </field>
+      <field>
+        <name>catDist1</name>
+      </field>
+      <field>
+        <name>catDist2</name>
+      </field>
+      <field>
+        <name>catLabel2</name>
+      </field>
+      <field>
+        <name>viewCount</name>
       </field>
       <select_unspecified>N</select_unspecified>
     </fields>
@@ -943,8 +1082,40 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>383</xloc>
-      <yloc>265</yloc>
+      <xloc>401</xloc>
+      <yloc>224</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>Unique rows (HashSet)</name>
+    <type>UniqueRowsByHashSet</type>
+    <description />
+    <distribute>Y</distribute>
+    <custom_distribution />
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name />
+    </partitioning>
+    <store_values>N</store_values>
+    <reject_duplicate_row>N</reject_duplicate_row>
+    <error_description />
+    <fields>
+      <field>
+        <name>article_id</name>
+      </field>
+    </fields>
+    <cluster_schema />
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>464</xloc>
+      <yloc>288</yloc>
       <draw>Y</draw>
     </GUI>
   </step>

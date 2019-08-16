@@ -36,9 +36,9 @@ class SocialBasicAPI(object):
 		#self.__db = self.cfp.get('db','db')
 		#self.__table = self.cfp.get('db','table')
 		
-	def postRequest(self,url, postData):
+	def postRequest(self,url, postData, **kwargs):
 		
-		r = requests.post(url, data=postData)
+		r = requests.post(url, data=postData,**kwargs)
 		return r
 		
 	def getRequest(self,url,paramsDict={},stream=False,**kwargs):

@@ -4,7 +4,6 @@ from SocialAPI.Model import MasterUid,MasterUidInitial
 import threading
 import datetime
 
-
 def get_weibo_post(uids,start_day=-7,count_num=50):
     weibo = SocialWeiboAPI()
 

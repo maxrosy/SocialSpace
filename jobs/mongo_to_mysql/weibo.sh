@@ -12,7 +12,7 @@ sh /home/panther/data-integration/pan.sh -file=/home/panther/SocialSpace/jobs/mo
 
 sh /home/panther/data-integration/pan.sh -file=/home/panther/SocialSpace/jobs/mongo_to_mysql/weibo_jobs/weibo_post_media.ktr -param:startTime="$startTime" -param:endTime="$endTime"
 
-sh /home/panther/data-integration/pan.sh -file=/home/panther/SocialSpace/jobs/mongo_to_mysql/weibo_jobs/weibo_post_crawl.ktr -param:startTime="$startTime" -param:endTime="$endTime"
+#sh /home/panther/data-integration/pan.sh -file=/home/panther/SocialSpace/jobs/mongo_to_mysql/weibo_jobs/weibo_post_crawl.ktr -param:startTime="$startTime" -param:endTime="$endTime"
 
 sh /home/panther/data-integration/pan.sh -file=/home/panther/SocialSpace/jobs/mongo_to_mysql/weibo_jobs/weibo_post_mention.ktr -param:startTime="$startTime" -param:endTime="$endTime"
 
@@ -22,4 +22,8 @@ sh /home/panther/data-integration/pan.sh -file=/home/panther/SocialSpace/jobs/mo
 
 sh /home/panther/data-integration/pan.sh -file=/home/panther/SocialSpace/jobs/mongo_to_mysql/weibo_jobs/weibo_search_statuses_limited_media.ktr -param:startTime="$startTime" -param:endTime="$endTime"
 
-sh /home/panther/data-integration/pan.sh -file=/home/panther/SocialSpace/jobs/mongo_to_mysql/weibo_jobs/weibo_search_statuses_limited.ktr -param:startTime="$startTime_yesterday" -param:endTime="$endTime_yesterday"
+sh /home/panther/data-integration/pan.sh -file=/home/panther/SocialSpace/jobs/mongo_to_mysql/weibo_jobs/weibo_search_statuses_limited.ktr -param:startTime="$startTime" -param:endTime="$endTime"
+
+sh /home/panther/data-integration/pan.sh -file=/home/panther/SocialSpace/jobs/mongo_to_mysql/weibo_jobs/weibo_user_comment.ktr -param:startTime="$startTime" -param:endTime="$endTime"
+
+sh /home/panther/data-integration/pan.sh -file=/home/panther/SocialSpace/jobs/mongo_to_mysql/weibo_jobs/weibo_user_attitude.ktr -param:startTime="$startTime" -param:endTime="$endTime"

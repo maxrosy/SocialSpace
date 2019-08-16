@@ -1,6 +1,6 @@
 <transformation>
   <info>
-    <name>idata_hupu_post</name>
+    <name>newrank_weixin_search_content</name>
     <description />
     <extended_description />
     <trans_version />
@@ -448,16 +448,16 @@
         <proxy_hostname />
         <proxy_port />
         <non_proxy_hosts />
-        <master>N</master>
+        <master>Y</master>
         <sslMode>N</sslMode>
       </slaveserver>
     </slaveservers>
     <clusterschemas>
     </clusterschemas>
     <created_user>-</created_user>
-    <created_date>2019/05/01 22:33:34.185</created_date>
+    <created_date>2019/08/14 12:51:46.107</created_date>
     <modified_user>-</modified_user>
-    <modified_date>2019/08/15 21:12:30.467</modified_date>
+    <modified_date>2019/08/15 21:38:28.798</modified_date>
     <key_for_session_key>H4sIAAAAAAAAAAMAAAAAAAAAAAA=</key_for_session_key>
     <is_key_private>N</is_key_private>
   </info>
@@ -639,13 +639,18 @@
   </connection>
   <order>
     <hop>
-      <from>MongoDB Input</from>
-      <to>Select values</to>
+      <from>Select values</from>
+      <to>Insert / Update</to>
       <enabled>Y</enabled>
     </hop>
     <hop>
-      <from>Select values</from>
-      <to>Insert / Update</to>
+      <from>MongoDB Input</from>
+      <to>Regex Evaluation</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Regex Evaluation</from>
+      <to>Select values</to>
       <enabled>Y</enabled>
     </hop>
   </order>
@@ -665,32 +670,21 @@
     <update_bypassed>N</update_bypassed>
     <lookup>
       <schema />
-      <table>idata_hupu_post</table>
+      <table>newrank_weixin_search_content</table>
       <key>
-        <name>post_id</name>
-        <field>post_id</field>
-        <condition>=</condition>
-        <name2 />
-      </key>
-      <key>
-        <name>ref_date</name>
-        <field>ref_date</field>
+        <name>sn_reg</name>
+        <field>sn</field>
         <condition>=</condition>
         <name2 />
       </key>
       <value>
-        <name>ref_date</name>
-        <rename>ref_date</rename>
-        <update>N</update>
+        <name>content</name>
+        <rename>content</rename>
+        <update>Y</update>
       </value>
       <value>
         <name>title</name>
         <rename>title</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>content</name>
-        <rename>content</rename>
         <update>Y</update>
       </value>
       <value>
@@ -699,53 +693,93 @@
         <update>Y</update>
       </value>
       <value>
-        <name>post_id</name>
-        <rename>post_id</rename>
+        <name>type</name>
+        <rename>type</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>summary</name>
+        <rename>summary</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>author</name>
+        <rename>author</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>name</name>
+        <rename>name</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>account</name>
+        <rename>account</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>keywords</name>
+        <rename>keywords</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>ref_date</name>
+        <rename>updateTime</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>audio_url</name>
+        <rename>audioUrl</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>image_url</name>
+        <rename>imageUrl</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>like_num</name>
+        <rename>likeNum</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>mid</name>
+        <rename>mid_reg</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>music_url</name>
+        <rename>musicUrl</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>order_num</name>
+        <rename>orderNum</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>original_flag</name>
+        <rename>originalFlag</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>public_time</name>
+        <rename>publicTime</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>read_num</name>
+        <rename>readNum</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>sn</name>
+        <rename>sn_reg</rename>
         <update>N</update>
       </value>
       <value>
-        <name>publish_date</name>
-        <rename>publishDate</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>like_count</name>
-        <rename>likeCount</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>app_code</name>
-        <rename>appCode</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>cat_path_key</name>
-        <rename>catPathKey</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>poster_id</name>
-        <rename>posterId</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>comment_count</name>
-        <rename>commentCount</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>share_count</name>
-        <rename>shareCount</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>poster_screen_name</name>
-        <rename>posterScreenName</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>image_urls</name>
-        <rename>imageUrls</rename>
+        <name>source_url</name>
+        <rename>sourceUrl</rename>
         <update>Y</update>
       </value>
     </lookup>
@@ -757,8 +791,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>543</xloc>
-      <yloc>389</yloc>
+      <xloc>592</xloc>
+      <yloc>320</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -776,14 +810,14 @@
     <hostname>localhost</hostname>
     <port>27017</port>
     <use_all_replica_members>N</use_all_replica_members>
-    <db_name>idata</db_name>
+    <db_name>newrank</db_name>
     <fields_name />
-    <collection>hupu_post</collection>
+    <collection>weixin_search_content</collection>
     <json_field_name>json</json_field_name>
     <json_query>{$or:[{'updatedTime':{'$gte':'%%startTime%%','$lte':'%%endTime%%'}},{'_id':{'$in':%%ids%%}}]}</json_query>
-    <auth_database>idata</auth_database>
-    <auth_user>idata</auth_user>
-    <auth_password>Encrypted 2beecdda90c86d1c0a81dbd71ecb7fe88</auth_password>
+    <auth_database>newrank</auth_database>
+    <auth_user>newrank</auth_user>
+    <auth_password>Encrypted 2beeadea90c86d1c0a81dbd71ecb7fe89</auth_password>
     <auth_mech>SCRAM-SHA-1</auth_mech>
     <auth_kerberos>N</auth_kerberos>
     <connect_timeout />
@@ -795,28 +829,8 @@
     <execute_for_each_row>N</execute_for_each_row>
     <mongo_fields>
       <mongo_field>
-        <field_name>publishDate</field_name>
-        <field_path>$.publishDate</field_path>
-        <field_type>Integer</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>ref_date</field_name>
-        <field_path>$.ref_date</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>likeCount</field_name>
-        <field_path>$.likeCount</field_path>
-        <field_type>Integer</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>appCode</field_name>
-        <field_path>$.appCode</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>catPathKey</field_name>
-        <field_path>$.catPathKey</field_path>
+        <field_name>content</field_name>
+        <field_path>$.content</field_path>
         <field_type>String</field_type>
       </mongo_field>
       <mongo_field>
@@ -825,43 +839,113 @@
         <field_type>String</field_type>
       </mongo_field>
       <mongo_field>
-        <field_name>content</field_name>
-        <field_path>$.content</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>posterId</field_name>
-        <field_path>$.posterId</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
         <field_name>url</field_name>
         <field_path>$.url</field_path>
         <field_type>String</field_type>
       </mongo_field>
       <mongo_field>
-        <field_name>commentCount</field_name>
-        <field_path>$.commentCount</field_path>
-        <field_type>Integer</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>shareCount</field_name>
-        <field_path>$.shareCount</field_path>
-        <field_type>Integer</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>posterScreenName</field_name>
-        <field_path>$.posterScreenName</field_path>
+        <field_name>musicUrl</field_name>
+        <field_path>$.musicUrl</field_path>
         <field_type>String</field_type>
       </mongo_field>
       <mongo_field>
-        <field_name>imageUrls</field_name>
-        <field_path>$.imageUrls</field_path>
+        <field_name>mid</field_name>
+        <field_path>$.mid</field_path>
         <field_type>String</field_type>
       </mongo_field>
       <mongo_field>
-        <field_name>id</field_name>
-        <field_path>$.id</field_path>
+        <field_name>orderNum</field_name>
+        <field_path>$.orderNum</field_path>
+        <field_type>Integer</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>type</field_name>
+        <field_path>$.type</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>likeNum</field_name>
+        <field_path>$.likeNum</field_path>
+        <field_type>Integer</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>sourceUrl</field_name>
+        <field_path>$.sourceUrl</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>audioUrl</field_name>
+        <field_path>$.audioUrl</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>publicTime</field_name>
+        <field_path>$.publicTime</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>imageUrl</field_name>
+        <field_path>$.imageUrl</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>createdTime</field_name>
+        <field_path>$.createdTime</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>sn</field_name>
+        <field_path>$.sn</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>summary</field_name>
+        <field_path>$.summary</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>updatedTime</field_name>
+        <field_path>$.updatedTime</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>author</field_name>
+        <field_path>$.author</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>updateTime</field_name>
+        <field_path>$.updateTime</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>originalFlag</field_name>
+        <field_path>$.originalFlag</field_path>
+        <field_type>Integer</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>readNum</field_name>
+        <field_path>$.readNum</field_path>
+        <field_type>Integer</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>name</field_name>
+        <field_path>$.name</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>_id</field_name>
+        <field_path>$._id</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>account</field_name>
+        <field_path>$.account</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>keywords</field_name>
+        <field_path>$.keywords</field_path>
         <field_type>String</field_type>
       </mongo_field>
     </mongo_fields>
@@ -873,8 +957,73 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>183</xloc>
-      <yloc>265</yloc>
+      <xloc>238</xloc>
+      <yloc>195</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>Regex Evaluation</name>
+    <type>RegexEval</type>
+    <description />
+    <distribute>Y</distribute>
+    <custom_distribution />
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name />
+    </partitioning>
+    <script>.*&amp;mid=(\w+).*&amp;sn=(\w+)&amp;.*</script>
+    <matcher>url</matcher>
+    <resultfieldname>result</resultfieldname>
+    <usevar>N</usevar>
+    <allowcapturegroups>Y</allowcapturegroups>
+    <replacefields>N</replacefields>
+    <canoneq>N</canoneq>
+    <caseinsensitive>N</caseinsensitive>
+    <comment>N</comment>
+    <dotall>N</dotall>
+    <multiline>N</multiline>
+    <unicode>N</unicode>
+    <unix>N</unix>
+    <fields>
+      <field>
+        <name>mid_reg</name>
+        <type>String</type>
+        <format />
+        <group />
+        <decimal />
+        <length>-1</length>
+        <precision>-1</precision>
+        <nullif />
+        <ifnull />
+        <trimtype>none</trimtype>
+        <currency />
+      </field>
+      <field>
+        <name>sn_reg</name>
+        <type>String</type>
+        <format />
+        <group />
+        <decimal />
+        <length>-1</length>
+        <precision>-1</precision>
+        <nullif />
+        <ifnull />
+        <trimtype>none</trimtype>
+        <currency />
+      </field>
+    </fields>
+    <cluster_schema />
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>368</xloc>
+      <yloc>112</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -891,47 +1040,85 @@
     </partitioning>
     <fields>
       <field>
-        <name>publishDate</name>
-      </field>
-      <field>
-        <name>ref_date</name>
-      </field>
-      <field>
-        <name>likeCount</name>
-      </field>
-      <field>
-        <name>appCode</name>
-      </field>
-      <field>
-        <name>catPathKey</name>
+        <name>content</name>
       </field>
       <field>
         <name>title</name>
       </field>
       <field>
-        <name>content</name>
-      </field>
-      <field>
-        <name>posterId</name>
-      </field>
-      <field>
         <name>url</name>
       </field>
       <field>
-        <name>commentCount</name>
+        <name>musicUrl</name>
       </field>
       <field>
-        <name>shareCount</name>
+        <name>mid</name>
       </field>
       <field>
-        <name>posterScreenName</name>
+        <name>orderNum</name>
       </field>
       <field>
-        <name>imageUrls</name>
+        <name>type</name>
       </field>
       <field>
-        <name>id</name>
-        <rename>post_id</rename>
+        <name>likeNum</name>
+      </field>
+      <field>
+        <name>sourceUrl</name>
+      </field>
+      <field>
+        <name>audioUrl</name>
+      </field>
+      <field>
+        <name>publicTime</name>
+      </field>
+      <field>
+        <name>imageUrl</name>
+      </field>
+      <field>
+        <name>createdTime</name>
+      </field>
+      <field>
+        <name>sn</name>
+      </field>
+      <field>
+        <name>summary</name>
+      </field>
+      <field>
+        <name>updatedTime</name>
+      </field>
+      <field>
+        <name>author</name>
+      </field>
+      <field>
+        <name>updateTime</name>
+      </field>
+      <field>
+        <name>originalFlag</name>
+      </field>
+      <field>
+        <name>readNum</name>
+      </field>
+      <field>
+        <name>name</name>
+      </field>
+      <field>
+        <name>_id</name>
+      </field>
+      <field>
+        <name>account</name>
+      </field>
+      <field>
+        <name>keywords</name>
+      </field>
+      <field>
+        <name>result</name>
+      </field>
+      <field>
+        <name>mid_reg</name>
+      </field>
+      <field>
+        <name>sn_reg</name>
       </field>
       <select_unspecified>N</select_unspecified>
     </fields>
@@ -943,8 +1130,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>383</xloc>
-      <yloc>265</yloc>
+      <xloc>443</xloc>
+      <yloc>196</yloc>
       <draw>Y</draw>
     </GUI>
   </step>

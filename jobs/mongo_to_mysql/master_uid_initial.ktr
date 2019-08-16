@@ -1,6 +1,6 @@
 <transformation>
   <info>
-    <name>idata_hupu_post</name>
+    <name>master_uid_initial</name>
     <description />
     <extended_description />
     <trans_version />
@@ -8,21 +8,6 @@
     <trans_status>0</trans_status>
     <directory>/</directory>
     <parameters>
-      <parameter>
-        <name>endTime</name>
-        <default_value />
-        <description />
-      </parameter>
-      <parameter>
-        <name>ids</name>
-        <default_value>[]</default_value>
-        <description />
-      </parameter>
-      <parameter>
-        <name>startTime</name>
-        <default_value />
-        <description />
-      </parameter>
     </parameters>
     <log>
       <trans-log-table>
@@ -448,17 +433,17 @@
         <proxy_hostname />
         <proxy_port />
         <non_proxy_hosts />
-        <master>N</master>
+        <master>Y</master>
         <sslMode>N</sslMode>
       </slaveserver>
     </slaveservers>
     <clusterschemas>
     </clusterschemas>
     <created_user>-</created_user>
-    <created_date>2019/05/01 22:33:34.185</created_date>
+    <created_date>2019/08/04 18:00:52.575</created_date>
     <modified_user>-</modified_user>
-    <modified_date>2019/08/15 21:12:30.467</modified_date>
-    <key_for_session_key>H4sIAAAAAAAAAAMAAAAAAAAAAAA=</key_for_session_key>
+    <modified_date>2019/08/04 18:10:50.322</modified_date>
+    <key_for_session_key />
     <is_key_private>N</is_key_private>
   </info>
   <notepads>
@@ -572,15 +557,7 @@
         <attribute>true</attribute>
       </attribute>
       <attribute>
-        <code>EXTRA_OPTION_MYSQL.useSSL</code>
-        <attribute>false</attribute>
-      </attribute>
-      <attribute>
         <code>EXTRA_OPTION_MYSQL.useServerPrepStmts</code>
-        <attribute>false</attribute>
-      </attribute>
-      <attribute>
-        <code>EXTRA_OPTION_MYSQL.verifyServerCertificate</code>
         <attribute>false</attribute>
       </attribute>
       <attribute>
@@ -639,7 +616,7 @@
   </connection>
   <order>
     <hop>
-      <from>MongoDB Input</from>
+      <from>Table input</from>
       <to>Select values</to>
       <enabled>Y</enabled>
     </hop>
@@ -661,91 +638,85 @@
       <schema_name />
     </partitioning>
     <connection>newSocialDB</connection>
-    <commit>10000</commit>
-    <update_bypassed>N</update_bypassed>
+    <commit>1000</commit>
+    <update_bypassed>Y</update_bypassed>
     <lookup>
       <schema />
-      <table>idata_hupu_post</table>
+      <table>master_uid</table>
       <key>
-        <name>post_id</name>
-        <field>post_id</field>
-        <condition>=</condition>
-        <name2 />
-      </key>
-      <key>
-        <name>ref_date</name>
-        <field>ref_date</field>
+        <name>uid</name>
+        <field>uid</field>
         <condition>=</condition>
         <name2 />
       </key>
       <value>
-        <name>ref_date</name>
-        <rename>ref_date</rename>
-        <update>N</update>
-      </value>
-      <value>
-        <name>title</name>
-        <rename>title</rename>
+        <name>uid</name>
+        <rename>uid</rename>
         <update>Y</update>
       </value>
       <value>
-        <name>content</name>
-        <rename>content</rename>
+        <name>name</name>
+        <rename>name</rename>
         <update>Y</update>
       </value>
       <value>
-        <name>url</name>
-        <rename>url</rename>
+        <name>username</name>
+        <rename>username</rename>
         <update>Y</update>
       </value>
       <value>
-        <name>post_id</name>
-        <rename>post_id</rename>
-        <update>N</update>
-      </value>
-      <value>
-        <name>publish_date</name>
-        <rename>publishDate</rename>
+        <name>pw</name>
+        <rename>pw</rename>
         <update>Y</update>
       </value>
       <value>
-        <name>like_count</name>
-        <rename>likeCount</rename>
+        <name>type</name>
+        <rename>type</rename>
         <update>Y</update>
       </value>
       <value>
-        <name>app_code</name>
-        <rename>appCode</rename>
+        <name>crawl_master</name>
+        <rename>crawl_master</rename>
         <update>Y</update>
       </value>
       <value>
-        <name>cat_path_key</name>
-        <rename>catPathKey</rename>
+        <name>crawl_from</name>
+        <rename>crawl_from</rename>
         <update>Y</update>
       </value>
       <value>
-        <name>poster_id</name>
-        <rename>posterId</rename>
+        <name>crawl_until</name>
+        <rename>crawl_until</rename>
         <update>Y</update>
       </value>
       <value>
-        <name>comment_count</name>
-        <rename>commentCount</rename>
+        <name>crawl_post</name>
+        <rename>crawl_post</rename>
         <update>Y</update>
       </value>
       <value>
-        <name>share_count</name>
-        <rename>shareCount</rename>
+        <name>crawl_repost</name>
+        <rename>crawl_repost</rename>
         <update>Y</update>
       </value>
       <value>
-        <name>poster_screen_name</name>
-        <rename>posterScreenName</rename>
+        <name>crawl_comment</name>
+        <rename>crawl_comment</rename>
         <update>Y</update>
       </value>
       <value>
-        <name>image_urls</name>
-        <rename>imageUrls</rename>
+        <name>crawl_attitude</name>
+        <rename>crawl_attitude</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>crawl_mention</name>
+        <rename>crawl_mention</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>crawl_user_growth</name>
+        <rename>crawl_user_growth</rename>
         <update>Y</update>
       </value>
     </lookup>
@@ -757,14 +728,14 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>543</xloc>
-      <yloc>389</yloc>
+      <xloc>560</xloc>
+      <yloc>112</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
   <step>
-    <name>MongoDB Input</name>
-    <type>MongoDbInput</type>
+    <name>Table input</name>
+    <type>TableInput</type>
     <description />
     <distribute>Y</distribute>
     <custom_distribution />
@@ -773,98 +744,13 @@
       <method>none</method>
       <schema_name />
     </partitioning>
-    <hostname>localhost</hostname>
-    <port>27017</port>
-    <use_all_replica_members>N</use_all_replica_members>
-    <db_name>idata</db_name>
-    <fields_name />
-    <collection>hupu_post</collection>
-    <json_field_name>json</json_field_name>
-    <json_query>{$or:[{'updatedTime':{'$gte':'%%startTime%%','$lte':'%%endTime%%'}},{'_id':{'$in':%%ids%%}}]}</json_query>
-    <auth_database>idata</auth_database>
-    <auth_user>idata</auth_user>
-    <auth_password>Encrypted 2beecdda90c86d1c0a81dbd71ecb7fe88</auth_password>
-    <auth_mech>SCRAM-SHA-1</auth_mech>
-    <auth_kerberos>N</auth_kerberos>
-    <connect_timeout />
-    <socket_timeout />
-    <use_ssl_socket_factory>N</use_ssl_socket_factory>
-    <read_preference>primary</read_preference>
-    <output_json>N</output_json>
-    <query_is_pipeline>N</query_is_pipeline>
-    <execute_for_each_row>N</execute_for_each_row>
-    <mongo_fields>
-      <mongo_field>
-        <field_name>publishDate</field_name>
-        <field_path>$.publishDate</field_path>
-        <field_type>Integer</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>ref_date</field_name>
-        <field_path>$.ref_date</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>likeCount</field_name>
-        <field_path>$.likeCount</field_path>
-        <field_type>Integer</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>appCode</field_name>
-        <field_path>$.appCode</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>catPathKey</field_name>
-        <field_path>$.catPathKey</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>title</field_name>
-        <field_path>$.title</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>content</field_name>
-        <field_path>$.content</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>posterId</field_name>
-        <field_path>$.posterId</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>url</field_name>
-        <field_path>$.url</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>commentCount</field_name>
-        <field_path>$.commentCount</field_path>
-        <field_type>Integer</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>shareCount</field_name>
-        <field_path>$.shareCount</field_path>
-        <field_type>Integer</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>posterScreenName</field_name>
-        <field_path>$.posterScreenName</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>imageUrls</field_name>
-        <field_path>$.imageUrls</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>id</field_name>
-        <field_path>$.id</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-    </mongo_fields>
+    <connection>newSocialDB</connection>
+    <sql>SELECT * FROM socialdb.master_uid_initial a where  not exists (select uid from master_uid where uid=a.uid)</sql>
+    <limit>0</limit>
+    <lookup />
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
     <cluster_schema />
     <remotesteps>
       <input>
@@ -873,8 +759,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>183</xloc>
-      <yloc>265</yloc>
+      <xloc>240</xloc>
+      <yloc>128</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -882,7 +768,7 @@
     <name>Select values</name>
     <type>SelectValues</type>
     <description />
-    <distribute>N</distribute>
+    <distribute>Y</distribute>
     <custom_distribution />
     <copies>1</copies>
     <partitioning>
@@ -891,47 +777,76 @@
     </partitioning>
     <fields>
       <field>
-        <name>publishDate</name>
-      </field>
-      <field>
-        <name>ref_date</name>
-      </field>
-      <field>
-        <name>likeCount</name>
-      </field>
-      <field>
-        <name>appCode</name>
-      </field>
-      <field>
-        <name>catPathKey</name>
-      </field>
-      <field>
-        <name>title</name>
-      </field>
-      <field>
-        <name>content</name>
-      </field>
-      <field>
-        <name>posterId</name>
-      </field>
-      <field>
-        <name>url</name>
-      </field>
-      <field>
-        <name>commentCount</name>
-      </field>
-      <field>
-        <name>shareCount</name>
-      </field>
-      <field>
-        <name>posterScreenName</name>
-      </field>
-      <field>
-        <name>imageUrls</name>
-      </field>
-      <field>
         <name>id</name>
-        <rename>post_id</rename>
+        <rename />
+      </field>
+      <field>
+        <name>uid</name>
+        <rename />
+      </field>
+      <field>
+        <name>name</name>
+        <rename />
+      </field>
+      <field>
+        <name>username</name>
+        <rename />
+      </field>
+      <field>
+        <name>pw</name>
+        <rename />
+      </field>
+      <field>
+        <name>type</name>
+        <rename />
+      </field>
+      <field>
+        <name>crawl_master</name>
+        <rename />
+      </field>
+      <field>
+        <name>crawl_from</name>
+        <rename />
+      </field>
+      <field>
+        <name>crawl_until</name>
+        <rename />
+      </field>
+      <field>
+        <name>crawl_post</name>
+        <rename />
+      </field>
+      <field>
+        <name>crawl_repost</name>
+        <rename />
+      </field>
+      <field>
+        <name>crawl_comment</name>
+        <rename />
+      </field>
+      <field>
+        <name>crawl_attitude</name>
+        <rename />
+      </field>
+      <field>
+        <name>crawl_mention</name>
+        <rename />
+      </field>
+      <field>
+        <name>crawl_user_growth</name>
+        <rename />
+      </field>
+      <field>
+        <name>status</name>
+        <rename />
+      </field>
+      <field>
+        <name>created_time</name>
+        <rename />
+      </field>
+      <field>
+        <name>updated_time</name>
+        <rename />
       </field>
       <select_unspecified>N</select_unspecified>
     </fields>
@@ -943,8 +858,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>383</xloc>
-      <yloc>265</yloc>
+      <xloc>368</xloc>
+      <yloc>96</yloc>
       <draw>Y</draw>
     </GUI>
   </step>

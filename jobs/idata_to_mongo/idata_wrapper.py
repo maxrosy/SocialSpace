@@ -39,14 +39,6 @@ def main():
         else:
             idata.get_idata_data(**opt)
 
-        try:
-            topic = opt.get('app')+'_'+opt.get('post_type')
-            producer = KafkaProducer(bootstrap_servers=['172.16.42.3:9092'])
-            producer.send(topic, b'max4', partition=0)
-        except Exception as e:
-            print(e)
-        finally:
-            producer.close()
 
 
     except Exception as e:
