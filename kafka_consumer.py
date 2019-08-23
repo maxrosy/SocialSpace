@@ -1,5 +1,5 @@
 from kafka import KafkaConsumer
-from subprocess import call
+from subprocess import call,check_output
 import time
 import json
 from SocialAPI.Logger.BasicLogger import Logger
@@ -34,9 +34,9 @@ topics = (
 ,'idata_zhihu_answer'
 ,'idata_zhihu_comment'
 ,'idata_zhihu_question'
-,'newrank_weixin_article_content'
+,'newrank_weixin_article_search'
 ,'newrank_weixin_search_content'
-#,'weibo_test'
+,'idata_test'
 )
 
 consumer = KafkaConsumer(bootstrap_servers=['172.16.42.3:9092'])
@@ -55,18 +55,23 @@ while True:
                     logger.info(v)
                     db_topic = json.loads(v.key).get('db')
                     job = v.topic
-                    _id = {'\$oid':json.loads(v.value)}
+                    _id = '{{$oid:\"{}\"}}'.format(json.loads(v.value))
                     if tasks.get(job):
                         tasks[job] += [_id]
                     else:
                         tasks[job] = [_id]
             for job,_ids in tasks.items():
-                command = "sh /home/panther/data-integration/pan.sh \
+                ids = ','.join(_ids)
+                ids = '\'['+ids+']\''
+                command = 'sh /home/panther/data-integration/pan.sh \
                         -file=/home/panther/SocialSpace/jobs/mongo_to_mysql/{}_jobs/{}.ktr \
-                        -param:_ids={}".format(db_topic,job,_ids)
+                        -param:ids={}'.format(db_topic,job,ids)
+                print(command)
+
                 result = call(command,shell=True)
                 if result==0:
                     print('Done')
+
         except KeyboardInterrupt:
             pass
         except Exception as e:

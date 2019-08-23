@@ -2,7 +2,7 @@ from SocialAPI.SocialAPI.WeiboAPI import SocialWeiboAPI
 from SocialAPI.Helper import Helper
 import asyncio
 import uvloop
-from SocialAPI.Model import Kol, MasterUid
+from SocialAPI.Model import MasterUid
 
 
 if __name__ == '__main__':

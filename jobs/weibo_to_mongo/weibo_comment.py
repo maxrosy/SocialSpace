@@ -1,14 +1,15 @@
 from SocialAPI.SocialAPI.WeiboAPI import SocialWeiboAPI
 from SocialAPI.Model import WeiboKolLastComment,WeiboSearchLimitedLastComment,WeiboMentionLastComment
+import pandas as pd
 
-if __name__ == '__main__':
+def main(day_back):
     # Get the last 2000 comments for each post at most
     try:
         weibo = SocialWeiboAPI()
         session = weibo.createSession()
 
 
-        startTime = weibo.getStrTime(-7)
+        startTime = weibo.getStrTime(day_back)
         # Get post IDs from search limited for comment
         pids = session.query(WeiboSearchLimitedLastComment.pid, WeiboSearchLimitedLastComment.since_id) \
             .filter(WeiboSearchLimitedLastComment.created_at >= startTime) \
@@ -31,6 +32,13 @@ if __name__ == '__main__':
         commentPostList += commentPostListFromKOL
         commentPostList += commentPostListFromMetion
 
-        weibo.doParallel('comment',commentPostList)
+        df = pd.DataFrame(commentPostList)
+        df = df.sort_values(by='since_id',ascending=False)
+        df = df.drop_duplicates(subset='id',keep='first')
+        commentPostList_dedup = df.to_dict('records')
+        weibo.doParallel('comment',commentPostList_dedup)
     finally:
         session.close()
+
+if __name__ =='__main__':
+    main(-7)

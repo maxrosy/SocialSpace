@@ -54,5 +54,5 @@ def weibo_post_daily(start_day=-7):
         session.close()
 
 if __name__ == '__main__':
-    #weibo_post_initial()
+    weibo_post_initial()
     weibo_post_daily()

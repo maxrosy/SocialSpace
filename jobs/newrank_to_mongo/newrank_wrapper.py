@@ -1,5 +1,8 @@
+import sys
+sys.path.append('/home/panther/SocialSpace/')
 from SocialAPI.SocialAPI.NewRankAPI import NewRankAPI
 import argparse
+
 
 def main():
 

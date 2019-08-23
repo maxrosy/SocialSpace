@@ -5,7 +5,7 @@ import sys, time
 from datetime import datetime
 import urllib
 from urllib.parse import quote
-import pandas as pd
+import re
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
 
@@ -136,6 +136,17 @@ class NewRankAPI(SocialBasicAPI):
                     if res.get('code') in (1500,1502,1503,1504):
                         retry_num += 1
                         continue
+                    for _ in res['data']:
+                        match_obj = re.search(r'.*&mid=(\w+).*&sn=(\w+)&.*', _['url'])
+                        if match_obj:
+                            mid = match_obj.group(1)
+                            sn = match_obj.group(2)
+                            _['mid'] = mid
+                            _['sn'] = sn
+                        # ugly \udc47 in some keywords list
+                        if _.get('keywords'):
+                            for i in range(len(_.get('keywords'))):
+                                _.get('keywords')[i] = _.get('keywords')[i].encode('utf-8','ignore').decode('utf-8','ignore')
                     postList += res['data']
                     page_num += 1
 
@@ -143,7 +154,7 @@ class NewRankAPI(SocialBasicAPI):
                         self.logger_access.info(
                             'No post returned for {}'.format(tableName))
                         return
-                    lookup_keys = ['url']
+                    lookup_keys = ['sn']
                     self.update_mongodb(postList, lookup_keys,**kwargs)
                     total_posts += len(postList)
                     self.logger_access.info(
@@ -192,3 +203,6 @@ class NewRankAPI(SocialBasicAPI):
         except Exception as e:
             self.logger_error.error(e)
             exit(1)
+
+    def __str__(self):
+        return "Newrank APIs"

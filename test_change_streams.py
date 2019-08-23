@@ -1,17 +1,32 @@
 from SocialAPI.SocialAPI.IdataAPI import IdataAPI
+from SocialAPI.SocialAPI.WeiboAPI import SocialWeiboAPI
+from SocialAPI.SocialAPI.NewRankAPI import NewRankAPI
 from kafka.producer import KafkaProducer
 import json
 from SocialAPI.Logger.BasicLogger import Logger
 from SocialAPI.Helper import Helper
+import argparse
 
 root_path = Helper().getRootPath()
 logger = Logger(root_path + '/conf/logging.conf','logger_change_streams').createLogger()
-
-weibo = IdataAPI()
-db = weibo.client.idata
-pipeline = [{ '$match': {"operationType" :{'$in': ['insert', 'update','replace']}}}]
+apis = {'idata':IdataAPI,'weibo':SocialWeiboAPI,'newrank':NewRankAPI}
 try:
-    logger.info("Start MongoDB Change Streams Service...")
+
+    parser = argparse.ArgumentParser()
+    parser.description = 'Mongodb DB-level Change Streams'
+    parser.add_argument("-d","--database",help="The name of the post type",choices=['idata','weibo','newrank'])
+    args = parser.parse_args()
+    opt = vars(args)
+
+    __db = opt.get('database')
+    __api = apis[__db]()
+
+    client = __api.client
+    db = client[__db]
+
+    pipeline = [{'$match': {"operationType": {'$in': ['insert', 'update', 'replace']}}}]
+
+    logger.info("Start MongoDB Change Streams Service for DB {}...".format(__db))
 
     with db.watch(pipeline) as stream:
         batch_list = list()
@@ -28,4 +43,4 @@ except KeyboardInterrupt:
 except Exception as e:
     logger.error(e)
 finally:
-    logger.info('Exit MongoDB Change Streams Service...')
+    logger.info('Exit MongoDB Change Streams Service for DB {}...'.format(__db))

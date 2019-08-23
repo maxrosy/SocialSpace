@@ -384,3 +384,6 @@ class IdataAPI(SocialBasicAPI):
         except Exception as e:
             self.logger_error.error(e)
             exit(1)
+
+    def __str__(self):
+        return "Idata APIs"
