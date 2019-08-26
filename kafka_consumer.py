@@ -61,22 +61,24 @@ while True:
                     else:
                         tasks[job] = [_id]
             for job,_ids in tasks.items():
-                ids = ','.join(_ids)
-                ids = '\'['+ids+']\''
-                command = 'sh /home/panther/data-integration/pan.sh \
-                        -file=/home/panther/SocialSpace/jobs/mongo_to_mysql/{}_jobs/{}.ktr \
-                        -param:ids={}'.format(db_topic,job,ids)
-                print(command)
+                # pass less arguments to command
+                for _ in range(0, len(_ids), 20):
+                    ids = ','.join(_ids[_:_ + 20])
+                    ids = '\'['+ids+']\''
+                    command = 'sh /home/panther/data-integration/pan.sh \
+                            -file=/home/panther/SocialSpace/jobs/mongo_to_mysql/{}_jobs/{}.ktr \
+                            -param:ids={}'.format(db_topic,job,ids)
+                    print(command)
 
-                result = call(command,shell=True)
-                if result==0:
-                    print('Done')
+                    result = call(command,shell=True)
+                    if result==0:
+                        print('Done')
 
         except KeyboardInterrupt:
             pass
         except Exception as e:
             logger.error(e)
-        time.sleep(5)
+        time.sleep(2)
 
 """
 for msg in consumer:
