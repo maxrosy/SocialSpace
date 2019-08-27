@@ -2,7 +2,7 @@ from SocialAPI.SocialAPI.WeiboAPI import SocialWeiboAPI
 from SocialAPI.Helper import Helper
 import asyncio
 import uvloop
-from SocialAPI.Model import Kol
+from SocialAPI.Model import MasterUid
 
 
 if __name__ == '__main__':
@@ -11,7 +11,9 @@ if __name__ == '__main__':
     weibo = SocialWeiboAPI()
 
     session = weibo.createSession()
-    uids = session.query(Kol.uid).all()
+    uids = session.query(MasterUid.uid)\
+        .filter(MasterUid.crawl_master==1,MasterUid.crawl_user_growth==1)\
+        .all()
     uidList = [str(uid[0]) for uid in uids]
 
     uidGroup = [','.join(uidList[i:i + 100]) for i in range(0, len(uidList), 100)]

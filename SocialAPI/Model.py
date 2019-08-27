@@ -60,17 +60,77 @@ class Attitude(Base):
 class Kol(Base):
     __table__ = Table('weibo_kol',metadata,autoload=True)
 
+class MasterUid(Base):
+    __table__ = Table('master_uid',metadata,autoload=True)
+
 class WeixinAccount(Base):
     __table__ = Table('weixin_account',metadata,autoload=True)
 
 class IdataAccount(Base):
     __table__ = Table('idata_account',metadata,autoload=True)
 
-class WeiboBrandSearch(Base):
-    __table__ = Table('weibo_brand_search',metadata,autoload=True)
+class MasterWeiboSearch(Base):
+    __table__ = Table('master_weibo_search',metadata,autoload=True)
 
 class WeiboLastMentionedPost(Base):
-    #__table__ = Table('weibo_last_mentioned_post',metadata,autoload=True)
     __tablename__ ='weibo_last_mentioned_post'
     uid = Column(BIGINT,primary_key=true)
     since_id = Column(VARCHAR(128))
+
+class WeiboSearchLimitedLastAttitude(Base):
+    __tablename__ ='weibo_search_limited_last_attitude'
+    pid = Column(BIGINT,primary_key=true)
+    created_at = Column(DATETIME)
+    since_id = Column(VARCHAR(128))
+
+class WeiboKolLastAttitude(Base):
+    __tablename__ ='weibo_kol_last_attitude'
+    pid = Column(BIGINT,primary_key=true)
+    created_at = Column(DATETIME)
+    since_id = Column(VARCHAR(128))
+
+class WeiboSearchLimitedLastComment(Base):
+    __tablename__ ='weibo_search_limited_last_comment'
+    pid = Column(BIGINT,primary_key=true)
+    created_at = Column(DATETIME)
+    since_id = Column(VARCHAR(128))
+
+class WeiboKolLastComment(Base):
+    __tablename__ ='weibo_kol_last_comment'
+    pid = Column(BIGINT,primary_key=true)
+    created_at = Column(DATETIME)
+    since_id = Column(VARCHAR(128))
+
+class WeiboSearchLimitedLastRepost(Base):
+    __tablename__ ='weibo_search_limited_last_repost'
+    pid = Column(BIGINT,primary_key=true)
+    created_at = Column(DATETIME)
+    since_id = Column(VARCHAR(128))
+
+class WeiboKolLastRepost(Base):
+    __tablename__ ='weibo_kol_last_repost'
+    pid = Column(BIGINT,primary_key=true)
+    created_at = Column(DATETIME)
+    since_id = Column(VARCHAR(128))
+
+class WeiboMentionLastAttitude(Base):
+    __tablename__ ='weibo_mention_last_attitude'
+    pid = Column(BIGINT,primary_key=true)
+    created_at = Column(DATETIME)
+    since_id = Column(VARCHAR(128))
+
+class WeiboMentionLastComment(Base):
+    __tablename__ ='weibo_mention_last_comment'
+    pid = Column(BIGINT,primary_key=true)
+    created_at = Column(DATETIME)
+    since_id = Column(VARCHAR(128))
+
+class WeiboUserInfo(Base):
+    __table__ = Table('weibo_user_info',metadata,autoload=True)
+
+class MonsterWeiboPost(Base):
+    __tablename__ ='monster_posts_weibo'
+    post_id = Column(BIGINT,primary_key=true)
+
+class MasterUidInitial(Base):
+    __table__ = Table('master_uid_initial',metadata,autoload=True)

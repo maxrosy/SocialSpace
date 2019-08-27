@@ -1,50 +1,45 @@
 from SocialAPI.SocialAPI.WeiboAPI import SocialWeiboAPI
-from SocialAPI.Helper import Helper
-from SocialAPI.Model import Kol
+from SocialAPI.Model import WeiboSearchLimitedLastAttitude, WeiboKolLastAttitude,WeiboMentionLastAttitude
 import pandas as pd
-import numpy as np
 
+def main(day_back):
+    # Get the last 2000 comments for each post at most
+    try:
+        weibo = SocialWeiboAPI()
+        session = weibo.createSession()
+
+        startTime = weibo.getStrTime(day_back)
+        # Get post IDs from search limited for attitude
+        pids = session.query(WeiboSearchLimitedLastAttitude.pid,WeiboSearchLimitedLastAttitude.since_id)\
+            .filter(WeiboSearchLimitedLastAttitude.created_at>=startTime)\
+            .all()
+        attitudePostList = [{'id': _[0], 'since_id': _[1]} for _ in pids]
+
+        # Get post IDs from post daily for attitude
+        pids = session.query(WeiboKolLastAttitude.pid,WeiboKolLastAttitude.since_id)\
+            .filter(WeiboKolLastAttitude.created_at>=startTime)\
+            .all()
+        attitudePostListFromKOL = [{'id': _[0], 'since_id': _[1]} for _ in pids]
+
+        # Get post IDs from mention for attitude
+        pids = session.query(WeiboMentionLastAttitude.pid, WeiboMentionLastAttitude.since_id) \
+            .filter(WeiboMentionLastAttitude.created_at >= startTime) \
+            .all()
+        attitudePostListFromMention = [{'id': _[0], 'since_id': _[1]} for _ in pids]
+
+        # Merge daily, kol, mention pid
+        attitudePostList += attitudePostListFromKOL
+        attitudePostList += attitudePostListFromMention
+
+        df = pd.DataFrame(attitudePostList)
+        df = df.sort_values(by='since_id', ascending=False)
+        df = df.drop_duplicates(subset='id', keep='first')
+        attitudePostList_dedup = df.to_dict('records')
+        weibo.doParallel('attitude',attitudePostList_dedup)
+    finally:
+        session.close()
 
 if __name__ == '__main__':
-    # Get the last 2000 comments for each post at most
-    rootPath = Helper().getRootPath()
-
-    weibo = SocialWeiboAPI()
-    session = weibo.createSession()
-    client = weibo.client
-    db = client.weibo
-    postTable = db.weibo_user_post
-    attitudeTable = db.weibo_user_attitude
-
-    startTime = weibo.getStrTime(-7)
-    startTimeStamp = weibo.getTimeStamp(startTime)
-    uids = session.query(Kol.uid).all()
-    uidList = [uid[0] for uid in uids]
-
-    session.close()
-
-    pidList = list(postTable.find({'uid':{'$in':uidList},'created_at_timestamp':{'$gte':startTimeStamp}},{'id':1,'attitudes_count':1}))
-    pList = [pid['id'] for pid in pidList]
-
-
-    df_attitudesInPost = pd.DataFrame(pidList)
-    pipeline = [
-        {'$match': {'status.id': {'$in': pList}}},
-        {'$group': {'_id': '$status.id', 'since_id': {'$max': '$id'},'count':{'$sum':1}}}
-    ]
-    attitudeList = list(attitudeTable.aggregate(pipeline))
-
-    df_attitudesInAttitude = pd.DataFrame(attitudeList)
-
-
-    df = df_attitudesInPost.merge(df_attitudesInAttitude,left_on='id',right_on='_id',how='left')
-
-    df['since_id'] = df['since_id'].replace(np.nan,0)
-    df['count'] = df['count'].replace(np.nan,0)
-    df = df[df['attitudes_count']>df['count']]
-
-    attitudePostList = df[['id','since_id']].to_dict('records')
-    weibo.doParallel('attitude',attitudePostList)
-    weibo._client.close()
+    main(-7)
 
 

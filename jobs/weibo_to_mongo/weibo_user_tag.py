@@ -4,7 +4,7 @@ from SocialAPI.Helper import Helper
 import asyncio
 import uvloop
 from datetime import datetime
-from SocialAPI.Model import Kol
+from SocialAPI.Model import Kol,WeiboUserInfo
 import os
 
 if __name__ == '__main__':

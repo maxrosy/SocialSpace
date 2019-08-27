@@ -14,6 +14,11 @@
         <description />
       </parameter>
       <parameter>
+        <name>ids</name>
+        <default_value>[]</default_value>
+        <description />
+      </parameter>
+      <parameter>
         <name>startTime</name>
         <default_value />
         <description />
@@ -452,7 +457,7 @@
     <created_user>-</created_user>
     <created_date>2019/05/07 20:53:06.770</created_date>
     <modified_user>-</modified_user>
-    <modified_date>2019/06/30 18:15:18.614</modified_date>
+    <modified_date>2019/08/15 21:20:00.952</modified_date>
     <key_for_session_key>H4sIAAAAAAAAAAMAAAAAAAAAAAA=</key_for_session_key>
     <is_key_private>N</is_key_private>
   </info>
@@ -567,7 +572,15 @@
         <attribute>true</attribute>
       </attribute>
       <attribute>
+        <code>EXTRA_OPTION_MYSQL.useSSL</code>
+        <attribute>false</attribute>
+      </attribute>
+      <attribute>
         <code>EXTRA_OPTION_MYSQL.useServerPrepStmts</code>
+        <attribute>false</attribute>
+      </attribute>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.verifyServerCertificate</code>
         <attribute>false</attribute>
       </attribute>
       <attribute>
@@ -744,8 +757,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>730</xloc>
-      <yloc>472</yloc>
+      <xloc>720</xloc>
+      <yloc>176</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -767,7 +780,7 @@
     <fields_name />
     <collection>qqsport_comment</collection>
     <json_field_name>json</json_field_name>
-    <json_query>{'updatedTime':{'$gte':'%%startTime%%','$lte':'%%endTime%%'}}</json_query>
+    <json_query>{$or:[{'updatedTime':{'$gte':'%%startTime%%','$lte':'%%endTime%%'}},{'_id':{'$in':%%ids%%}}]}</json_query>
     <auth_database>idata</auth_database>
     <auth_user>idata</auth_user>
     <auth_password>Encrypted 2beecdda90c86d1c0a81dbd71ecb7fe88</auth_password>
@@ -860,8 +873,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>370</xloc>
-      <yloc>348</yloc>
+      <xloc>368</xloc>
+      <yloc>48</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -930,8 +943,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>570</xloc>
-      <yloc>348</yloc>
+      <xloc>560</xloc>
+      <yloc>48</yloc>
       <draw>Y</draw>
     </GUI>
   </step>

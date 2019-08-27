@@ -14,6 +14,11 @@ import re
 import hashlib
 from zipfile import ZipFile
 import os
+from SocialAPI.Model import WeiboSearchLimitedLastAttitude, WeiboKolLastAttitude,WeiboMentionLastAttitude
+from SocialAPI.Model import WeiboKolLastComment,WeiboSearchLimitedLastComment,WeiboMentionLastComment
+from SocialAPI.Model import WeiboSearchLimitedLastRepost,WeiboKolLastRepost
+
+import pandas as pd
 
 def doCommentParellelWrapper(*args,**kwargs):
     w = SocialWeiboAPI()
@@ -108,6 +113,11 @@ class SocialWeiboAPI(SocialBasicAPI):
         """
 
         self.logger_access.info("Calling get_tags_batch_other function with uids: {}".format(uids))
+        client = self.client
+        db = client.weibo
+        userTable = db.weibo_user_tag
+        # users = usersTable.insert_many(users)
+
         try:
             paramsDict = {}
             paramsDict['uids'] = uids
@@ -119,11 +129,6 @@ class SocialWeiboAPI(SocialBasicAPI):
             if not result:
                 self.logger_access.warning("No data returned for uids:{}".format(uids))
                 return
-
-            client = MongoClient()
-            db = client.weibo
-            userTable = db.weibo_user_tag
-            # users = usersTable.insert_many(users)
 
             update_operations = list()
             for user in result:
@@ -149,6 +154,67 @@ class SocialWeiboAPI(SocialBasicAPI):
             self.logger_error.error(msg)
             db.weibo_error_log.insert({'className': class_name, 'functionName': function_name, 'params': uids,'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
 
+        finally:
+            client.close()
+
+    def statuses_show_batch_biz(self,ids,trim_user=1,isGetLongText=1):
+        """
+        Documentation
+        https://open.weibo.com/wiki/C/2/statuses/show_batch/biz
+
+        :param ids: mids, seperated by ','
+        :param trim_user:
+        :param isGetLongText:
+        :return:
+        """
+        self.logger_access.info("Calling statuses_show_batch_biz with ids: {}".format(ids))
+        client = self.client
+        db = client.weibo
+        postTable = db.weibo_user_post
+        try:
+            params_dict = {}
+            params_dict['access_token'] = self.__apiToken
+            params_dict['ids'] = ids
+            params_dict['trim_user'] = 1# trim_user
+            params_dict['isGetLongText'] = isGetLongText
+            url = 'https://c.api.weibo.com/2/statuses/show_batch/biz.json'
+
+            result = self.getRequest(url, params_dict)
+            ret = result.json()
+            if not ret:
+                self.logger_access.warning('No data returned for mids - {}'.format(ids))
+                return
+            if ret.get('error_code') is not None:
+                raise Exception('Error Code: {}, Error Msg: {}'.format(ret.get('error_code'), result.get('error')))
+            posts = ret.get('statuses')
+
+            update_operations = list()
+            for post in posts:
+                if post.get('created_at'):
+                    post['created_at_timestamp'] = int(
+                        time.mktime(time.strptime(post['created_at'], "%a %b %d %H:%M:%S %z %Y")))
+                    post['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S',
+                                                       time.localtime(post['created_at_timestamp']))
+                post['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+                op = UpdateOne({'id': post['id']},
+                               {'$set': post,
+                                '$setOnInsert': {'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
+                               upsert=True)
+                update_operations.append(op)
+
+            postTable.bulk_write(update_operations, ordered=False, bypass_document_validation=False)
+
+        except BulkWriteError as e:
+            raise Exception(e.details)
+
+        except Exception as e:
+            class_name = self.__class__.__name__
+            function_name = sys._getframe().f_code.co_name
+            msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
+            self.logger_error.error(msg)
+            db.weibo_error_log.insert({'className': class_name, 'functionName': function_name, 'params': uid,
+                                       'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
         finally:
             client.close()
 
@@ -318,7 +384,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 
         client = self.client
         db = client.weibo
-        commentTable = db.weibo_user_comment_davidbackham
+        commentTable = db.weibo_user_comment
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
         event_loop = asyncio.new_event_loop()
 
@@ -414,7 +480,7 @@ class SocialWeiboAPI(SocialBasicAPI):
         """
         client = self.client
         db = client.weibo
-        attitudeTable = db.weibo_user_attitude_new
+        attitudeTable = db.weibo_user_attitude
 
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
         event_loop = asyncio.new_event_loop()
@@ -459,6 +525,7 @@ class SocialWeiboAPI(SocialBasicAPI):
                             raise Exception('Post: {}, Error Code: {}, Error Msg: {}'.format(mid, item.get('error_code'), item.get('error')))
                         attitudes = item.get('attitudes')
                         if not attitudes:
+                            """
                             self.logger_error.error('Missing attitude items')
                             class_name = self.__class__.__name__
                             function_name = sys._getframe().f_code.co_name
@@ -467,7 +534,8 @@ class SocialWeiboAPI(SocialBasicAPI):
                                 {'className': class_name, 'functionName': function_name, 'params': mid,
                                  'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
                             continue
-                            #raise StopIteration
+                            """
+                            raise StopIteration
                         attitudeList += attitudes
 
                     if not attitudeList:
@@ -489,8 +557,7 @@ class SocialWeiboAPI(SocialBasicAPI):
                         if attitude['status']:
                             attitude['status']['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.strptime(
                                 attitude['status']['created_at'], "%a %b %d %H:%M:%S %z %Y"))
-                        op = UpdateOne({'id':attitude['id']},{'$set':attitude,
-                                            '$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%dT%H:%M:%S')}},upsert=True)
+                        op = UpdateOne({'id':attitude['id']},{'$set':attitude,'$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%dT%H:%M:%S')}},upsert=True)
                         update_operations.append(op)
                         """
                         res = attitudeTable.update({'id':attitude['id']},{'$set':attitude,
@@ -634,7 +701,7 @@ class SocialWeiboAPI(SocialBasicAPI):
     def get_statuses_mentions_other(self, uid, page_start=1,page_range=5,page_limit=10,**kwargs):
         """
         Documentation
-        https://open.weibo.com/wiki/C/2/statuses/mentions/other
+
 
         :param uid:
         :param kwargs:
@@ -1019,6 +1086,133 @@ class SocialWeiboAPI(SocialBasicAPI):
         finally:
             client.close()
 
+    def get_comment_by_since_id(self,mid):
+        ret = self.__check_comment_since_id(mid)
+        if ret:
+            for _ in ret:
+                self.get_comments_show(mid=_['id'],since_id=_['since_id'])
+
+    def get_attitude_by_since_id(self,mid):
+        ret = self.__check_attitude_since_id(mid)
+        if ret:
+            for _ in ret:
+                self.get_attitudes_show(mid=_['id'], since_id=_['since_id'])
+
+    def get_repost_by_since_id(self,mid):
+        ret = self.__check_repost_since_id(mid)
+        if ret:
+            for _ in ret:
+                self.get_status_repost_timeline(mid=_['id'],since_id=_['since_id'])
+
+    def __check_repost_since_id(self,mid):
+
+        session = self.createSession()
+        try:
+
+            # Get post IDs from search limited for repost
+            pids = session.query(WeiboSearchLimitedLastRepost.pid, WeiboSearchLimitedLastRepost.since_id) \
+                .filter(WeiboSearchLimitedLastRepost.pid == mid) \
+                .all()
+
+            repostPostList = [{'id': _[0], 'since_id': _[1]} for _ in pids]
+
+            # Get post IDs from post daily for repost
+            pids = session.query(WeiboKolLastRepost.pid, WeiboKolLastRepost.since_id) \
+                .filter(WeiboKolLastRepost.pid == mid) \
+                .all()
+
+            repostPostListFromKOL = [{'id': _[0], 'since_id': _[1]} for _ in pids]
+            repostPostList += repostPostListFromKOL
+
+            if not repostPostList:
+                return None
+            df = pd.DataFrame(repostPostList)
+            df = df.sort_values(by='since_id', ascending=False)
+            df = df.drop_duplicates(subset='id', keep='first')
+            return df.to_dict('records')
+
+        except Exception as e:
+            self.logger_error.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
+            exit(1)
+        finally:
+            session.close()
+
+    def __check_comment_since_id(self,mid):
+
+        session = self.createSession()
+        try:
+            # Get post IDs from search limited for comment
+            pids = session.query(WeiboSearchLimitedLastComment.pid, WeiboSearchLimitedLastComment.since_id) \
+                .filter(WeiboSearchLimitedLastComment.pid == mid) \
+                .all()
+            commentPostList = [{'id': _[0], 'since_id': _[1]} for _ in pids]
+
+            # Get post IDs from post daily for comment
+            pids = session.query(WeiboKolLastComment.pid, WeiboKolLastComment.since_id) \
+                .filter(WeiboKolLastComment.pid == mid) \
+                .all()
+            commentPostListFromKOL = [{'id': _[0], 'since_id': _[1]} for _ in pids]
+
+            # Get post IDs from mention for comment
+            pids = session.query(WeiboMentionLastComment.pid, WeiboMentionLastComment.since_id) \
+                .filter(WeiboMentionLastComment.pid == mid) \
+                .all()
+            commentPostListFromMetion = [{'id': _[0], 'since_id': _[1]} for _ in pids]
+
+            # Merge daily, kol, mention pid
+            commentPostList += commentPostListFromKOL
+            commentPostList += commentPostListFromMetion
+
+            if not commentPostList:
+                return None
+            df = pd.DataFrame(commentPostList)
+            df = df.sort_values(by='since_id', ascending=False)
+            df = df.drop_duplicates(subset='id', keep='first')
+            return df.to_dict('records')
+
+        except Exception as e:
+            self.logger_error.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
+            exit(1)
+        finally:
+            session.close()
+
+    def __check_attitude_since_id(self,mid):
+        session = self.createSession()
+        try:
+            pids = session.query(WeiboSearchLimitedLastAttitude.pid, WeiboSearchLimitedLastAttitude.since_id) \
+                .filter(WeiboSearchLimitedLastAttitude.pid == mid) \
+                .all()
+            attitudePostList = [{'id': _[0], 'since_id': _[1]} for _ in pids]
+
+            # Get post IDs from post daily for attitude
+            pids = session.query(WeiboKolLastAttitude.pid, WeiboKolLastAttitude.since_id) \
+                .filter(WeiboKolLastAttitude.pid == mid) \
+                .all()
+            attitudePostListFromKOL = [{'id': _[0], 'since_id': _[1]} for _ in pids]
+
+            # Get post IDs from mention for attitude
+            pids = session.query(WeiboMentionLastAttitude.pid, WeiboMentionLastAttitude.since_id) \
+                .filter(WeiboMentionLastAttitude.pid == mid) \
+                .all()
+            attitudePostListFromMention = [{'id': _[0], 'since_id': _[1]} for _ in pids]
+
+            # Merge daily, kol, mention pid
+            attitudePostList += attitudePostListFromKOL
+            attitudePostList += attitudePostListFromMention
+
+            if not attitudePostList:
+                return None
+            df = pd.DataFrame(attitudePostList)
+            df = df.sort_values(by='since_id', ascending=False)
+            df = df.drop_duplicates(subset='id', keep='first')
+            return df.to_dict('records')
+
+        except Exception as e:
+            self.logger_error.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
+            exit(1)
+        finally:
+            session.close()
+
     def doParallel(self,funcName,dataSet):
         try:
             p = Pool(3)
@@ -1026,7 +1220,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 
             for i, item in enumerate(dataSet):
                 if funcName == 'comment':
-                    result.append(p.apply_async(func=doCommentParellelWrapper,args=(str(int(item['id'])),),kwds=dict(since_id=str(int(item['since_id'])),count=200)))
+                    result.append(p.apply_async(func=doCommentParellelWrapper,args=(str(int(item['id'])),),kwds=dict(since_id=str(int(item['since_id'])),count=100)))
                 elif funcName == 'attitude':
                     result.append(p.apply_async(func=doAttitudeParellelWrapper,args=(str(int(item['id'])),),kwds=dict(since_id=str(int(item['since_id'])),count=100)))
                 elif funcName == 'repost':
@@ -1039,3 +1233,5 @@ class SocialWeiboAPI(SocialBasicAPI):
         except Exception as e:
             print(e)
 
+    def __str__(self):
+        return "Weibo APIs"

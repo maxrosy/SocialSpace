@@ -36,9 +36,9 @@ class SocialBasicAPI(object):
 		#self.__db = self.cfp.get('db','db')
 		#self.__table = self.cfp.get('db','table')
 		
-	def postRequest(self,url, postData):
+	def postRequest(self,url, postData, **kwargs):
 		
-		r = requests.post(url, data=postData)
+		r = requests.post(url, data=postData,**kwargs)
 		return r
 		
 	def getRequest(self,url,paramsDict={},stream=False,**kwargs):
@@ -50,6 +50,7 @@ class SocialBasicAPI(object):
 		params = dict(paramsDict,**kwargs)
 		async with aiohttp.ClientSession() as session:
 			async with session.get(url, params=params) as r:
+				await asyncio.sleep(0.5) # otherwise causing connection issue with Weibo
 				#return await r.json()
 				data = await r.read()
 				return simplejson.loads(data,strict=False)

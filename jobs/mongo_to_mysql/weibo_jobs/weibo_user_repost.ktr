@@ -452,7 +452,7 @@
     <created_user>-</created_user>
     <created_date>2018/06/24 11:24:17.332</created_date>
     <modified_user>-</modified_user>
-    <modified_date>2019/06/30 13:41:02.095</modified_date>
+    <modified_date>2019/08/23 15:02:33.828</modified_date>
     <key_for_session_key>H4sIAAAAAAAAAAMAAAAAAAAAAAA=</key_for_session_key>
     <is_key_private>N</is_key_private>
   </info>
@@ -567,7 +567,15 @@
         <attribute>true</attribute>
       </attribute>
       <attribute>
+        <code>EXTRA_OPTION_MYSQL.useSSL</code>
+        <attribute>false</attribute>
+      </attribute>
+      <attribute>
         <code>EXTRA_OPTION_MYSQL.useServerPrepStmts</code>
+        <attribute>false</attribute>
+      </attribute>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.verifyServerCertificate</code>
         <attribute>false</attribute>
       </attribute>
       <attribute>
@@ -636,16 +644,56 @@
       <enabled>Y</enabled>
     </hop>
     <hop>
-      <from>Select values for User</from>
-      <to>weibo_user_info</to>
+      <from>Select values for Repost</from>
+      <to>Generate random value</to>
       <enabled>Y</enabled>
     </hop>
     <hop>
-      <from>Select values for Repost</from>
+      <from>Generate random value</from>
       <to>weibo_user_repost</to>
       <enabled>Y</enabled>
     </hop>
+    <hop>
+      <from>Select values for User</from>
+      <to>Generate random value 2</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Generate random value 2</from>
+      <to>weibo_user_info</to>
+      <enabled>Y</enabled>
+    </hop>
   </order>
+  <step>
+    <name>Generate random value</name>
+    <type>RandomValue</type>
+    <description />
+    <distribute>Y</distribute>
+    <custom_distribution />
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name />
+    </partitioning>
+    <fields>
+      <field>
+        <name>uuid</name>
+        <type>random uuid</type>
+      </field>
+    </fields>
+    <cluster_schema />
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>528</xloc>
+      <yloc>48</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
   <step>
     <name>MongoDB Input</name>
     <type>MongoDbInput</type>
@@ -1971,6 +2019,11 @@
         <rename>uid</rename>
         <update>N</update>
       </value>
+      <value>
+        <name>uuid</name>
+        <rename>uuid</rename>
+        <update>N</update>
+      </value>
     </lookup>
     <cluster_schema />
     <remotesteps>
@@ -1980,7 +2033,7 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>600</xloc>
+      <xloc>752</xloc>
       <yloc>208</yloc>
       <draw>Y</draw>
     </GUI>
@@ -2228,6 +2281,11 @@
         <rename>pid</rename>
         <update>Y</update>
       </value>
+      <value>
+        <name>uuid</name>
+        <rename>uuid</rename>
+        <update>N</update>
+      </value>
     </lookup>
     <cluster_schema />
     <remotesteps>
@@ -2237,8 +2295,38 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>592</xloc>
+      <xloc>704</xloc>
       <yloc>48</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>Generate random value 2</name>
+    <type>RandomValue</type>
+    <description />
+    <distribute>Y</distribute>
+    <custom_distribution />
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name />
+    </partitioning>
+    <fields>
+      <field>
+        <name>uuid</name>
+        <type>random uuid</type>
+      </field>
+    </fields>
+    <cluster_schema />
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>576</xloc>
+      <yloc>208</yloc>
       <draw>Y</draw>
     </GUI>
   </step>

@@ -33,7 +33,7 @@ if __name__ =='__main__':
     
     #uid_mention_list = [{'uid':1006421732,'since_id':4325734551722946}]
     """
-    uid_mention_list = [{'uid':x[0], 'since_id':x[1]} for x in uid_list]
+    uid_mention_list = [{'uid':_[0], 'since_id':_[1]} for _ in uid_list]
     weibo.doParallel('mention', uid_mention_list)
 
     #for item in uid_mention_list:
