@@ -452,7 +452,7 @@
     <created_user>-</created_user>
     <created_date>2019/05/11 16:07:02.365</created_date>
     <modified_user>-</modified_user>
-    <modified_date>2019/08/23 10:59:07.333</modified_date>
+    <modified_date>2019/08/24 18:25:38.355</modified_date>
     <key_for_session_key>H4sIAAAAAAAAAAMAAAAAAAAAAAA=</key_for_session_key>
     <is_key_private>N</is_key_private>
   </info>
@@ -486,6 +486,10 @@
       <attribute>
         <code>EXTRA_OPTION_MYSQL.useCompression</code>
         <attribute>true</attribute>
+      </attribute>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.useSSL</code>
+        <attribute>false</attribute>
       </attribute>
       <attribute>
         <code>EXTRA_OPTION_MYSQL.useServerPrepStmts</code>
@@ -639,16 +643,56 @@
       <enabled>Y</enabled>
     </hop>
     <hop>
+      <from>Generate random value</from>
+      <to>Insert / Update</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
       <from>Select values</from>
+      <to>Regex Evaluation</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Regex Evaluation</from>
       <to>Generate random value</to>
       <enabled>Y</enabled>
     </hop>
     <hop>
       <from>Generate random value</from>
-      <to>Insert / Update</to>
-      <enabled>Y</enabled>
+      <to>Table output</to>
+      <enabled>N</enabled>
     </hop>
   </order>
+  <step>
+    <name>Generate random value</name>
+    <type>RandomValue</type>
+    <description />
+    <distribute>Y</distribute>
+    <custom_distribution />
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name />
+    </partitioning>
+    <fields>
+      <field>
+        <name>uuid</name>
+        <type>random uuid</type>
+      </field>
+    </fields>
+    <cluster_schema />
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>640</xloc>
+      <yloc>160</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
   <step>
     <name>Insert / Update</name>
     <type>InsertUpdate</type>
@@ -662,7 +706,7 @@
     </partitioning>
     <connection>newSocialDB</connection>
     <commit>10000</commit>
-    <update_bypassed>Y</update_bypassed>
+    <update_bypassed>N</update_bypassed>
     <lookup>
       <schema />
       <table>weibo_search_statuses_limited</table>
@@ -823,11 +867,6 @@
         <update>Y</update>
       </value>
       <value>
-        <name>source</name>
-        <rename>source</rename>
-        <update>Y</update>
-      </value>
-      <value>
         <name>source_allowclick</name>
         <rename>source_allowclick</rename>
         <update>Y</update>
@@ -892,6 +931,11 @@
         <rename>uuid</rename>
         <update>N</update>
       </value>
+      <value>
+        <name>source</name>
+        <rename>source_reg</rename>
+        <update>Y</update>
+      </value>
     </lookup>
     <cluster_schema />
     <remotesteps>
@@ -901,8 +945,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>704</xloc>
-      <yloc>451</yloc>
+      <xloc>800</xloc>
+      <yloc>160</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -1162,8 +1206,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>344</xloc>
-      <yloc>327</yloc>
+      <xloc>256</xloc>
+      <yloc>256</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -1336,14 +1380,14 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>544</xloc>
-      <yloc>327</yloc>
+      <xloc>448</xloc>
+      <yloc>256</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
   <step>
-    <name>Generate random value</name>
-    <type>RandomValue</type>
+    <name>Regex Evaluation</name>
+    <type>RegexEval</type>
     <description />
     <distribute>Y</distribute>
     <custom_distribution />
@@ -1352,10 +1396,32 @@
       <method>none</method>
       <schema_name />
     </partitioning>
+    <script>&lt;a .*>(.*)&lt;/a></script>
+    <matcher>source</matcher>
+    <resultfieldname>result</resultfieldname>
+    <usevar>N</usevar>
+    <allowcapturegroups>Y</allowcapturegroups>
+    <replacefields>N</replacefields>
+    <canoneq>N</canoneq>
+    <caseinsensitive>N</caseinsensitive>
+    <comment>N</comment>
+    <dotall>N</dotall>
+    <multiline>N</multiline>
+    <unicode>N</unicode>
+    <unix>N</unix>
     <fields>
       <field>
-        <name>uuid</name>
-        <type>random uuid</type>
+        <name>source_reg</name>
+        <type>String</type>
+        <format />
+        <group />
+        <decimal />
+        <length>-1</length>
+        <precision>-1</precision>
+        <nullif />
+        <ifnull />
+        <trimtype>none</trimtype>
+        <currency />
       </field>
     </fields>
     <cluster_schema />
@@ -1366,7 +1432,226 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>688</xloc>
+      <xloc>560</xloc>
+      <yloc>224</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>Table output</name>
+    <type>TableOutput</type>
+    <description />
+    <distribute>Y</distribute>
+    <custom_distribution />
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name />
+    </partitioning>
+    <connection>newSocialDB</connection>
+    <schema />
+    <table>weibo_search_statuses_limited</table>
+    <commit>1000</commit>
+    <truncate>N</truncate>
+    <ignore_errors>N</ignore_errors>
+    <use_batch>Y</use_batch>
+    <specify_fields>Y</specify_fields>
+    <partitioning_enabled>N</partitioning_enabled>
+    <partitioning_field />
+    <partitioning_daily>N</partitioning_daily>
+    <partitioning_monthly>Y</partitioning_monthly>
+    <tablename_in_field>N</tablename_in_field>
+    <tablename_field />
+    <tablename_in_table>Y</tablename_in_table>
+    <return_keys>N</return_keys>
+    <return_field />
+    <fields>
+      <field>
+        <column_name>annotations</column_name>
+        <stream_name>annotations</stream_name>
+      </field>
+      <field>
+        <column_name>appid</column_name>
+        <stream_name>appid</stream_name>
+      </field>
+      <field>
+        <column_name>attitudes_count</column_name>
+        <stream_name>attitudes_count</stream_name>
+      </field>
+      <field>
+        <column_name>biz_feature</column_name>
+        <stream_name>biz_feature</stream_name>
+      </field>
+      <field>
+        <column_name>can_edit</column_name>
+        <stream_name>can_edit</stream_name>
+      </field>
+      <field>
+        <column_name>comment_manage_info</column_name>
+        <stream_name>comment_manage_info</stream_name>
+      </field>
+      <field>
+        <column_name>comments_count</column_name>
+        <stream_name>comments_count</stream_name>
+      </field>
+      <field>
+        <column_name>content_auth</column_name>
+        <stream_name>content_auth</stream_name>
+      </field>
+      <field>
+        <column_name>created_at</column_name>
+        <stream_name>created_at</stream_name>
+      </field>
+      <field>
+        <column_name>darwin_tags</column_name>
+        <stream_name>darwin_tags</stream_name>
+      </field>
+      <field>
+        <column_name>favorited</column_name>
+        <stream_name>favorited</stream_name>
+      </field>
+      <field>
+        <column_name>geo</column_name>
+        <stream_name>geo</stream_name>
+      </field>
+      <field>
+        <column_name>gift_ids</column_name>
+        <stream_name>gift_ids</stream_name>
+      </field>
+      <field>
+        <column_name>hasActionTypeCard</column_name>
+        <stream_name>hasActionTypeCard</stream_name>
+      </field>
+      <field>
+        <column_name>hot_weibo_tags</column_name>
+        <stream_name>hot_weibo_tags</stream_name>
+      </field>
+      <field>
+        <column_name>idstr</column_name>
+        <stream_name>idstr</stream_name>
+      </field>
+      <field>
+        <column_name>in_reply_to_screen_name</column_name>
+        <stream_name>in_reply_to_screen_name</stream_name>
+      </field>
+      <field>
+        <column_name>in_reply_to_status_id</column_name>
+        <stream_name>in_reply_to_status_id</stream_name>
+      </field>
+      <field>
+        <column_name>in_reply_to_user_id</column_name>
+        <stream_name>in_reply_to_user_id</stream_name>
+      </field>
+      <field>
+        <column_name>isLongText</column_name>
+        <stream_name>isLongText</stream_name>
+      </field>
+      <field>
+        <column_name>is_paid</column_name>
+        <stream_name>is_paid</stream_name>
+      </field>
+      <field>
+        <column_name>is_show_bulletin</column_name>
+        <stream_name>is_show_bulletin</stream_name>
+      </field>
+      <field>
+        <column_name>mblog_vip_type</column_name>
+        <stream_name>mblog_vip_type</stream_name>
+      </field>
+      <field>
+        <column_name>mid</column_name>
+        <stream_name>mid</stream_name>
+      </field>
+      <field>
+        <column_name>mlevel</column_name>
+        <stream_name>mlevel</stream_name>
+      </field>
+      <field>
+        <column_name>more_info_type</column_name>
+        <stream_name>more_info_type</stream_name>
+      </field>
+      <field>
+        <column_name>pending_approval_count</column_name>
+        <stream_name>pending_approval_count</stream_name>
+      </field>
+      <field>
+        <column_name>pic_ids</column_name>
+        <stream_name>pic_ids</stream_name>
+      </field>
+      <field>
+        <column_name>positive_recom_flag</column_name>
+        <stream_name>positive_recom_flag</stream_name>
+      </field>
+      <field>
+        <column_name>reposts_count</column_name>
+        <stream_name>reposts_count</stream_name>
+      </field>
+      <field>
+        <column_name>source_allowclick</column_name>
+        <stream_name>source_allowclick</stream_name>
+      </field>
+      <field>
+        <column_name>source_type</column_name>
+        <stream_name>source_type</stream_name>
+      </field>
+      <field>
+        <column_name>text</column_name>
+        <stream_name>text</stream_name>
+      </field>
+      <field>
+        <column_name>text_tag_tips</column_name>
+        <stream_name>text_tag_tips</stream_name>
+      </field>
+      <field>
+        <column_name>truncated</column_name>
+        <stream_name>truncated</stream_name>
+      </field>
+      <field>
+        <column_name>uid</column_name>
+        <stream_name>uid</stream_name>
+      </field>
+      <field>
+        <column_name>url_objects</column_name>
+        <stream_name>url_objects</stream_name>
+      </field>
+      <field>
+        <column_name>userType</column_name>
+        <stream_name>userType</stream_name>
+      </field>
+      <field>
+        <column_name>visible</column_name>
+        <stream_name>visible</stream_name>
+      </field>
+      <field>
+        <column_name>pid</column_name>
+        <stream_name>pid</stream_name>
+      </field>
+      <field>
+        <column_name>q_id</column_name>
+        <stream_name>q_id</stream_name>
+      </field>
+      <field>
+        <column_name>q</column_name>
+        <stream_name>q</stream_name>
+      </field>
+      <field>
+        <column_name>uuid</column_name>
+        <stream_name>uuid</stream_name>
+      </field>
+      <field>
+        <column_name>source</column_name>
+        <stream_name>source_reg</stream_name>
+      </field>
+    </fields>
+    <cluster_schema />
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>752</xloc>
       <yloc>272</yloc>
       <draw>Y</draw>
     </GUI>
