@@ -1,7 +1,7 @@
 import argparse
 import sys
 sys.path.append('/home/panther/SocialSpace/')
-#import znanalysis.Spider.HupuAPISail as hupu
+import znanalysis.Spider.HupuAPISail as hupu
 
 
 def main():
