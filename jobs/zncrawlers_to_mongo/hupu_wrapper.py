@@ -14,8 +14,8 @@ def main():
     args = main_parser.parse_args()
     opt = vars(args)
 
-    h = HupuMongo()
-    h.get_hupu_data(opt.get('kw'), opt.get('p'))
+    h = hupu.HupuMongo()
+    h.get_hupu_data(opt.get('keyword'), opt.get('pagelimit'))
 
 
 if __name__ == "__main__":
