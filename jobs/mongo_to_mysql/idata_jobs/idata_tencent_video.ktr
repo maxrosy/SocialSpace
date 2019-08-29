@@ -457,7 +457,7 @@
     <created_user>-</created_user>
     <created_date>2019/05/02 11:14:26.645</created_date>
     <modified_user>-</modified_user>
-    <modified_date>2019/08/15 21:24:50.889</modified_date>
+    <modified_date>2019/08/23 17:58:16.441</modified_date>
     <key_for_session_key>H4sIAAAAAAAAAAMAAAAAAAAAAAA=</key_for_session_key>
     <is_key_private>N</is_key_private>
   </info>
@@ -491,6 +491,10 @@
       <attribute>
         <code>EXTRA_OPTION_MYSQL.useCompression</code>
         <attribute>true</attribute>
+      </attribute>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.useSSL</code>
+        <attribute>false</attribute>
       </attribute>
       <attribute>
         <code>EXTRA_OPTION_MYSQL.useServerPrepStmts</code>
@@ -645,6 +649,11 @@
     </hop>
     <hop>
       <from>Select values</from>
+      <to>Generate random value</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Generate random value</from>
       <to>Insert / Update</to>
       <enabled>Y</enabled>
     </hop>
@@ -818,6 +827,11 @@
         <rename>viewCount</rename>
         <update>Y</update>
       </value>
+      <value>
+        <name>uuid</name>
+        <rename>uuid</rename>
+        <update>N</update>
+      </value>
     </lookup>
     <cluster_schema />
     <remotesteps>
@@ -827,8 +841,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>673</xloc>
-      <yloc>260</yloc>
+      <xloc>816</xloc>
+      <yloc>128</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -1127,6 +1141,36 @@
     <GUI>
       <xloc>513</xloc>
       <yloc>136</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>Generate random value</name>
+    <type>RandomValue</type>
+    <description />
+    <distribute>Y</distribute>
+    <custom_distribution />
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name />
+    </partitioning>
+    <fields>
+      <field>
+        <name>uuid</name>
+        <type>random uuid</type>
+      </field>
+    </fields>
+    <cluster_schema />
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>672</xloc>
+      <yloc>144</yloc>
       <draw>Y</draw>
     </GUI>
   </step>

@@ -442,8 +442,8 @@
     <created_user>-</created_user>
     <created_date>2019/08/04 18:00:52.575</created_date>
     <modified_user>-</modified_user>
-    <modified_date>2019/08/04 18:10:50.322</modified_date>
-    <key_for_session_key />
+    <modified_date>2019/08/26 10:52:34.807</modified_date>
+    <key_for_session_key>H4sIAAAAAAAAAAMAAAAAAAAAAAA=</key_for_session_key>
     <is_key_private>N</is_key_private>
   </info>
   <notepads>
@@ -476,6 +476,10 @@
       <attribute>
         <code>EXTRA_OPTION_MYSQL.useCompression</code>
         <attribute>true</attribute>
+      </attribute>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.useSSL</code>
+        <attribute>false</attribute>
       </attribute>
       <attribute>
         <code>EXTRA_OPTION_MYSQL.useServerPrepStmts</code>
@@ -557,8 +561,20 @@
         <attribute>true</attribute>
       </attribute>
       <attribute>
+        <code>EXTRA_OPTION_MYSQL.useSSL</code>
+        <attribute>false</attribute>
+      </attribute>
+      <attribute>
         <code>EXTRA_OPTION_MYSQL.useServerPrepStmts</code>
         <attribute>false</attribute>
+      </attribute>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.verifyServerCertificate</code>
+        <attribute>false</attribute>
+      </attribute>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.zeroDateTimeBehavior</code>
+        <attribute>CONVERT_TO_NULL</attribute>
       </attribute>
       <attribute>
         <code>FORCE_IDENTIFIERS_TO_LOWERCASE</code>
@@ -639,7 +655,7 @@
     </partitioning>
     <connection>newSocialDB</connection>
     <commit>1000</commit>
-    <update_bypassed>Y</update_bypassed>
+    <update_bypassed>N</update_bypassed>
     <lookup>
       <schema />
       <table>master_uid</table>
@@ -652,7 +668,7 @@
       <value>
         <name>uid</name>
         <rename>uid</rename>
-        <update>Y</update>
+        <update>N</update>
       </value>
       <value>
         <name>name</name>
@@ -734,6 +750,87 @@
     </GUI>
   </step>
   <step>
+    <name>Select values</name>
+    <type>SelectValues</type>
+    <description />
+    <distribute>Y</distribute>
+    <custom_distribution />
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name />
+    </partitioning>
+    <fields>
+      <field>
+        <name>id</name>
+      </field>
+      <field>
+        <name>uid</name>
+      </field>
+      <field>
+        <name>name</name>
+      </field>
+      <field>
+        <name>username</name>
+      </field>
+      <field>
+        <name>pw</name>
+      </field>
+      <field>
+        <name>type</name>
+      </field>
+      <field>
+        <name>crawl_master</name>
+      </field>
+      <field>
+        <name>crawl_from</name>
+      </field>
+      <field>
+        <name>crawl_until</name>
+      </field>
+      <field>
+        <name>crawl_post</name>
+      </field>
+      <field>
+        <name>crawl_repost</name>
+      </field>
+      <field>
+        <name>crawl_comment</name>
+      </field>
+      <field>
+        <name>crawl_attitude</name>
+      </field>
+      <field>
+        <name>crawl_mention</name>
+      </field>
+      <field>
+        <name>crawl_user_growth</name>
+      </field>
+      <field>
+        <name>status</name>
+      </field>
+      <field>
+        <name>created_time</name>
+      </field>
+      <field>
+        <name>updated_time</name>
+      </field>
+      <select_unspecified>N</select_unspecified>
+    </fields>
+    <cluster_schema />
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>368</xloc>
+      <yloc>96</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
     <name>Table input</name>
     <type>TableInput</type>
     <description />
@@ -745,7 +842,9 @@
       <schema_name />
     </partitioning>
     <connection>newSocialDB</connection>
-    <sql>SELECT * FROM socialdb.master_uid_initial a where  not exists (select uid from master_uid where uid=a.uid)</sql>
+    <sql>SELECT * FROM socialdb.master_uid_initial a where  not exists (select uid from master_uid where uid=a.uid)
+union 
+select a.* from socialdb.master_uid_initial a join socialdb.master_uid b on a.uid=b.uid and b.crawl_master=0</sql>
     <limit>0</limit>
     <lookup />
     <execute_each_row>N</execute_each_row>
@@ -761,105 +860,6 @@
     <GUI>
       <xloc>240</xloc>
       <yloc>128</yloc>
-      <draw>Y</draw>
-    </GUI>
-  </step>
-  <step>
-    <name>Select values</name>
-    <type>SelectValues</type>
-    <description />
-    <distribute>Y</distribute>
-    <custom_distribution />
-    <copies>1</copies>
-    <partitioning>
-      <method>none</method>
-      <schema_name />
-    </partitioning>
-    <fields>
-      <field>
-        <name>id</name>
-        <rename />
-      </field>
-      <field>
-        <name>uid</name>
-        <rename />
-      </field>
-      <field>
-        <name>name</name>
-        <rename />
-      </field>
-      <field>
-        <name>username</name>
-        <rename />
-      </field>
-      <field>
-        <name>pw</name>
-        <rename />
-      </field>
-      <field>
-        <name>type</name>
-        <rename />
-      </field>
-      <field>
-        <name>crawl_master</name>
-        <rename />
-      </field>
-      <field>
-        <name>crawl_from</name>
-        <rename />
-      </field>
-      <field>
-        <name>crawl_until</name>
-        <rename />
-      </field>
-      <field>
-        <name>crawl_post</name>
-        <rename />
-      </field>
-      <field>
-        <name>crawl_repost</name>
-        <rename />
-      </field>
-      <field>
-        <name>crawl_comment</name>
-        <rename />
-      </field>
-      <field>
-        <name>crawl_attitude</name>
-        <rename />
-      </field>
-      <field>
-        <name>crawl_mention</name>
-        <rename />
-      </field>
-      <field>
-        <name>crawl_user_growth</name>
-        <rename />
-      </field>
-      <field>
-        <name>status</name>
-        <rename />
-      </field>
-      <field>
-        <name>created_time</name>
-        <rename />
-      </field>
-      <field>
-        <name>updated_time</name>
-        <rename />
-      </field>
-      <select_unspecified>N</select_unspecified>
-    </fields>
-    <cluster_schema />
-    <remotesteps>
-      <input>
-      </input>
-      <output>
-      </output>
-    </remotesteps>
-    <GUI>
-      <xloc>368</xloc>
-      <yloc>96</yloc>
       <draw>Y</draw>
     </GUI>
   </step>

@@ -31,9 +31,14 @@ def weibo_post_initial():
     try:
         weibo = SocialWeiboAPI()
         session = weibo.createSession()
-        uids = session.query(MasterUidInitial.uid, MasterUidInitial.crawl_from) \
-            .filter(~exists().where(MasterUid.uid == MasterUidInitial.uid)) \
-            .all()
+        # Get new inserted uids
+        uids_new = session.query(MasterUidInitial.uid, MasterUidInitial.crawl_from) \
+            .filter(~exists().where(MasterUid.uid == MasterUidInitial.uid))
+        # Get uids in master_uid whose is disabled
+        uids_disabled = session.query(MasterUidInitial.uid, MasterUidInitial.crawl_from)\
+            .join(MasterUid,MasterUidInitial.uid==MasterUid.uid)\
+            .filter(MasterUid.crawl_master==0)
+        uids = uids_new.union(uids_disabled).all()
         uids = [{'uid': str(_[0]), 'start_day': _[1]} for _ in uids]
         get_weibo_post(uids)
 

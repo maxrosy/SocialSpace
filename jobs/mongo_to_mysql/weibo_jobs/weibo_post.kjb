@@ -8,7 +8,7 @@
   <created_user>-</created_user>
   <created_date>2019/08/11 18:35:36.410</created_date>
   <modified_user>-</modified_user>
-  <modified_date>2019/08/21 17:08:19.402</modified_date>
+  <modified_date>2019/08/26 09:59:11.034</modified_date>
   <parameters>
     <parameter>
       <name>endTime</name>
@@ -21,6 +21,101 @@
       <description />
     </parameter>
   </parameters>
+  <connection>
+    <name>newSocialDB</name>
+    <server>localhost</server>
+    <type>MYSQL</type>
+    <access>Native</access>
+    <database>socialdb</database>
+    <port>3306</port>
+    <username>pandas_kettle</username>
+    <password>Encrypted 2be98afc86aa7f294aa17aa71cdd38f99</password>
+    <servername />
+    <data_tablespace />
+    <index_tablespace />
+    <attributes>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.characterEncoding</code>
+        <attribute>utf8</attribute>
+      </attribute>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.rewriteBatchedStatements</code>
+        <attribute>true</attribute>
+      </attribute>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.serverTimeZone</code>
+        <attribute>Asia/Shanghai</attribute>
+      </attribute>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.useCompression</code>
+        <attribute>true</attribute>
+      </attribute>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.useSSL</code>
+        <attribute>false</attribute>
+      </attribute>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.useServerPrepStmts</code>
+        <attribute>false</attribute>
+      </attribute>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.verifyServerCertificate</code>
+        <attribute>false</attribute>
+      </attribute>
+      <attribute>
+        <code>FORCE_IDENTIFIERS_TO_LOWERCASE</code>
+        <attribute>N</attribute>
+      </attribute>
+      <attribute>
+        <code>FORCE_IDENTIFIERS_TO_UPPERCASE</code>
+        <attribute>N</attribute>
+      </attribute>
+      <attribute>
+        <code>INITIAL_POOL_SIZE</code>
+        <attribute>5</attribute>
+      </attribute>
+      <attribute>
+        <code>IS_CLUSTERED</code>
+        <attribute>N</attribute>
+      </attribute>
+      <attribute>
+        <code>MAXIMUM_POOL_SIZE</code>
+        <attribute>60</attribute>
+      </attribute>
+      <attribute>
+        <code>PORT_NUMBER</code>
+        <attribute>3306</attribute>
+      </attribute>
+      <attribute>
+        <code>PRESERVE_RESERVED_WORD_CASE</code>
+        <attribute>Y</attribute>
+      </attribute>
+      <attribute>
+        <code>QUOTE_ALL_FIELDS</code>
+        <attribute>N</attribute>
+      </attribute>
+      <attribute>
+        <code>SQL_CONNECT</code>
+        <attribute>set names utf8mb4;</attribute>
+      </attribute>
+      <attribute>
+        <code>STREAM_RESULTS</code>
+        <attribute>Y</attribute>
+      </attribute>
+      <attribute>
+        <code>SUPPORTS_BOOLEAN_DATA_TYPE</code>
+        <attribute>Y</attribute>
+      </attribute>
+      <attribute>
+        <code>SUPPORTS_TIMESTAMP_DATA_TYPE</code>
+        <attribute>Y</attribute>
+      </attribute>
+      <attribute>
+        <code>USE_POOLING</code>
+        <attribute>Y</attribute>
+      </attribute>
+    </attributes>
+  </connection>
   <slaveservers>
     <slaveserver>
       <name>master</name>
@@ -367,7 +462,7 @@
         <parameter>
           <name>startTime</name>
           <stream_name />
-          <value />
+          <value>%%startTime%%</value>
         </parameter>
       </parameters>
       <parallel>N</parallel>
@@ -414,7 +509,7 @@
         <parameter>
           <name>startTime</name>
           <stream_name />
-          <value />
+          <value>%%startTime%%</value>
         </parameter>
       </parameters>
       <parallel>N</parallel>
@@ -467,6 +562,24 @@
       <parallel>N</parallel>
       <draw>Y</draw>
       <nr>0</nr>
+      <xloc>768</xloc>
+      <yloc>160</yloc>
+    </entry>
+    <entry>
+      <name>Truncate tables</name>
+      <description />
+      <type>TRUNCATE_TABLES</type>
+      <connection>newSocialDB</connection>
+      <arg_from_previous>N</arg_from_previous>
+      <fields>
+        <field>
+          <name>master_uid_initial</name>
+          <schemaname />
+        </field>
+      </fields>
+      <parallel>N</parallel>
+      <draw>Y</draw>
+      <nr>0</nr>
       <xloc>656</xloc>
       <yloc>160</yloc>
     </entry>
@@ -501,6 +614,15 @@
     </hop>
     <hop>
       <from>master_uid_initial</from>
+      <to>Truncate tables</to>
+      <from_nr>0</from_nr>
+      <to_nr>0</to_nr>
+      <enabled>Y</enabled>
+      <evaluation>Y</evaluation>
+      <unconditional>N</unconditional>
+    </hop>
+    <hop>
+      <from>Truncate tables</from>
       <to>Success</to>
       <from_nr>0</from_nr>
       <to_nr>0</to_nr>
