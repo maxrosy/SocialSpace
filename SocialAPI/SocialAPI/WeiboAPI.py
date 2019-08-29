@@ -816,7 +816,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             client.close()
             event_loop.close()
 
-    def search_statuses_limited(self,start_time, end_time, q,page_start=1, page_range=5, page_limit=None,**kwargs):
+    def search_statuses_limited(self,start_time, end_time, q,page_start=1, page_range=20, page_limit=None,**kwargs):
 
         self.logger_access.info("Calling search_statuses_limited function for {} from {} to {}".format(q[1],start_time,end_time))
 
