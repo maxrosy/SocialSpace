@@ -14,10 +14,20 @@ if __name__ =='__main__':
 
 
     # Get last hour time range
-    start_date_time = datetime.datetime.now() + datetime.timedelta(hours=-72)
-    end_date_time = datetime.datetime.now() + datetime.timedelta(hours=-72)
-    start_time = start_date_time.strftime("%Y-%m-%d 00:00:00")
-    end_time = end_date_time.strftime("%Y-%m-%d 23:59:59")
+    for x in range(30):
+        start_date_time = datetime.datetime.now() + datetime.timedelta(days=-x)
+        #end_date_time = datetime.datetime.now() + datetime.timedelta(hours=-72)
+        #start_time = start_date_time.strftime("%Y-%m-%d 00:00:00")
+        for q in brand_queries:
+            for i in range(4):
+                temptime = start_date_time.replace(hour=i*6, minute=0, second=0)
+                start_time = temptime.strftime('%Y-%m-%d %H:%M:%S')
 
-    for q in brand_queries:
-        weibo.search_statuses_limited(start_time, end_time, q=q, hasori=1, dup=0, count=50, sort='hot', antispam=0)
+                temptime = start_date_time.replace(hour=(i*6)+5, minute=59, second=59)
+                end_time = temptime.strftime('%Y-%m-%d %H:%M:%S')
+
+                weibo.search_statuses_limited(start_time, end_time, q=q, hasori=1, dup=0, count=50, sort='hot', antispam=0)
+
+
+
+
