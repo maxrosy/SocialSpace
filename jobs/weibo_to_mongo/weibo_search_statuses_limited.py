@@ -15,9 +15,9 @@ if __name__ =='__main__':
 
     # Get last hour time range
     start_date_time = datetime.datetime.now() + datetime.timedelta(hours=-72)
-    end_date_time = datetime.datetime.now() + datetime.timedelta(hours=-24)
+    end_date_time = datetime.datetime.now() + datetime.timedelta(hours=-72)
     start_time = start_date_time.strftime("%Y-%m-%d 00:00:00")
     end_time = end_date_time.strftime("%Y-%m-%d 23:59:59")
 
     for q in brand_queries:
-        weibo.search_statuses_limited(start_time, end_time, q=q, hasori=1, dup=0, count=50,sort='hot')
+        weibo.search_statuses_limited(start_time, end_time, q=q, hasori=1, dup=0, count=50, sort='hot', antispam=0)

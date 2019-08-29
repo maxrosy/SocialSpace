@@ -16,11 +16,11 @@ def main():
     args = main_parser.parse_args()
     opt = vars(args)
 
-    z = ZhihuMongo()
-    if opt.get('t') == 'question':
-        z.get_zhihu_question(opt.get('kw'), opt.get('p'))
-    if opt.get('t') == 'answer':
-        z.get_zhihu_answers(opt.get('q'), opt.get('p'))
+    z = zhihu.ZhihuMongo()
+    if opt.get('type') == 'question':
+        z.get_zhihu_question(opt.get('keyword'), opt.get('pagelimit'))
+    if opt.get('type') == 'answer':
+        z.get_zhihu_answers(opt.get('question_id'), opt.get('pagelimit'))
 
 
 if __name__ == "__main__":
