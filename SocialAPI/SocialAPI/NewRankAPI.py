@@ -8,6 +8,7 @@ from urllib.parse import quote
 import re
 from pymongo import UpdateOne
 from pymongo.errors import BulkWriteError
+from json.decoder import JSONDecodeError
 
 class NewRankAPI(SocialBasicAPI):
 
@@ -81,6 +82,8 @@ class NewRankAPI(SocialBasicAPI):
                         '{} records have been fetched. Totally {} records - {}'.format(len(postList), total_posts,
                                                                                        tableName))
                     time.sleep(0.1)
+                except JSONDecodeError as e:
+                    raise Exception(e)
                 except StopIteration:
                     loop=False
                 finally:
@@ -161,6 +164,8 @@ class NewRankAPI(SocialBasicAPI):
                         '{} records have been fetched. Totally {} records - {}'.format(len(postList), total_posts,
                                                                                        tableName))
                     time.sleep(0.1)
+                except JSONDecodeError as e:
+                    raise Exception(e)
                 except StopIteration:
                     loop = False
         except Exception as e:

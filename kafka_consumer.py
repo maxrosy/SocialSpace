@@ -1,5 +1,5 @@
 from kafka import KafkaConsumer
-from subprocess import call,check_output
+from subprocess import call,check_call,CalledProcessError
 import time
 import json
 from SocialAPI.Logger.BasicLogger import Logger
@@ -55,29 +55,35 @@ while True:
                     logger.info(v)
                     db_topic = json.loads(v.key).get('db')
                     job = v.topic
-                    _id = '{{$oid:\"{}\"}}'.format(json.loads(v.value))
+                    _id = json.loads(v.value).split(',')[0]
+                    updated_time = int(json.loads(v.value).split(',')[1])
+
                     if tasks.get(job):
-                        tasks[job] += [_id]
+                        if tasks[job]['start_time'] > updated_time:
+                            tasks[job]['start_time'] = updated_time
+                        if tasks[job]['end_time'] < updated_time:
+                            tasks[job]['end_time'] = updated_time
                     else:
-                        tasks[job] = [_id]
-            for job,_ids in tasks.items():
-                # pass less arguments to command
-                for _ in range(0, len(_ids), 20):
-                    ids = ','.join(_ids[_:_ + 20])
-                    ids = '\'['+ids+']\''
-                    command = 'sh /home/panther/data-integration/pan.sh \
-                            -file=/home/panther/SocialSpace/jobs/mongo_to_mysql/{}_jobs/{}.ktr \
-                            -param:ids={}'.format(db_topic,job,ids)
-                    print(command)
+                        tasks[job] = {'start_time':updated_time,'end_time':updated_time}
+            for job,time_range in tasks.items():
+                start_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time_range['start_time']))
+                end_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time_range['end_time']))
 
-                    result = call(command,shell=True)
-                    if result==0:
-                        print('Done')
+                command = 'sh /home/panther/data-integration/pan.sh -file=/home/panther/SocialSpace/jobs/mongo_to_mysql/{}_jobs/{}.ktr -param:startTime="{}" -param:endTime="{}"'\
+                    .format(db_topic,job,start_time,end_time)
+                print(command)
 
+                result = check_call(command,shell=True)
+                if result==0:
+                    print('Done')
+        except CalledProcessError as e:
+            logger.error(str(e))
+            exit(1)
         except KeyboardInterrupt:
             pass
         except Exception as e:
             logger.error(e)
+            exit(1)
         time.sleep(2)
 
 """

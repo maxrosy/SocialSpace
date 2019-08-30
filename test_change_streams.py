@@ -32,7 +32,7 @@ try:
         batch_list = list()
         for change in stream:
             logger.info(change)
-            msg=str(change.get('documentKey').get('_id'))
+            msg=str(change.get('documentKey').get('_id'))+','+str(change.get('clusterTime').time)
             topic = change.get('ns').get('db')+'_'+change.get('ns').get('coll')
             producer = KafkaProducer(bootstrap_servers=['172.16.42.3:9092'])
             producer.send(topic, key=bytes(json.dumps(change.get('ns')).encode('utf-8')),value=bytes(json.dumps(msg).encode('utf-8')), partition=0)
@@ -41,6 +41,7 @@ try:
 except KeyboardInterrupt:
     pass
 except Exception as e:
+    print(e)
     logger.error(e)
 finally:
     logger.info('Exit MongoDB Change Streams Service for DB {}...'.format(__db))
