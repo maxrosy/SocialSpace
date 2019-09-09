@@ -30,12 +30,12 @@ def main(day_back):
         # Merge daily, kol, mention pid
         attitudePostList += attitudePostListFromKOL
         attitudePostList += attitudePostListFromMention
-
-        df = pd.DataFrame(attitudePostList)
-        df = df.sort_values(by='since_id', ascending=False)
-        df = df.drop_duplicates(subset='id', keep='first')
-        attitudePostList_dedup = df.to_dict('records')
-        weibo.doParallel('attitude',attitudePostList_dedup)
+        if attitudePostList:
+            df = pd.DataFrame(attitudePostList)
+            df = df.sort_values(by='since_id', ascending=False)
+            df = df.drop_duplicates(subset='id', keep='first')
+            attitudePostList_dedup = df.to_dict('records')
+            weibo.doParallel('attitude',attitudePostList_dedup)
     finally:
         session.close()
 

@@ -1,6 +1,7 @@
 from SocialAPI.SocialAPI.IdataAPI import IdataAPI
 from SocialAPI.SocialAPI.WeiboAPI import SocialWeiboAPI
 from SocialAPI.SocialAPI.NewRankAPI import NewRankAPI
+from znanalysis.Spider.HupuAPISail import HupuMongo
 from kafka.producer import KafkaProducer
 import json
 from SocialAPI.Logger.BasicLogger import Logger
@@ -9,12 +10,12 @@ import argparse
 
 root_path = Helper().getRootPath()
 logger = Logger(root_path + '/conf/logging.conf','logger_change_streams').createLogger()
-apis = {'idata':IdataAPI,'weibo':SocialWeiboAPI,'newrank':NewRankAPI}
+apis = {'idata':IdataAPI,'weibo':SocialWeiboAPI,'newrank':NewRankAPI,'zncrawlers':HupuMongo}
 try:
 
     parser = argparse.ArgumentParser()
     parser.description = 'Mongodb DB-level Change Streams'
-    parser.add_argument("-d","--database",help="The name of the post type",choices=['idata','weibo','newrank'])
+    parser.add_argument("-d","--database",help="The name of the post type",choices=['idata','weibo','newrank','zncrawlers'])
     args = parser.parse_args()
     opt = vars(args)
 
