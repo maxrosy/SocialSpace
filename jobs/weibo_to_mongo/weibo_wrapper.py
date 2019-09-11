@@ -1,7 +1,8 @@
-from SocialAPI.SocialAPI.WeiboAPI import SocialWeiboAPI
-import argparse
 import sys
 sys.path.append('home/panther/SocialSpace')
+from SocialAPI.SocialAPI.WeiboAPI import SocialWeiboAPI
+import argparse
+
 
 def main():
     choices = ['statuses_show_batch_biz','get_comment_by_since_id','get_attitude_by_since_id','get_repost_by_since_id']
@@ -34,7 +35,6 @@ def main():
 
     except Exception as e:
         print(e)
-
 
 
 if __name__ == '__main__':
