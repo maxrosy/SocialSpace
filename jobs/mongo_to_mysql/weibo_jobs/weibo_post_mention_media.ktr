@@ -452,7 +452,7 @@
     <created_user>-</created_user>
     <created_date>2019/05/24 22:04:22.211</created_date>
     <modified_user>-</modified_user>
-    <modified_date>2019/06/30 13:36:23.221</modified_date>
+    <modified_date>2019/09/10 20:29:22.376</modified_date>
     <key_for_session_key>H4sIAAAAAAAAAAMAAAAAAAAAAAA=</key_for_session_key>
     <is_key_private>N</is_key_private>
   </info>
@@ -486,6 +486,10 @@
       <attribute>
         <code>EXTRA_OPTION_MYSQL.useCompression</code>
         <attribute>true</attribute>
+      </attribute>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.useSSL</code>
+        <attribute>false</attribute>
       </attribute>
       <attribute>
         <code>EXTRA_OPTION_MYSQL.useServerPrepStmts</code>
@@ -567,7 +571,19 @@
         <attribute>true</attribute>
       </attribute>
       <attribute>
+        <code>EXTRA_OPTION_MYSQL.useSSL</code>
+        <attribute>false</attribute>
+      </attribute>
+      <attribute>
         <code>EXTRA_OPTION_MYSQL.useServerPrepStmts</code>
+        <attribute>false</attribute>
+      </attribute>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.useUnicode</code>
+        <attribute>true</attribute>
+      </attribute>
+      <attribute>
+        <code>EXTRA_OPTION_MYSQL.verifyServerCertificate</code>
         <attribute>false</attribute>
       </attribute>
       <attribute>
@@ -604,7 +620,7 @@
       </attribute>
       <attribute>
         <code>SQL_CONNECT</code>
-        <attribute>set names utf8mb4;</attribute>
+        <attribute>set names utf8mb4;set character set utf8mb4;</attribute>
       </attribute>
       <attribute>
         <code>STREAM_RESULTS</code>
@@ -631,24 +647,19 @@
       <enabled>Y</enabled>
     </hop>
     <hop>
-      <from>Filter rows</from>
-      <to>Select values 2</to>
-      <enabled>Y</enabled>
-    </hop>
-    <hop>
       <from>MongoDB Input</from>
       <to>Filter rows</to>
       <enabled>Y</enabled>
     </hop>
     <hop>
       <from>Select values</from>
-      <to>Insert / Update</to>
+      <to>Generate random value</to>
       <enabled>Y</enabled>
     </hop>
     <hop>
-      <from>Select values 2</from>
-      <to>Insert / Update 2</to>
-      <enabled>N</enabled>
+      <from>Generate random value</from>
+      <to>Insert / Update</to>
+      <enabled>Y</enabled>
     </hop>
   </order>
   <step>
@@ -682,6 +693,36 @@
     <GUI>
       <xloc>485</xloc>
       <yloc>184</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>Generate random value</name>
+    <type>RandomValue</type>
+    <description />
+    <distribute>Y</distribute>
+    <custom_distribution />
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name />
+    </partitioning>
+    <fields>
+      <field>
+        <name>uuid</name>
+        <type>random uuid</type>
+      </field>
+    </fields>
+    <cluster_schema />
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>688</xloc>
+      <yloc>64</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -799,6 +840,11 @@
         <rename>play_count</rename>
         <update>Y</update>
       </value>
+      <value>
+        <name>uuid</name>
+        <rename>uuid</rename>
+        <update>N</update>
+      </value>
     </lookup>
     <cluster_schema />
     <remotesteps>
@@ -810,134 +856,6 @@
     <GUI>
       <xloc>789</xloc>
       <yloc>152</yloc>
-      <draw>Y</draw>
-    </GUI>
-  </step>
-  <step>
-    <name>Insert / Update 2</name>
-    <type>InsertUpdate</type>
-    <description />
-    <distribute>Y</distribute>
-    <custom_distribution />
-    <copies>1</copies>
-    <partitioning>
-      <method>none</method>
-      <schema_name />
-    </partitioning>
-    <connection>newSocialDB</connection>
-    <commit>10000</commit>
-    <update_bypassed>N</update_bypassed>
-    <lookup>
-      <schema />
-      <table>weibo_post_media</table>
-      <key>
-        <name>pid</name>
-        <field>pid</field>
-        <condition>=</condition>
-        <name2 />
-      </key>
-      <key>
-        <name>url_short</name>
-        <field>url_short</field>
-        <condition>=</condition>
-        <name2 />
-      </key>
-      <value>
-        <name>pid</name>
-        <rename>pid</rename>
-        <update>N</update>
-      </value>
-      <value>
-        <name>uid</name>
-        <rename>uid</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>object_id</name>
-        <rename>object_id</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>url_short</name>
-        <rename>url_short</rename>
-        <update>N</update>
-      </value>
-      <value>
-        <name>object_type</name>
-        <rename>object_type</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>object_type_detail</name>
-        <rename>object_type_detail</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>target_url</name>
-        <rename>target_url</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>text</name>
-        <rename>text</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>topic_tag</name>
-        <rename>topic_tag</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>category</name>
-        <rename>category</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>duration</name>
-        <rename>duration</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>title_picture</name>
-        <rename>title_picture</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>screenshots</name>
-        <rename>screenshots</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>video_orientation</name>
-        <rename>video_orientation</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>width</name>
-        <rename>width</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>height</name>
-        <rename>height</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>play_count</name>
-        <rename>play_count</rename>
-        <update>Y</update>
-      </value>
-    </lookup>
-    <cluster_schema />
-    <remotesteps>
-      <input>
-      </input>
-      <output>
-      </output>
-    </remotesteps>
-    <GUI>
-      <xloc>789</xloc>
-      <yloc>232</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -1147,84 +1065,6 @@
     <GUI>
       <xloc>597</xloc>
       <yloc>152</yloc>
-      <draw>Y</draw>
-    </GUI>
-  </step>
-  <step>
-    <name>Select values 2</name>
-    <type>SelectValues</type>
-    <description />
-    <distribute>Y</distribute>
-    <custom_distribution />
-    <copies>1</copies>
-    <partitioning>
-      <method>none</method>
-      <schema_name />
-    </partitioning>
-    <fields>
-      <field>
-        <name>pid</name>
-      </field>
-      <field>
-        <name>uid</name>
-      </field>
-      <field>
-        <name>object_id</name>
-      </field>
-      <field>
-        <name>url_short</name>
-      </field>
-      <field>
-        <name>object_type</name>
-      </field>
-      <field>
-        <name>object_type_detail</name>
-      </field>
-      <field>
-        <name>target_url</name>
-      </field>
-      <field>
-        <name>text</name>
-      </field>
-      <field>
-        <name>topic_tag</name>
-      </field>
-      <field>
-        <name>category</name>
-      </field>
-      <field>
-        <name>duration</name>
-      </field>
-      <field>
-        <name>title_picture</name>
-      </field>
-      <field>
-        <name>screenshots</name>
-      </field>
-      <field>
-        <name>video_orientation</name>
-      </field>
-      <field>
-        <name>width</name>
-      </field>
-      <field>
-        <name>height</name>
-      </field>
-      <field>
-        <name>play_count</name>
-      </field>
-      <select_unspecified>N</select_unspecified>
-    </fields>
-    <cluster_schema />
-    <remotesteps>
-      <input>
-      </input>
-      <output>
-      </output>
-    </remotesteps>
-    <GUI>
-      <xloc>597</xloc>
-      <yloc>232</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
