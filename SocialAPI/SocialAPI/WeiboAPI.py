@@ -1,4 +1,4 @@
-from pymongo import MongoClient
+from pymongo import MongoClient, MongoReplicaSetClient
 import asyncio
 import uvloop
 from .SocialBasicAPI import SocialBasicAPI
@@ -59,9 +59,9 @@ class SocialWeiboAPI(SocialBasicAPI):
         :return:
         """
         self.logger_access.info("Calling get_user_show_batch_other with uids: {}".format(uids))
+        client = self.client
+        db = client.weibo
         try:
-            client = self.client
-            db = client.weibo
             userTable = db.weibo_user_info
 
             params_dict = {'access_token': self.__apiToken, 'uids': uids}

@@ -1,6 +1,7 @@
 from SocialAPI.SocialAPI.IdataAPI import IdataAPI
 from SocialAPI.SocialAPI.WeiboAPI import SocialWeiboAPI
 from SocialAPI.SocialAPI.NewRankAPI import NewRankAPI
+from znanalysis.Spider.HupuAPISail import HupuMongo
 from kafka.producer import KafkaProducer
 import json
 from SocialAPI.Logger.BasicLogger import Logger
@@ -9,12 +10,12 @@ import argparse
 
 root_path = Helper().getRootPath()
 logger = Logger(root_path + '/conf/logging.conf','logger_change_streams').createLogger()
-apis = {'idata':IdataAPI,'weibo':SocialWeiboAPI,'newrank':NewRankAPI}
+apis = {'idata':IdataAPI,'weibo':SocialWeiboAPI,'newrank':NewRankAPI,'zncrawlers':HupuMongo}
 try:
 
     parser = argparse.ArgumentParser()
     parser.description = 'Mongodb DB-level Change Streams'
-    parser.add_argument("-d","--database",help="The name of the post type",choices=['idata','weibo','newrank'])
+    parser.add_argument("-d","--database",help="The name of the post type",choices=['idata','weibo','newrank','zncrawlers'])
     args = parser.parse_args()
     opt = vars(args)
 
@@ -32,7 +33,7 @@ try:
         batch_list = list()
         for change in stream:
             logger.info(change)
-            msg=str(change.get('documentKey').get('_id'))
+            msg=str(change.get('documentKey').get('_id'))+','+str(change.get('clusterTime').time)
             topic = change.get('ns').get('db')+'_'+change.get('ns').get('coll')
             producer = KafkaProducer(bootstrap_servers=['172.16.42.3:9092'])
             producer.send(topic, key=bytes(json.dumps(change.get('ns')).encode('utf-8')),value=bytes(json.dumps(msg).encode('utf-8')), partition=0)
@@ -41,6 +42,7 @@ try:
 except KeyboardInterrupt:
     pass
 except Exception as e:
+    print(e)
     logger.error(e)
 finally:
     logger.info('Exit MongoDB Change Streams Service for DB {}...'.format(__db))
