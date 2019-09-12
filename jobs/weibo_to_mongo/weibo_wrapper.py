@@ -1,5 +1,5 @@
 import sys
-sys.path.append('home/panther/SocialSpace')
+sys.path.append('/home/panther/SocialSpace/')
 from SocialAPI.SocialAPI.WeiboAPI import SocialWeiboAPI
 import argparse
 
