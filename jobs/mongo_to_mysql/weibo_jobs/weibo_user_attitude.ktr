@@ -452,7 +452,7 @@
     <created_user>-</created_user>
     <created_date>2018/06/23 21:26:04.245</created_date>
     <modified_user>-</modified_user>
-    <modified_date>2019/09/10 22:41:14.097</modified_date>
+    <modified_date>2019/09/17 07:40:12.198</modified_date>
     <key_for_session_key>H4sIAAAAAAAAAAMAAAAAAAAAAAA=</key_for_session_key>
     <is_key_private>N</is_key_private>
   </info>
@@ -652,11 +652,6 @@
       <enabled>Y</enabled>
     </hop>
     <hop>
-      <from>Select values for Attitude</from>
-      <to>weibo_user_attitude</to>
-      <enabled>Y</enabled>
-    </hop>
-    <hop>
       <from>Select values for User</from>
       <to>Generate random value</to>
       <enabled>Y</enabled>
@@ -664,6 +659,16 @@
     <hop>
       <from>Generate random value</from>
       <to>weibo_user_info</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Select values for Attitude</from>
+      <to>Generate random value 2</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Generate random value 2</from>
+      <to>weibo_user_attitude</to>
       <enabled>Y</enabled>
     </hop>
   </order>
@@ -1102,7 +1107,7 @@
     <name>Select values for Attitude</name>
     <type>SelectValues</type>
     <description />
-    <distribute>Y</distribute>
+    <distribute>N</distribute>
     <custom_distribution />
     <copies>1</copies>
     <partitioning>
@@ -1183,239 +1188,180 @@
     <fields>
       <field>
         <name>uid</name>
-        <rename />
       </field>
       <field>
         <name>allow_all_act_msg</name>
-        <rename />
       </field>
       <field>
         <name>allow_all_comment</name>
-        <rename />
       </field>
       <field>
         <name>avatar_hd</name>
-        <rename />
       </field>
       <field>
         <name>avatar_large</name>
-        <rename />
       </field>
       <field>
         <name>bi_followers_count</name>
-        <rename />
       </field>
       <field>
         <name>block_app</name>
-        <rename />
       </field>
       <field>
         <name>block_word</name>
-        <rename />
       </field>
       <field>
         <name>city</name>
-        <rename />
       </field>
       <field>
         <name>class</name>
-        <rename />
       </field>
       <field>
         <name>cover_image_phone</name>
-        <rename />
       </field>
       <field>
         <name>credit_score</name>
-        <rename />
       </field>
       <field>
         <name>description</name>
-        <rename />
       </field>
       <field>
         <name>domain</name>
-        <rename />
       </field>
       <field>
         <name>favourites_count</name>
-        <rename />
       </field>
       <field>
         <name>follow_me</name>
-        <rename />
       </field>
       <field>
         <name>followers_count</name>
-        <rename />
       </field>
       <field>
         <name>following</name>
-        <rename />
       </field>
       <field>
         <name>friends_count</name>
-        <rename />
       </field>
       <field>
         <name>gender</name>
-        <rename />
       </field>
       <field>
         <name>geo_enabled</name>
-        <rename />
       </field>
       <field>
         <name>has_service_tel</name>
-        <rename />
       </field>
       <field>
         <name>insecurity</name>
-        <rename />
       </field>
       <field>
         <name>lang</name>
-        <rename />
       </field>
       <field>
         <name>like</name>
-        <rename />
       </field>
       <field>
         <name>like_me</name>
-        <rename />
       </field>
       <field>
         <name>location</name>
-        <rename />
       </field>
       <field>
         <name>mbrank</name>
-        <rename />
       </field>
       <field>
         <name>mbtype</name>
-        <rename />
       </field>
       <field>
         <name>name</name>
-        <rename />
       </field>
       <field>
         <name>online_status</name>
-        <rename />
       </field>
       <field>
         <name>pagefriends_count</name>
-        <rename />
       </field>
       <field>
         <name>profile_image_url</name>
-        <rename />
       </field>
       <field>
         <name>profile_url</name>
-        <rename />
       </field>
       <field>
         <name>province</name>
-        <rename />
       </field>
       <field>
         <name>ptype</name>
-        <rename />
       </field>
       <field>
         <name>remark</name>
-        <rename />
       </field>
       <field>
         <name>screen_name</name>
-        <rename />
       </field>
       <field>
         <name>star</name>
-        <rename />
       </field>
       <field>
         <name>statuses_count</name>
-        <rename />
       </field>
       <field>
         <name>story_read_state</name>
-        <rename />
       </field>
       <field>
         <name>urank</name>
-        <rename />
       </field>
       <field>
         <name>url</name>
-        <rename />
       </field>
       <field>
         <name>user_ability</name>
-        <rename />
       </field>
       <field>
         <name>vclub_member</name>
-        <rename />
       </field>
       <field>
         <name>verified</name>
-        <rename />
       </field>
       <field>
         <name>verified_contact_email</name>
-        <rename />
       </field>
       <field>
         <name>verified_contact_mobile</name>
-        <rename />
       </field>
       <field>
         <name>verified_contact_name</name>
-        <rename />
       </field>
       <field>
         <name>verified_level</name>
-        <rename />
       </field>
       <field>
         <name>verified_reason</name>
-        <rename />
       </field>
       <field>
         <name>verified_reason_modified</name>
-        <rename />
       </field>
       <field>
         <name>verified_source</name>
-        <rename />
       </field>
       <field>
         <name>verified_source_url</name>
-        <rename />
       </field>
       <field>
         <name>verified_state</name>
-        <rename />
       </field>
       <field>
         <name>verified_trade</name>
-        <rename />
       </field>
       <field>
         <name>verified_type</name>
-        <rename />
       </field>
       <field>
         <name>verified_type_ext</name>
-        <rename />
       </field>
       <field>
         <name>weihao</name>
-        <rename />
       </field>
       <field>
         <name>user_created_at</name>
@@ -1516,7 +1462,12 @@
       <value>
         <name>aid</name>
         <rename>aid</rename>
-        <update>Y</update>
+        <update>N</update>
+      </value>
+      <value>
+        <name>uuid</name>
+        <rename>uuid</rename>
+        <update>N</update>
       </value>
     </lookup>
     <cluster_schema />
@@ -1527,8 +1478,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>608</xloc>
-      <yloc>48</yloc>
+      <xloc>704</xloc>
+      <yloc>64</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -1876,6 +1827,36 @@
     <GUI>
       <xloc>704</xloc>
       <yloc>224</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>Generate random value 2</name>
+    <type>RandomValue</type>
+    <description />
+    <distribute>Y</distribute>
+    <custom_distribution />
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name />
+    </partitioning>
+    <fields>
+      <field>
+        <name>uuid</name>
+        <type>random uuid</type>
+      </field>
+    </fields>
+    <cluster_schema />
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>544</xloc>
+      <yloc>80</yloc>
       <draw>Y</draw>
     </GUI>
   </step>

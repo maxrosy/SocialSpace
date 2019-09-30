@@ -1,6 +1,6 @@
 <transformation>
   <info>
-    <name>weibo_user_post</name>
+    <name>weibo_user_post_tmp_stream</name>
     <description />
     <extended_description />
     <trans_version />
@@ -436,24 +436,24 @@
       <slaveserver>
         <name>master</name>
         <hostname>localhost</hostname>
-        <port>8080</port>
+        <port>9909</port>
         <webAppName />
         <username>cluster</username>
         <password>Encrypted 2be98afc86aa7f2e4cb1aa265cd86aac8</password>
         <proxy_hostname />
         <proxy_port />
         <non_proxy_hosts />
-        <master>N</master>
+        <master>Y</master>
         <sslMode>N</sslMode>
       </slaveserver>
     </slaveservers>
     <clusterschemas>
     </clusterschemas>
     <created_user>-</created_user>
-    <created_date>2018/06/18 20:08:06.799</created_date>
+    <created_date>2019/09/23 21:59:21.362</created_date>
     <modified_user>-</modified_user>
-    <modified_date>2019/09/12 21:05:11.615</modified_date>
-    <key_for_session_key>H4sIAAAAAAAAAAMAAAAAAAAAAAA=</key_for_session_key>
+    <modified_date>2019/09/23 22:04:16.698</modified_date>
+    <key_for_session_key />
     <is_key_private>N</is_key_private>
   </info>
   <notepads>
@@ -642,23 +642,18 @@
   </connection>
   <order>
     <hop>
-      <from>MongoDB Input</from>
-      <to>Select values</to>
-      <enabled>Y</enabled>
-    </hop>
-    <hop>
-      <from>Select values</from>
-      <to>Regex Evaluation</to>
-      <enabled>Y</enabled>
-    </hop>
-    <hop>
-      <from>Select values</from>
-      <to>Generate random value</to>
-      <enabled>Y</enabled>
-    </hop>
-    <hop>
       <from>Generate random value</from>
       <to>Insert / Update 2</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Generate random value 2</from>
+      <to>Table output</to>
+      <enabled>N</enabled>
+    </hop>
+    <hop>
+      <from>MongoDB Input</from>
+      <to>Select values</to>
       <enabled>Y</enabled>
     </hop>
     <hop>
@@ -667,13 +662,38 @@
       <enabled>N</enabled>
     </hop>
     <hop>
-      <from>Generate random value 2</from>
-      <to>Table output</to>
-      <enabled>N</enabled>
-    </hop>
-    <hop>
       <from>Regex Evaluation</from>
       <to>Insert / Update 3</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Select values</from>
+      <to>Generate random value</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Select values</from>
+      <to>Regex Evaluation</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Generate random value 2 2</from>
+      <to>Insert / Update</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>MongoDB Input 2</from>
+      <to>Filter rows</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Select values 2</from>
+      <to>Generate random value 2 2</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Filter rows</from>
+      <to>Select values 2</to>
       <enabled>Y</enabled>
     </hop>
   </order>
@@ -702,8 +722,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>480</xloc>
-      <yloc>176</yloc>
+      <xloc>560</xloc>
+      <yloc>208</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -732,8 +752,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>640</xloc>
-      <yloc>32</yloc>
+      <xloc>720</xloc>
+      <yloc>64</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -784,8 +804,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>560</xloc>
-      <yloc>256</yloc>
+      <xloc>640</xloc>
+      <yloc>288</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -1021,8 +1041,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>624</xloc>
-      <yloc>176</yloc>
+      <xloc>704</xloc>
+      <yloc>208</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -1042,7 +1062,7 @@
     <use_all_replica_members>N</use_all_replica_members>
     <db_name>weibo</db_name>
     <fields_name />
-    <collection>weibo_user_post</collection>
+    <collection>weibo_user_post_tmp_stream</collection>
     <json_field_name>json</json_field_name>
     <json_query>{'updatedTime':{'$gte':'%%startTime%%','$lte':'%%endTime%%'}}</json_query>
     <auth_database>weibo</auth_database>
@@ -1272,8 +1292,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>200</xloc>
-      <yloc>100</yloc>
+      <xloc>272</xloc>
+      <yloc>128</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -1324,8 +1344,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>528</xloc>
-      <yloc>80</yloc>
+      <xloc>608</xloc>
+      <yloc>112</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -1492,8 +1512,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>400</xloc>
-      <yloc>100</yloc>
+      <xloc>480</xloc>
+      <yloc>128</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -1699,8 +1719,440 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>784</xloc>
-      <yloc>16</yloc>
+      <xloc>864</xloc>
+      <yloc>48</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>Filter rows</name>
+    <type>FilterRows</type>
+    <description />
+    <distribute>Y</distribute>
+    <custom_distribution />
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name />
+    </partitioning>
+    <send_true_to>Select values 2</send_true_to>
+    <send_false_to>Select values 2</send_false_to>
+    <compare>
+      <condition>
+        <negated>N</negated>
+        <leftvalue>object_id</leftvalue>
+        <function>IS NOT NULL</function>
+        <rightvalue />
+      </condition>
+    </compare>
+    <cluster_schema />
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>416</xloc>
+      <yloc>432</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>Generate random value 2 2</name>
+    <type>RandomValue</type>
+    <description />
+    <distribute>Y</distribute>
+    <custom_distribution />
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name />
+    </partitioning>
+    <fields>
+      <field>
+        <name>uuid</name>
+        <type>random uuid</type>
+      </field>
+    </fields>
+    <cluster_schema />
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>656</xloc>
+      <yloc>400</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>Insert / Update</name>
+    <type>InsertUpdate</type>
+    <description />
+    <distribute>Y</distribute>
+    <custom_distribution />
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name />
+    </partitioning>
+    <connection>newSocialDB</connection>
+    <commit>10000</commit>
+    <update_bypassed>Y</update_bypassed>
+    <lookup>
+      <schema />
+      <table>weibo_post_media_post</table>
+      <key>
+        <name>pid</name>
+        <field>pid</field>
+        <condition>=</condition>
+        <name2 />
+      </key>
+      <key>
+        <name>object_id</name>
+        <field>object_id</field>
+        <condition>=</condition>
+        <name2 />
+      </key>
+      <value>
+        <name>pid</name>
+        <rename>pid</rename>
+        <update>N</update>
+      </value>
+      <value>
+        <name>uid</name>
+        <rename>uid</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>object_id</name>
+        <rename>object_id</rename>
+        <update>N</update>
+      </value>
+      <value>
+        <name>url_short</name>
+        <rename>url_short</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>object_type</name>
+        <rename>object_type</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>object_type_detail</name>
+        <rename>object_type_detail</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>target_url</name>
+        <rename>target_url</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>text</name>
+        <rename>text</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>topic_tag</name>
+        <rename>topic_tag</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>category</name>
+        <rename>category</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>duration</name>
+        <rename>duration</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>title_picture</name>
+        <rename>title_picture</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>screenshots</name>
+        <rename>screenshots</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>video_orientation</name>
+        <rename>video_orientation</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>width</name>
+        <rename>width</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>height</name>
+        <rename>height</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>play_count</name>
+        <rename>play_count</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>author_id</name>
+        <rename>author_id</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>author_display_name</name>
+        <rename>author_display_name</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>uuid</name>
+        <rename>uuid</rename>
+        <update>N</update>
+      </value>
+    </lookup>
+    <cluster_schema />
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>816</xloc>
+      <yloc>400</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>MongoDB Input 2</name>
+    <type>MongoDbInput</type>
+    <description />
+    <distribute>N</distribute>
+    <custom_distribution />
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name />
+    </partitioning>
+    <hostname>localhost</hostname>
+    <port>27017</port>
+    <use_all_replica_members>N</use_all_replica_members>
+    <db_name>weibo</db_name>
+    <fields_name />
+    <collection>weibo_user_post_tmp_stream</collection>
+    <json_field_name>json</json_field_name>
+    <json_query>{'url_objects':{$exists:true},$where:"this.url_objects.length>0",'updatedTime':{'$gte':'%%startTime%%','$lte':'%%endTime%%'}}</json_query>
+    <auth_database>weibo</auth_database>
+    <auth_user>weibo_readonly</auth_user>
+    <auth_password>Encrypted 2be98afc86ae5bca6a111a43a98c3fd89</auth_password>
+    <auth_mech>SCRAM-SHA-1</auth_mech>
+    <auth_kerberos>N</auth_kerberos>
+    <connect_timeout />
+    <socket_timeout />
+    <use_ssl_socket_factory>N</use_ssl_socket_factory>
+    <read_preference>primary</read_preference>
+    <output_json>N</output_json>
+    <query_is_pipeline>N</query_is_pipeline>
+    <execute_for_each_row>N</execute_for_each_row>
+    <mongo_fields>
+      <mongo_field>
+        <field_name>pid</field_name>
+        <field_path>$.id</field_path>
+        <field_type>BigNumber</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>uid</field_name>
+        <field_path>$.uid</field_path>
+        <field_type>BigNumber</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>object_id</field_name>
+        <field_path>$.url_objects[*].object_id</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>url_short</field_name>
+        <field_path>$.url_objects[*].info.url_short</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>object_type</field_name>
+        <field_path>$.url_objects[*].object.object.object_type</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>object_type_detail</field_name>
+        <field_path>$.url_objects[*].object.object.object_type_detail</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>target_url</field_name>
+        <field_path>$.url_objects[*].object.object.target_url</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>text</field_name>
+        <field_path>$.url_objects[*].object.object.summary</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>topic_tag</field_name>
+        <field_path>$.url_objects[*].object.object.topic_tag</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>category</field_name>
+        <field_path>$.url_objects[*].object.object.category</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>duration</field_name>
+        <field_path>$.url_objects[*].object.object.duration</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>title_picture</field_name>
+        <field_path>$.url_objects[*].object.object.image.url</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>screenshots</field_name>
+        <field_path>$.url_objects[*].object.object.screenshots</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>video_orientation</field_name>
+        <field_path>$.url_objects[*].object.object.ext_info.video_orientation</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>width</field_name>
+        <field_path>$.url_objects[*].object.object.compressed_file_meta.video_media_info.width</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>height</field_name>
+        <field_path>$.url_objects[*].object.object.compressed_file_meta.video_media_info.height</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>play_count</field_name>
+        <field_path>$.url_objects[*].play_count</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>author_id</field_name>
+        <field_path>$.url_objects[*].object.object.author.id</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>author_display_name</field_name>
+        <field_path>$.url_objects[*].object.object.author.display_name</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+    </mongo_fields>
+    <cluster_schema />
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>240</xloc>
+      <yloc>400</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>Select values 2</name>
+    <type>SelectValues</type>
+    <description />
+    <distribute>N</distribute>
+    <custom_distribution />
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name />
+    </partitioning>
+    <fields>
+      <field>
+        <name>pid</name>
+      </field>
+      <field>
+        <name>uid</name>
+      </field>
+      <field>
+        <name>object_id</name>
+      </field>
+      <field>
+        <name>url_short</name>
+      </field>
+      <field>
+        <name>object_type</name>
+      </field>
+      <field>
+        <name>object_type_detail</name>
+      </field>
+      <field>
+        <name>target_url</name>
+      </field>
+      <field>
+        <name>text</name>
+      </field>
+      <field>
+        <name>topic_tag</name>
+      </field>
+      <field>
+        <name>category</name>
+      </field>
+      <field>
+        <name>duration</name>
+      </field>
+      <field>
+        <name>title_picture</name>
+      </field>
+      <field>
+        <name>screenshots</name>
+      </field>
+      <field>
+        <name>video_orientation</name>
+      </field>
+      <field>
+        <name>width</name>
+      </field>
+      <field>
+        <name>height</name>
+      </field>
+      <field>
+        <name>play_count</name>
+      </field>
+      <field>
+        <name>author_id</name>
+      </field>
+      <field>
+        <name>author_display_name</name>
+      </field>
+      <select_unspecified>N</select_unspecified>
+    </fields>
+    <cluster_schema />
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>528</xloc>
+      <yloc>400</yloc>
       <draw>Y</draw>
     </GUI>
   </step>

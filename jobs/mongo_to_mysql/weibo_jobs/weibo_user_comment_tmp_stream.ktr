@@ -1,6 +1,6 @@
 <transformation>
   <info>
-    <name>weibo_user_repost</name>
+    <name>weibo_user_comment_tmp_stream</name>
     <description />
     <extended_description />
     <trans_version />
@@ -436,23 +436,23 @@
       <slaveserver>
         <name>master</name>
         <hostname>localhost</hostname>
-        <port>8080</port>
+        <port>9909</port>
         <webAppName />
         <username>cluster</username>
         <password>Encrypted 2be98afc86aa7f2e4cb1aa265cd86aac8</password>
         <proxy_hostname />
         <proxy_port />
         <non_proxy_hosts />
-        <master>N</master>
+        <master>Y</master>
         <sslMode>N</sslMode>
       </slaveserver>
     </slaveservers>
     <clusterschemas>
     </clusterschemas>
     <created_user>-</created_user>
-    <created_date>2018/06/24 11:24:17.332</created_date>
+    <created_date>2019/09/23 22:04:50.315</created_date>
     <modified_user>-</modified_user>
-    <modified_date>2019/09/15 11:35:08.377</modified_date>
+    <modified_date>2019/09/23 22:07:25.114</modified_date>
     <key_for_session_key>H4sIAAAAAAAAAAMAAAAAAAAAAAA=</key_for_session_key>
     <is_key_private>N</is_key_private>
   </info>
@@ -642,28 +642,8 @@
   </connection>
   <order>
     <hop>
-      <from>MongoDB Input</from>
-      <to>Select values for Repost</to>
-      <enabled>Y</enabled>
-    </hop>
-    <hop>
-      <from>MongoDB Input</from>
-      <to>Select values for User</to>
-      <enabled>Y</enabled>
-    </hop>
-    <hop>
-      <from>Select values for Repost</from>
-      <to>Generate random value</to>
-      <enabled>Y</enabled>
-    </hop>
-    <hop>
       <from>Generate random value</from>
-      <to>weibo_user_repost</to>
-      <enabled>Y</enabled>
-    </hop>
-    <hop>
-      <from>Select values for User</from>
-      <to>Generate random value 2</to>
+      <to>weibo_user_comment</to>
       <enabled>Y</enabled>
     </hop>
     <hop>
@@ -672,16 +652,31 @@
       <enabled>Y</enabled>
     </hop>
     <hop>
-      <from>Generate random value</from>
-      <to>Table output</to>
-      <enabled>N</enabled>
+      <from>MongoDB Input</from>
+      <to>Select values for Comment</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>MongoDB Input</from>
+      <to>Select values for User</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Select values for Comment</from>
+      <to>Generate random value</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Select values for User</from>
+      <to>Generate random value 2</to>
+      <enabled>Y</enabled>
     </hop>
   </order>
   <step>
     <name>Generate random value</name>
     <type>RandomValue</type>
     <description />
-    <distribute>N</distribute>
+    <distribute>Y</distribute>
     <custom_distribution />
     <copies>1</copies>
     <partitioning>
@@ -702,8 +697,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>528</xloc>
-      <yloc>48</yloc>
+      <xloc>803</xloc>
+      <yloc>250</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -732,8 +727,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>576</xloc>
-      <yloc>208</yloc>
+      <xloc>787</xloc>
+      <yloc>442</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -753,7 +748,7 @@
     <use_all_replica_members>N</use_all_replica_members>
     <db_name>weibo</db_name>
     <fields_name />
-    <collection>weibo_user_repost</collection>
+    <collection>weibo_user_comment_tmp_stream</collection>
     <json_field_name>json</json_field_name>
     <json_query>{'updatedTime':{'$gte':'%%startTime%%','$lte':'%%endTime%%'}}</json_query>
     <auth_database>weibo</auth_database>
@@ -780,8 +775,28 @@
         <field_type>String</field_type>
       </mongo_field>
       <mongo_field>
-        <field_name>pid</field_name>
-        <field_path>$.retweeted_status.id</field_path>
+        <field_name>rootid</field_name>
+        <field_path>$.rootid</field_path>
+        <field_type>BigNumber</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>floor_number</field_name>
+        <field_path>$.floor_number</field_path>
+        <field_type>Number</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>text</field_name>
+        <field_path>$.text</field_path>
+        <field_type>String</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>disable_reply</field_name>
+        <field_path>$.disable_reply</field_path>
+        <field_type>Number</field_type>
+      </mongo_field>
+      <mongo_field>
+        <field_name>mid</field_name>
+        <field_path>$.mid</field_path>
         <field_type>BigNumber</field_type>
       </mongo_field>
       <mongo_field>
@@ -790,204 +805,14 @@
         <field_type>String</field_type>
       </mongo_field>
       <mongo_field>
-        <field_name>mid</field_name>
-        <field_path>$.mid</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>can_edit</field_name>
-        <field_path>$.can_edit</field_path>
-        <field_type>Boolean</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>text</field_name>
-        <field_path>$.text</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>source_allowclick</field_name>
-        <field_path>$.source_allowclick</field_path>
-        <field_type>Number</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>source_type</field_name>
-        <field_path>$.source_type</field_path>
-        <field_type>Number</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>source</field_name>
-        <field_path>$.source</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>appid</field_name>
-        <field_path>$.appid</field_path>
-        <field_type>Number</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>favorited</field_name>
-        <field_path>$.favorited</field_path>
-        <field_type>Boolean</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>truncated</field_name>
-        <field_path>$.truncated</field_path>
-        <field_type>Boolean</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>in_reply_to_status_id</field_name>
-        <field_path>$.in_reply_to_status_id</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>in_reply_to_user_id</field_name>
-        <field_path>$.in_reply_to_user_id</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>in_reply_to_screen_name</field_name>
-        <field_path>$.in_reply_to_screen_name</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>pic_ids</field_name>
-        <field_path>$.pic_ids</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>geo</field_name>
-        <field_path>$.geo</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>is_paid</field_name>
-        <field_path>$.is_paid</field_path>
-        <field_type>Boolean</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>mblog_vip_type</field_name>
-        <field_path>$.mblog_vip_type</field_path>
-        <field_type>Number</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>annotations</field_name>
-        <field_path>$.annotations</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
         <field_name>uid</field_name>
         <field_path>$.user.id</field_path>
         <field_type>BigNumber</field_type>
       </mongo_field>
       <mongo_field>
-        <field_name>rtid</field_name>
-        <field_path>$.retweeted_status.id</field_path>
+        <field_name>pid</field_name>
+        <field_path>$.status.id</field_path>
         <field_type>BigNumber</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>reposts_count</field_name>
-        <field_path>$.reposts_count</field_path>
-        <field_type>Number</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>comments_count</field_name>
-        <field_path>$.comments_count</field_path>
-        <field_type>Number</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>attitudes_count</field_name>
-        <field_path>$.attitudes_count</field_path>
-        <field_type>Number</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>pending_approval_count</field_name>
-        <field_path>$.pending_approval_count</field_path>
-        <field_type>Number</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>isLongText</field_name>
-        <field_path>$.isLongText</field_path>
-        <field_type>Boolean</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>mlevel</field_name>
-        <field_path>$.mlevel</field_path>
-        <field_type>Number</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>visible</field_name>
-        <field_path>$.visible</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>biz_feature</field_name>
-        <field_path>$.biz_feature</field_path>
-        <field_type>Number</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>page_type</field_name>
-        <field_path>$.page_type</field_path>
-        <field_type>Number</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>hasActionTypeCard</field_name>
-        <field_path>$.hasActionTypeCard</field_path>
-        <field_type>Number</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>darwin_tags</field_name>
-        <field_path>$.darwin_tags</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>hot_weibo_tags</field_name>
-        <field_path>$.hot_weibo_tags</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>text_tag_tips</field_name>
-        <field_path>$.text_tag_tips</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>userType</field_name>
-        <field_path>$.userType</field_path>
-        <field_type>Number</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>more_info_type</field_name>
-        <field_path>$.more_info_type</field_path>
-        <field_type>Number</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>cardid</field_name>
-        <field_path>$.cardid</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>positive_recom_flag</field_name>
-        <field_path>$.positive_recom_flag</field_path>
-        <field_type>Number</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>content_auth</field_name>
-        <field_path>$.content_auth</field_path>
-        <field_type>Number</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>gift_ids</field_name>
-        <field_path>$.gift_ids</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>comment_manage_info</field_name>
-        <field_path>$.comment_manage_info</field_path>
-        <field_type>String</field_type>
-      </mongo_field>
-      <mongo_field>
-        <field_name>is_show_bulletin</field_name>
-        <field_path>$.is_show_bulletin</field_path>
-        <field_type>Number</field_type>
       </mongo_field>
       <mongo_field>
         <field_name>allow_all_act_msg</field_name>
@@ -1298,13 +1123,13 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>200</xloc>
-      <yloc>100</yloc>
+      <xloc>339</xloc>
+      <yloc>314</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
   <step>
-    <name>Select values for Repost</name>
+    <name>Select values for Comment</name>
     <type>SelectValues</type>
     <description />
     <distribute>Y</distribute>
@@ -1319,136 +1144,51 @@
         <name>created_at</name>
       </field>
       <field>
-        <name>idstr</name>
+        <name>rootid</name>
       </field>
       <field>
-        <name>mid</name>
-      </field>
-      <field>
-        <name>can_edit</name>
+        <name>floor_number</name>
       </field>
       <field>
         <name>text</name>
       </field>
       <field>
-        <name>source_allowclick</name>
+        <name>disable_reply</name>
       </field>
       <field>
-        <name>source_type</name>
+        <name>mid</name>
       </field>
       <field>
-        <name>source</name>
-      </field>
-      <field>
-        <name>appid</name>
-      </field>
-      <field>
-        <name>favorited</name>
-      </field>
-      <field>
-        <name>truncated</name>
-      </field>
-      <field>
-        <name>in_reply_to_status_id</name>
-      </field>
-      <field>
-        <name>in_reply_to_user_id</name>
-      </field>
-      <field>
-        <name>in_reply_to_screen_name</name>
-      </field>
-      <field>
-        <name>pic_ids</name>
-      </field>
-      <field>
-        <name>geo</name>
-      </field>
-      <field>
-        <name>is_paid</name>
-      </field>
-      <field>
-        <name>mblog_vip_type</name>
-      </field>
-      <field>
-        <name>annotations</name>
+        <name>idstr</name>
       </field>
       <field>
         <name>uid</name>
       </field>
       <field>
-        <name>rtid</name>
-      </field>
-      <field>
-        <name>reposts_count</name>
-      </field>
-      <field>
-        <name>comments_count</name>
-      </field>
-      <field>
-        <name>attitudes_count</name>
-      </field>
-      <field>
-        <name>pending_approval_count</name>
-      </field>
-      <field>
-        <name>isLongText</name>
-      </field>
-      <field>
-        <name>mlevel</name>
-      </field>
-      <field>
-        <name>visible</name>
-      </field>
-      <field>
-        <name>biz_feature</name>
-      </field>
-      <field>
-        <name>page_type</name>
-      </field>
-      <field>
-        <name>hasActionTypeCard</name>
-      </field>
-      <field>
-        <name>darwin_tags</name>
-      </field>
-      <field>
-        <name>hot_weibo_tags</name>
-      </field>
-      <field>
-        <name>text_tag_tips</name>
-      </field>
-      <field>
-        <name>userType</name>
-      </field>
-      <field>
-        <name>more_info_type</name>
-      </field>
-      <field>
-        <name>cardid</name>
-      </field>
-      <field>
-        <name>positive_recom_flag</name>
-      </field>
-      <field>
-        <name>content_auth</name>
-      </field>
-      <field>
-        <name>gift_ids</name>
-      </field>
-      <field>
-        <name>is_show_bulletin</name>
-      </field>
-      <field>
-        <name>comment_manage_info</name>
+        <name>pid</name>
       </field>
       <field>
         <name>id</name>
-        <rename>repost_id</rename>
-      </field>
-      <field>
-        <name>pid</name>
+        <rename>cid</rename>
       </field>
       <select_unspecified>N</select_unspecified>
+      <meta>
+        <name>created_at</name>
+        <rename>created_at</rename>
+        <type>String</type>
+        <length>-2</length>
+        <precision>-2</precision>
+        <conversion_mask>yyyy-MM-dd HH:mm:ss</conversion_mask>
+        <date_format_lenient>false</date_format_lenient>
+        <date_format_locale />
+        <date_format_timezone />
+        <lenient_string_to_number>false</lenient_string_to_number>
+        <encoding />
+        <decimal_symbol />
+        <grouping_symbol />
+        <currency_symbol />
+        <storage_type />
+      </meta>
     </fields>
     <cluster_schema />
     <remotesteps>
@@ -1458,8 +1198,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>400</xloc>
-      <yloc>100</yloc>
+      <xloc>627</xloc>
+      <yloc>234</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -1475,6 +1215,10 @@
       <schema_name />
     </partitioning>
     <fields>
+      <field>
+        <name>uid</name>
+        <rename>uid</rename>
+      </field>
       <field>
         <name>allow_all_act_msg</name>
         <rename>allow_all_act_msg</rename>
@@ -1708,16 +1452,12 @@
         <rename>weihao</rename>
       </field>
       <field>
-        <name>user_idstr</name>
-        <rename>idstr</rename>
-      </field>
-      <field>
-        <name>uid</name>
-        <rename>uid</rename>
-      </field>
-      <field>
         <name>user_created_at</name>
         <rename>created_at</rename>
+      </field>
+      <field>
+        <name>user_idstr</name>
+        <rename>idstr</rename>
       </field>
       <select_unspecified>N</select_unspecified>
     </fields>
@@ -1729,8 +1469,100 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>400</xloc>
-      <yloc>208</yloc>
+      <xloc>627</xloc>
+      <yloc>458</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>weibo_user_comment</name>
+    <type>InsertUpdate</type>
+    <description />
+    <distribute>Y</distribute>
+    <custom_distribution />
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name />
+    </partitioning>
+    <connection>newSocialDB</connection>
+    <commit>10000</commit>
+    <update_bypassed>N</update_bypassed>
+    <lookup>
+      <schema />
+      <table>weibo_user_comment</table>
+      <key>
+        <name>cid</name>
+        <field>cid</field>
+        <condition>=</condition>
+        <name2 />
+      </key>
+      <value>
+        <name>created_at</name>
+        <rename>created_at</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>rootid</name>
+        <rename>rootid</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>floor_number</name>
+        <rename>floor_number</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>text</name>
+        <rename>text</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>disable_reply</name>
+        <rename>disable_reply</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>mid</name>
+        <rename>mid</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>idstr</name>
+        <rename>idstr</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>uid</name>
+        <rename>uid</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>pid</name>
+        <rename>pid</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>cid</name>
+        <rename>cid</rename>
+        <update>Y</update>
+      </value>
+      <value>
+        <name>uuid</name>
+        <rename>uuid</rename>
+        <update>N</update>
+      </value>
+    </lookup>
+    <cluster_schema />
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>931</xloc>
+      <yloc>314</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -1758,9 +1590,9 @@
         <name2 />
       </key>
       <value>
-        <name>created_at</name>
-        <rename>created_at</rename>
-        <update>Y</update>
+        <name>uid</name>
+        <rename>uid</rename>
+        <update>N</update>
       </value>
       <value>
         <name>allow_all_act_msg</name>
@@ -2053,58 +1885,6 @@
         <update>Y</update>
       </value>
       <value>
-        <name>idstr</name>
-        <rename>idstr</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>uid</name>
-        <rename>uid</rename>
-        <update>N</update>
-      </value>
-      <value>
-        <name>uuid</name>
-        <rename>uuid</rename>
-        <update>N</update>
-      </value>
-    </lookup>
-    <cluster_schema />
-    <remotesteps>
-      <input>
-      </input>
-      <output>
-      </output>
-    </remotesteps>
-    <GUI>
-      <xloc>752</xloc>
-      <yloc>208</yloc>
-      <draw>Y</draw>
-    </GUI>
-  </step>
-  <step>
-    <name>weibo_user_repost</name>
-    <type>InsertUpdate</type>
-    <description />
-    <distribute>Y</distribute>
-    <custom_distribution />
-    <copies>1</copies>
-    <partitioning>
-      <method>none</method>
-      <schema_name />
-    </partitioning>
-    <connection>newSocialDB</connection>
-    <commit>10000</commit>
-    <update_bypassed>N</update_bypassed>
-    <lookup>
-      <schema />
-      <table>weibo_user_repost</table>
-      <key>
-        <name>repost_id</name>
-        <field>repost_id</field>
-        <condition>=</condition>
-        <name2 />
-      </key>
-      <value>
         <name>created_at</name>
         <rename>created_at</rename>
         <update>Y</update>
@@ -2115,216 +1895,6 @@
         <update>Y</update>
       </value>
       <value>
-        <name>mid</name>
-        <rename>mid</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>can_edit</name>
-        <rename>can_edit</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>text</name>
-        <rename>text</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>source_allowclick</name>
-        <rename>source_allowclick</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>source_type</name>
-        <rename>source_type</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>source</name>
-        <rename>source</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>appid</name>
-        <rename>appid</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>favorited</name>
-        <rename>favorited</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>truncated</name>
-        <rename>truncated</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>in_reply_to_status_id</name>
-        <rename>in_reply_to_status_id</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>in_reply_to_user_id</name>
-        <rename>in_reply_to_user_id</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>in_reply_to_screen_name</name>
-        <rename>in_reply_to_screen_name</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>pic_ids</name>
-        <rename>pic_ids</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>geo</name>
-        <rename>geo</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>is_paid</name>
-        <rename>is_paid</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>mblog_vip_type</name>
-        <rename>mblog_vip_type</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>annotations</name>
-        <rename>annotations</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>uid</name>
-        <rename>uid</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>rtid</name>
-        <rename>rtid</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>reposts_count</name>
-        <rename>reposts_count</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>comments_count</name>
-        <rename>comments_count</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>attitudes_count</name>
-        <rename>attitudes_count</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>pending_approval_count</name>
-        <rename>pending_approval_count</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>isLongText</name>
-        <rename>isLongText</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>mlevel</name>
-        <rename>mlevel</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>visible</name>
-        <rename>visible</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>biz_feature</name>
-        <rename>biz_feature</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>page_type</name>
-        <rename>page_type</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>hasActionTypeCard</name>
-        <rename>hasActionTypeCard</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>darwin_tags</name>
-        <rename>darwin_tags</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>hot_weibo_tags</name>
-        <rename>hot_weibo_tags</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>text_tag_tips</name>
-        <rename>text_tag_tips</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>userType</name>
-        <rename>userType</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>more_info_type</name>
-        <rename>more_info_type</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>cardid</name>
-        <rename>cardid</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>positive_recom_flag</name>
-        <rename>positive_recom_flag</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>content_auth</name>
-        <rename>content_auth</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>gift_ids</name>
-        <rename>gift_ids</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>is_show_bulletin</name>
-        <rename>is_show_bulletin</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>comment_manage_info</name>
-        <rename>comment_manage_info</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>repost_id</name>
-        <rename>repost_id</rename>
-        <update>Y</update>
-      </value>
-      <value>
-        <name>pid</name>
-        <rename>pid</rename>
-        <update>Y</update>
-      </value>
-      <value>
         <name>uuid</name>
         <rename>uuid</rename>
         <update>N</update>
@@ -2338,231 +1908,8 @@
       </output>
     </remotesteps>
     <GUI>
-      <xloc>704</xloc>
-      <yloc>48</yloc>
-      <draw>Y</draw>
-    </GUI>
-  </step>
-  <step>
-    <name>Table output</name>
-    <type>TableOutput</type>
-    <description />
-    <distribute>Y</distribute>
-    <custom_distribution />
-    <copies>1</copies>
-    <partitioning>
-      <method>none</method>
-      <schema_name />
-    </partitioning>
-    <connection>newSocialDB</connection>
-    <schema />
-    <table>weibo_user_repost</table>
-    <commit>1000</commit>
-    <truncate>N</truncate>
-    <ignore_errors>N</ignore_errors>
-    <use_batch>Y</use_batch>
-    <specify_fields>Y</specify_fields>
-    <partitioning_enabled>N</partitioning_enabled>
-    <partitioning_field />
-    <partitioning_daily>N</partitioning_daily>
-    <partitioning_monthly>Y</partitioning_monthly>
-    <tablename_in_field>N</tablename_in_field>
-    <tablename_field />
-    <tablename_in_table>Y</tablename_in_table>
-    <return_keys>N</return_keys>
-    <return_field />
-    <fields>
-      <field>
-        <column_name>created_at</column_name>
-        <stream_name>created_at</stream_name>
-      </field>
-      <field>
-        <column_name>idstr</column_name>
-        <stream_name>idstr</stream_name>
-      </field>
-      <field>
-        <column_name>mid</column_name>
-        <stream_name>mid</stream_name>
-      </field>
-      <field>
-        <column_name>can_edit</column_name>
-        <stream_name>can_edit</stream_name>
-      </field>
-      <field>
-        <column_name>text</column_name>
-        <stream_name>text</stream_name>
-      </field>
-      <field>
-        <column_name>source_allowclick</column_name>
-        <stream_name>source_allowclick</stream_name>
-      </field>
-      <field>
-        <column_name>source_type</column_name>
-        <stream_name>source_type</stream_name>
-      </field>
-      <field>
-        <column_name>source</column_name>
-        <stream_name>source</stream_name>
-      </field>
-      <field>
-        <column_name>appid</column_name>
-        <stream_name>appid</stream_name>
-      </field>
-      <field>
-        <column_name>favorited</column_name>
-        <stream_name>favorited</stream_name>
-      </field>
-      <field>
-        <column_name>truncated</column_name>
-        <stream_name>truncated</stream_name>
-      </field>
-      <field>
-        <column_name>in_reply_to_status_id</column_name>
-        <stream_name>in_reply_to_status_id</stream_name>
-      </field>
-      <field>
-        <column_name>in_reply_to_user_id</column_name>
-        <stream_name>in_reply_to_user_id</stream_name>
-      </field>
-      <field>
-        <column_name>in_reply_to_screen_name</column_name>
-        <stream_name>in_reply_to_screen_name</stream_name>
-      </field>
-      <field>
-        <column_name>pic_ids</column_name>
-        <stream_name>pic_ids</stream_name>
-      </field>
-      <field>
-        <column_name>geo</column_name>
-        <stream_name>geo</stream_name>
-      </field>
-      <field>
-        <column_name>is_paid</column_name>
-        <stream_name>is_paid</stream_name>
-      </field>
-      <field>
-        <column_name>mblog_vip_type</column_name>
-        <stream_name>mblog_vip_type</stream_name>
-      </field>
-      <field>
-        <column_name>annotations</column_name>
-        <stream_name>annotations</stream_name>
-      </field>
-      <field>
-        <column_name>uid</column_name>
-        <stream_name>uid</stream_name>
-      </field>
-      <field>
-        <column_name>rtid</column_name>
-        <stream_name>rtid</stream_name>
-      </field>
-      <field>
-        <column_name>reposts_count</column_name>
-        <stream_name>reposts_count</stream_name>
-      </field>
-      <field>
-        <column_name>comments_count</column_name>
-        <stream_name>comments_count</stream_name>
-      </field>
-      <field>
-        <column_name>attitudes_count</column_name>
-        <stream_name>attitudes_count</stream_name>
-      </field>
-      <field>
-        <column_name>pending_approval_count</column_name>
-        <stream_name>pending_approval_count</stream_name>
-      </field>
-      <field>
-        <column_name>isLongText</column_name>
-        <stream_name>isLongText</stream_name>
-      </field>
-      <field>
-        <column_name>mlevel</column_name>
-        <stream_name>mlevel</stream_name>
-      </field>
-      <field>
-        <column_name>visible</column_name>
-        <stream_name>visible</stream_name>
-      </field>
-      <field>
-        <column_name>biz_feature</column_name>
-        <stream_name>biz_feature</stream_name>
-      </field>
-      <field>
-        <column_name>page_type</column_name>
-        <stream_name>page_type</stream_name>
-      </field>
-      <field>
-        <column_name>hasActionTypeCard</column_name>
-        <stream_name>hasActionTypeCard</stream_name>
-      </field>
-      <field>
-        <column_name>darwin_tags</column_name>
-        <stream_name>darwin_tags</stream_name>
-      </field>
-      <field>
-        <column_name>hot_weibo_tags</column_name>
-        <stream_name>hot_weibo_tags</stream_name>
-      </field>
-      <field>
-        <column_name>text_tag_tips</column_name>
-        <stream_name>text_tag_tips</stream_name>
-      </field>
-      <field>
-        <column_name>userType</column_name>
-        <stream_name>userType</stream_name>
-      </field>
-      <field>
-        <column_name>more_info_type</column_name>
-        <stream_name>more_info_type</stream_name>
-      </field>
-      <field>
-        <column_name>cardid</column_name>
-        <stream_name>cardid</stream_name>
-      </field>
-      <field>
-        <column_name>positive_recom_flag</column_name>
-        <stream_name>positive_recom_flag</stream_name>
-      </field>
-      <field>
-        <column_name>content_auth</column_name>
-        <stream_name>content_auth</stream_name>
-      </field>
-      <field>
-        <column_name>gift_ids</column_name>
-        <stream_name>gift_ids</stream_name>
-      </field>
-      <field>
-        <column_name>is_show_bulletin</column_name>
-        <stream_name>is_show_bulletin</stream_name>
-      </field>
-      <field>
-        <column_name>comment_manage_info</column_name>
-        <stream_name>comment_manage_info</stream_name>
-      </field>
-      <field>
-        <column_name>repost_id</column_name>
-        <stream_name>repost_id</stream_name>
-      </field>
-      <field>
-        <column_name>pid</column_name>
-        <stream_name>pid</stream_name>
-      </field>
-      <field>
-        <column_name>uuid</column_name>
-        <stream_name>uuid</stream_name>
-      </field>
-    </fields>
-    <cluster_schema />
-    <remotesteps>
-      <input>
-      </input>
-      <output>
-      </output>
-    </remotesteps>
-    <GUI>
-      <xloc>704</xloc>
-      <yloc>112</yloc>
+      <xloc>979</xloc>
+      <yloc>458</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
