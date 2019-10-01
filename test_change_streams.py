@@ -29,7 +29,7 @@ try:
 
     logger.info("Start MongoDB Change Streams Service for DB {}...".format(__db))
 
-    with db.watch(pipeline) as stream:
+    with db.watch(pipeline) as stream: 
         batch_list = list()
         for change in stream:
             logger.info(change)
