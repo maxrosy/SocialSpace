@@ -6,11 +6,12 @@ import argparse
 
 def main():
     choices = ['statuses_show_batch_biz','get_comment_by_since_id','get_attitude_by_since_id','get_repost_by_since_id']
+    collections = {'statuses_show_batch_biz':'weibo_user_post_tmp_stream','get_attitude_by_since_id':'weibo_user_attitude_tmp_stream','get_comment_by_since_id':'weibo_user_comment_tmp_stream','get_repost_by_since_id':'weibo_user_repost_tmp_stream'}
     try:
         parser = argparse.ArgumentParser()
         parser.description = 'Command line interface of Weibo'
         parser.add_argument("-f", "--function", required=True, choices=choices,help="Choose one function")
-        parser.add_argument("-m","--mid",help="Weibo post ID")
+        parser.add_argument("-m","--mid",help="Weibo post ID",type=int)
         parser.add_argument("-i","--ids",help="Weibo post IDs")
         parser.add_argument("--others",
                             help="Any optional argument not mentioned above, example: --others=key1//value1//key2//value2")
@@ -27,14 +28,16 @@ def main():
         none_key = [key for key in opt.keys() if opt[key] is None]
         for key in none_key:
             del opt[key]
-        func=opt.pop('function')
 
+        func=opt.pop('function')
+        opt['collection'] = collections[func]
         weibo = SocialWeiboAPI()
         getattr(weibo, func)(**opt)
 
 
     except Exception as e:
         print(e)
+
 
 
 if __name__ == '__main__':

@@ -14,11 +14,9 @@ import re
 import hashlib
 from zipfile import ZipFile
 import os
-from SocialAPI.Model import WeiboSearchLimitedLastAttitude, WeiboKolLastAttitude,WeiboMentionLastAttitude
-from SocialAPI.Model import WeiboKolLastComment,WeiboSearchLimitedLastComment,WeiboMentionLastComment
-from SocialAPI.Model import WeiboSearchLimitedLastRepost,WeiboKolLastRepost
-
+from SocialAPI.Model import WeiboUserAttitude,WeiboUserComment,WeiboUserRepost
 import pandas as pd
+from sqlalchemy.sql import func
 
 def doCommentParellelWrapper(*args,**kwargs):
     w = SocialWeiboAPI()
@@ -157,7 +155,7 @@ class SocialWeiboAPI(SocialBasicAPI):
         finally:
             client.close()
 
-    def statuses_show_batch_biz(self,ids,trim_user=1,isGetLongText=1):
+    def statuses_show_batch_biz(self,ids,trim_user=1,isGetLongText=1,collection='weibo_user_post'):
         """
         Documentation
         https://open.weibo.com/wiki/C/2/statuses/show_batch/biz
@@ -170,7 +168,7 @@ class SocialWeiboAPI(SocialBasicAPI):
         self.logger_access.info("Calling statuses_show_batch_biz with ids: {}".format(ids))
         client = self.client
         db = client.weibo
-        postTable = db.weibo_user_post
+        postTable = db[collection]
         try:
             params_dict = {}
             params_dict['access_token'] = self.__apiToken
@@ -369,7 +367,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             client.close()
 
 
-    def get_comments_show(self,mid,page_start=1,page_range=5,page_limit=20,**kwargs):
+    def get_comments_show(self,mid,page_start=1,page_range=5,page_limit=20,collection='weibo_user_comment',**kwargs):
         """
         Documentation
         http://open.weibo.com/wiki/C/2/comments/show/all
@@ -384,7 +382,7 @@ class SocialWeiboAPI(SocialBasicAPI):
 
         client = self.client
         db = client.weibo
-        commentTable = db.weibo_user_comment
+        commentTable = db[collection]
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
         event_loop = asyncio.new_event_loop()
 
@@ -469,7 +467,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             event_loop.close()
 
 
-    def get_attitudes_show(self,mid,page_start=1,page_range=5,page_limit=20,**kwargs):
+    def get_attitudes_show(self,mid,page_start=1,page_range=5,page_limit=20,collection='weibo_user_atttide',**kwargs):
         """
         Documentation
         http://open.weibo.com/wiki/C/2/attitudes/show/biz
@@ -480,7 +478,7 @@ class SocialWeiboAPI(SocialBasicAPI):
         """
         client = self.client
         db = client.weibo
-        attitudeTable = db.weibo_user_attitude
+        attitudeTable = db[collection]
 
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
         event_loop = asyncio.new_event_loop()
@@ -618,7 +616,7 @@ class SocialWeiboAPI(SocialBasicAPI):
         """
         client = self.client
         db = client.weibo
-        repostTable = db.weibo_user_repost2
+        repostTable = db.weibo_user_repost
 
         try:
             url = 'https://c.api.weibo.com/2/statuses/repost_timeline/all.json'
@@ -664,13 +662,13 @@ class SocialWeiboAPI(SocialBasicAPI):
                 except StopIteration:
                     loop = False
 
-
+            update_operations = list()
             if not repostList:
                 self.logger_access.warning("No data to update for post {}".format(mid))
                 return
             for repost in repostList:
                 repost['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                repost['createdTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                #repost['createdTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 if repost.get('created_at'):
                     repost['created_at_timestamp'] = int(time.mktime(time.strptime(repost['created_at'], "%a %b %d %H:%M:%S %z %Y")))
                     repost['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(repost['created_at_timestamp']))
@@ -679,10 +677,11 @@ class SocialWeiboAPI(SocialBasicAPI):
                         repost['user']['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S',time.strptime(repost['user']['created_at'],"%a %b %d %H:%M:%S %z %Y"))
                 if repost.get('retweeted_status'):
                     repost['retweeted_status']['created_at'] = time.strftime('%Y-%m-%d %H:%M:%S',time.strptime(repost['retweeted_status']['created_at'],"%a %b %d %H:%M:%S %z %Y"))
-                #res = attitudeTable.update({'id':attitude['id']},{'$set':attitude,'$setOnInsert':{'createdTime':datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},upsert=True)
+                op = UpdateOne({'id': repost['id']}, {'$set': repost, '$setOnInsert': {
+                    'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S')}}, upsert=True)
+                update_operations.append(op)
 
-
-            res = repostTable.insert_many(repostList)
+            repostTable.bulk_write(update_operations, ordered=False, bypass_document_validation=False)
             self.logger_access.info('{} records has been inserted for post {}'.format(len(repostList),mid))
 
 
@@ -1086,50 +1085,33 @@ class SocialWeiboAPI(SocialBasicAPI):
         finally:
             client.close()
 
-    def get_comment_by_since_id(self,mid):
-        ret = self.__check_comment_since_id(mid)
-        if ret:
-            for _ in ret:
-                self.get_comments_show(mid=_['id'],since_id=_['since_id'])
+    def get_comment_by_since_id(self,mid,collection):
+        since_id = self.__check_comment_since_id(mid)
 
-    def get_attitude_by_since_id(self,mid):
-        ret = self.__check_attitude_since_id(mid)
-        if ret:
-            for _ in ret:
-                self.get_attitudes_show(mid=_['id'], since_id=_['since_id'])
+        self.get_comments_show(mid=mid,since_id=since_id,collection=collection)
+
+    def get_attitude_by_since_id(self,mid,collection):
+        since_id = self.__check_attitude_since_id(mid)
+
+        self.get_attitudes_show(mid=mid, since_id=since_id,collection=collection)
 
     def get_repost_by_since_id(self,mid):
-        ret = self.__check_repost_since_id(mid)
-        if ret:
-            for _ in ret:
-                self.get_status_repost_timeline(mid=_['id'],since_id=_['since_id'])
+        since_id = self.__check_repost_since_id(mid)
+
+        self.get_status_repost_timeline(mid=mid,since_id=since_id)
 
     def __check_repost_since_id(self,mid):
 
         session = self.createSession()
         try:
+            since_id = session.query(func.max(WeiboUserRepost.repost_id)) \
+                .filter(WeiboUserRepost.pid == mid) \
+                .group_by(WeiboUserRepost.pid) \
+                .first()
 
-            # Get post IDs from search limited for repost
-            pids = session.query(WeiboSearchLimitedLastRepost.pid, WeiboSearchLimitedLastRepost.since_id) \
-                .filter(WeiboSearchLimitedLastRepost.pid == mid) \
-                .all()
-
-            repostPostList = [{'id': _[0], 'since_id': _[1]} for _ in pids]
-
-            # Get post IDs from post daily for repost
-            pids = session.query(WeiboKolLastRepost.pid, WeiboKolLastRepost.since_id) \
-                .filter(WeiboKolLastRepost.pid == mid) \
-                .all()
-
-            repostPostListFromKOL = [{'id': _[0], 'since_id': _[1]} for _ in pids]
-            repostPostList += repostPostListFromKOL
-
-            if not repostPostList:
-                return None
-            df = pd.DataFrame(repostPostList)
-            df = df.sort_values(by='since_id', ascending=False)
-            df = df.drop_duplicates(subset='id', keep='first')
-            return df.to_dict('records')
+            if since_id is None:
+                return 0
+            return since_id[0]
 
         except Exception as e:
             self.logger_error.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
@@ -1141,34 +1123,14 @@ class SocialWeiboAPI(SocialBasicAPI):
 
         session = self.createSession()
         try:
-            # Get post IDs from search limited for comment
-            pids = session.query(WeiboSearchLimitedLastComment.pid, WeiboSearchLimitedLastComment.since_id) \
-                .filter(WeiboSearchLimitedLastComment.pid == mid) \
-                .all()
-            commentPostList = [{'id': _[0], 'since_id': _[1]} for _ in pids]
+            since_id = session.query(func.max(WeiboUserComment.cid)) \
+                .filter(WeiboUserComment.pid == mid) \
+                .group_by(WeiboUserComment.pid) \
+                .first()
 
-            # Get post IDs from post daily for comment
-            pids = session.query(WeiboKolLastComment.pid, WeiboKolLastComment.since_id) \
-                .filter(WeiboKolLastComment.pid == mid) \
-                .all()
-            commentPostListFromKOL = [{'id': _[0], 'since_id': _[1]} for _ in pids]
-
-            # Get post IDs from mention for comment
-            pids = session.query(WeiboMentionLastComment.pid, WeiboMentionLastComment.since_id) \
-                .filter(WeiboMentionLastComment.pid == mid) \
-                .all()
-            commentPostListFromMetion = [{'id': _[0], 'since_id': _[1]} for _ in pids]
-
-            # Merge daily, kol, mention pid
-            commentPostList += commentPostListFromKOL
-            commentPostList += commentPostListFromMetion
-
-            if not commentPostList:
-                return None
-            df = pd.DataFrame(commentPostList)
-            df = df.sort_values(by='since_id', ascending=False)
-            df = df.drop_duplicates(subset='id', keep='first')
-            return df.to_dict('records')
+            if since_id is None:
+                return 0
+            return since_id[0]
 
         except Exception as e:
             self.logger_error.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))
@@ -1179,6 +1141,15 @@ class SocialWeiboAPI(SocialBasicAPI):
     def __check_attitude_since_id(self,mid):
         session = self.createSession()
         try:
+            since_id = session.query(func.max(WeiboUserAttitude.aid))\
+                .filter(WeiboUserAttitude.pid==mid)\
+                .group_by(WeiboUserAttitude.pid)\
+                .first()
+
+            if since_id is None:
+                return 0
+            return since_id[0]
+            """
             pids = session.query(WeiboSearchLimitedLastAttitude.pid, WeiboSearchLimitedLastAttitude.since_id) \
                 .filter(WeiboSearchLimitedLastAttitude.pid == mid) \
                 .all()
@@ -1206,6 +1177,7 @@ class SocialWeiboAPI(SocialBasicAPI):
             df = df.sort_values(by='since_id', ascending=False)
             df = df.drop_duplicates(subset='id', keep='first')
             return df.to_dict('records')
+            """
 
         except Exception as e:
             self.logger_error.error('On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e))

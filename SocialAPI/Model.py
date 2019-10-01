@@ -72,6 +72,15 @@ class IdataAccount(Base):
 class MasterWeiboSearch(Base):
     __table__ = Table('master_weibo_search',metadata,autoload=True)
 
+class WeiboUserAttitude(Base):
+    __table__ = Table('weibo_user_attitude',metadata,autoload=True)
+
+class WeiboUserComment(Base):
+    __table__ = Table('weibo_user_comment',metadata,autoload=True)
+
+class WeiboUserRepost(Base):
+    __table__ = Table('weibo_user_repost',metadata,autoload=True)
+
 class WeiboLastMentionedPost(Base):
     __tablename__ ='weibo_last_mentioned_post'
     uid = Column(BIGINT,primary_key=true)

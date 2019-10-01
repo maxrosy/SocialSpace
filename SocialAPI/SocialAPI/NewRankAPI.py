@@ -68,6 +68,10 @@ class NewRankAPI(SocialBasicAPI):
                     if res.get('code') in (1500,1502,1503,1504): #System Errors
                         retry_num += 1
                         continue
+                    for _ in res['data']:
+                        if _.get('keywords'):
+                            for i in range(len(_.get('keywords'))):
+                                _.get('keywords')[i] = _.get('keywords')[i].encode('utf-8','ignore').decode('utf-8','ignore')
                     postList += res['data']
                     page_num += 1
 
