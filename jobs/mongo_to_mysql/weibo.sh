@@ -17,8 +17,10 @@ if [ $? -ne 0 ];then
 fi
 #sh /home/panther/data-integration/pan.sh -file=/home/panther/SocialSpace/jobs/mongo_to_mysql/weibo_jobs/weibo_post_media.ktr -param:startTime="$startTime" -param:endTime="$endTime"
 
-#sh /home/panther/data-integration/pan.sh -file=/home/panther/SocialSpace/jobs/mongo_to_mysql/weibo_jobs/weibo_post_crawl.ktr -param:startTime="$startTime" -param:endTime="$endTime"
-
+sh /home/panther/data-integration/pan.sh -file=/home/panther/SocialSpace/jobs/mongo_to_mysql/weibo_jobs/weibo_post_crawl.ktr -param:startTime="$startTime" -param:endTime="$endTime"
+if [ $? -ne 0 ];then
+        let err_num++
+fi
 sh /home/panther/data-integration/pan.sh -file=/home/panther/SocialSpace/jobs/mongo_to_mysql/weibo_jobs/weibo_post_mention.ktr -param:startTime="$startTime" -param:endTime="$endTime"
 if [ $? -ne 0 ];then
         let err_num++
