@@ -7,6 +7,7 @@ from SocialAPI.Helper import Helper
 from SocialAPI.SocialAPI.IdataAPI import IdataAPI
 from SocialAPI.SocialAPI.NewRankAPI import NewRankAPI
 from znanalysis.Spider.HupuAPISail import HupuMongo
+from SocialAPI.SocialAPI.WeiboAPI import SocialWeiboAPI
 from datetime import datetime
 
 root_path = Helper().getRootPath()
@@ -41,6 +42,7 @@ topics = (
 ,'newrank_weixin_article_content'
 ,'newrank_weixin_search_content'
 ,'zncrawlers_hupu_search'
+,'zncrawlers_douyin_post'
 ,'weibo_user_post_tmp_stream'
 ,'weibo_user_attitude_tmp_stream'
 ,'weibo_user_comment_tmp_stream'
@@ -50,7 +52,7 @@ topics = (
 
 consumer = KafkaConsumer(bootstrap_servers=['172.16.42.3:9092'],enable_auto_commit=False,group_id='socialdb-1')
 consumer.subscribe(topics=topics)
-apis = {'idata':IdataAPI,'newrank':NewRankAPI,'zncrawlers':HupuMongo}
+apis = {'idata':IdataAPI,'newrank':NewRankAPI,'zncrawlers':HupuMongo,'weibo':SocialWeiboAPI}
 
 
 def main():
