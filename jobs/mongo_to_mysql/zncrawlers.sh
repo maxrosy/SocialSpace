@@ -9,6 +9,10 @@ sh /home/panther/data-integration/pan.sh -file=/home/panther/SocialSpace/jobs/mo
 if [ $? -ne 0 ];then
         let err_num++
 fi
+sh /home/panther/data-integration/pan.sh -file=/home/panther/SocialSpace/jobs/mongo_to_mysql/zncrawlers_jobs/zncrawlers_douyin_post.ktr -param:startTime="$startTime" -param:endTime="$endTime"
+if [ $? -ne 0 ];then
+        let err_num++
+fi
 
 if [ $err_num -ne 0 ];then
 	exit 1
