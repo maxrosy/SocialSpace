@@ -107,19 +107,44 @@ class SocialWeixinAPI(SocialBasicAPI):
         #auth_url = quote(auth_url,'utf-8')
         return auth_url
 
-    def getAccessTokenFromController(self,appid,appkey):
-        try:
-            url_ackey = 'http://api.woaap.com/api/ackey'
-            paramsDict = {'appid':appid,'appkey':appkey}
-
+    def getAckey(self, appid, appkey,new_url=0):
+            ackey = self.r.get(appid)
+            if ackey:
+                return str(ackey,encoding='utf8')
+            if new_url == 1:
+                url_ackey = 'http://api-suzhou.woaap.com/api/ackey'
+            else:
+                url_ackey = 'http://api.woaap.com/api/ackey'
+            paramsDict = {'appid': appid, 'appkey': appkey}
             client = self.client
             db = client.weixin
 
-            r = self.getRequest(url_ackey,paramsDict)
-            res = r.json()
-            if res.get('errcode') != 0:
-                raise Exception(res.get('errmsg'))
-            ackey = res['ackey']
+            try:
+                r = self.getRequest(url_ackey, paramsDict)
+                res = r.json()
+                if res.get('errcode') != 0:
+                    raise Exception(res.get('errmsg'))
+                ackey = res['ackey']
+                self.r.set(appid,ackey,3600)
+                return ackey
+
+            except Exception as e:
+                class_name = self.__class__.__name__
+                function_name = sys._getframe().f_code.co_name
+                msg = 'On line {} - {}'.format(sys.exc_info()[2].tb_lineno, e)
+                db.weixin_error_log.insert({'className': class_name, 'functionName': function_name, 'params': '',
+                                            'createdTime': datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'msg': msg})
+                self.logger_error.error(msg)
+
+            finally:
+                client.close()
+
+    def getAccessTokenFromController(self,appid,appkey):
+
+        client = self.client
+        db = client.weixin
+        try:
+            ackey = self.getAckey(appid,appkey,0)
 
             url_token = 'http://api.woaap.com/api/accesstoken'
             paramsDict = {'ackey': ackey}
@@ -140,24 +165,34 @@ class SocialWeixinAPI(SocialBasicAPI):
         finally:
             client.close()
 
-    def getUserCumulate(self, access_token, begin_date, end_date, account_name):
-        url = 'https://api.weixin.qq.com/datacube/getusercumulate?access_token={}'.format(access_token)
-        data = {'begin_date': begin_date, 'end_date': end_date}
-        postData = json.dumps(data)
-        try:
-            self.logger_access.info('Calling getUserCumulate API for account {} from {} to {}'.format(account_name,begin_date,end_date))
-            client = self.client
-            db = client.weixin
-            userTable = db.weixin_user_cumulate
+    def getUserCumulate(self, access_ackey_or_token, begin_date, end_date, account_name, new_url):
+        if new_url == 1:
+            url = 'http://api-suzhou.woaap.com/api/datacube?ackey={}&type={}&subtype={}&begin_date={},&end_date={}'.format(access_ackey_or_token,'user','cumulate',begin_date,end_date)
+            postData = None
+        else:
+            url = 'https://api.weixin.qq.com/datacube/getusercumulate?access_token={}'.format(access_ackey_or_token)
+            data = {'begin_date': begin_date,'end_date':end_date}
+            postData = json.dumps(data)
 
+        self.logger_access.info('Calling getUserCumulate API for account {} from {} to {}'.format(account_name,begin_date,end_date))
+        client = self.client
+        db = client.weixin
+        userTable = db.weixin_user_cumulate
+        try:
             r = self.postRequest(url, postData)
             res = r.json()
-            if res.get('errcode'):
-                raise Exception(res.get('errmsg'))
-            for user in res['list']:
+            if not res:
+                return
+            if isinstance(res,list):
+                users = res
+            else:
+                if res.get('errcode'):
+                    raise Exception(res.get('errmsg'))
+                users = res['list']
+            for user in users:
                 user['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 user['account_name'] = account_name
-                result = userTable.update({'account_name': user['account_name'],'ref_date':user['ref_date'],'user_source':user['user_source']},
+                userTable.update({'account_name': user['account_name'],'ref_date':user['ref_date'],'user_source':user['user_source']},
                                           {'$set': user, '$setOnInsert': {
                                               'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
                                           upsert=True)
@@ -172,27 +207,39 @@ class SocialWeixinAPI(SocialBasicAPI):
         finally:
             client.close()
 
-    def getArticleTotal(self, access_token, begin_date, end_date, account_name):
-        url = 'https://api.weixin.qq.com/datacube/getarticletotal?access_token={}'.format(access_token)
-        data = {'begin_date': begin_date, 'end_date': end_date}
-        postData = json.dumps(data)
+    def getArticleTotal(self, access_ackey_or_token, begin_date, end_date, account_name,new_url=0):
+        if new_url == 1:
+            url = 'http://api-suzhou.woaap.com/api/datacube?ackey={}&type={}&subtype={}&begin_date={},&end_date={}'.format(access_ackey_or_token,'article','total',begin_date,end_date)
+            postData = None
+        else:
+            url = 'https://api.weixin.qq.com/datacube/getarticletotal?access_token={}'.format(access_ackey_or_token)
+            data = {'begin_date': begin_date,'end_date':end_date}
+            postData = json.dumps(data)
+        self.logger_access.info(
+            'Calling getArticleTotal API for account {} from {} to {}'.format(account_name, begin_date, end_date))
+
+        client = self.client
+        db = client.weixin
+        postTable = db.weixin_post
+
         try:
-            self.logger_access.info('Calling getArticleTotal API for account {} from {} to {}'.format(account_name, begin_date, end_date))
-            client = self.client
-            db = client.weixin
-            postTable = db.weixin_post
             r = self.postRequest(url, postData)
             res = r.json()
-            if res.get('errcode'):
-                raise Exception(res.get('errmsg'))
-            for post in res['list']:
+            if not res:
+                return
+            if isinstance(res,list):
+                posts = res
+            else:
+                if res.get('errcode'):
+                    raise Exception(res.get('errmsg'))
+                posts = res['list']
+            for post in posts:
                 post['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 post['account_name'] = account_name
-                result = postTable.update({'msgid': post['msgid'], 'ref_date': post['ref_date']},
+                postTable.update({'msgid': post['msgid'], 'ref_date': post['ref_date']},
                                           {'$set': post, '$setOnInsert': {
                                               'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
                                           upsert=True)
-
             return
 
         except Exception as e:
@@ -205,23 +252,33 @@ class SocialWeixinAPI(SocialBasicAPI):
         finally:
             client.close()
 
-    def getUpstreamMsg(self, access_token, begin_date, end_date, account_name):
-        url = 'https://api.weixin.qq.com/datacube/getupstreammsg?access_token={}'.format(access_token)
-        data = {'begin_date': begin_date, 'end_date': end_date}
-        postData = json.dumps(data)
+    def getUpstreamMsg(self, access_ackey_or_token, begin_date, end_date, account_name, new_url):
+        if new_url == 1:
+            url = 'http://api-suzhou.woaap.com/api/datacube?ackey={}&type={}&subtype={}&begin_date={},&end_date={}'.format(access_ackey_or_token,'upstreammsg','summary',begin_date,end_date)
+            postData = None
+        else:
+            url = 'https://api.weixin.qq.com/datacube/getupstreammsg?access_token={}'.format(access_ackey_or_token)
+            data = {'begin_date': begin_date,'end_date':end_date}
+            postData = json.dumps(data)
+        self.logger_access.info('Calling getUpstreamMsg API for account {} from {} to {}'.format(account_name, begin_date, end_date))
+        client = self.client
+        db = client.weixin
+        msgTable = db.weixin_upstream_msg
         try:
-            self.logger_access.info('Calling getUpstreamMsg API for account {} from {} to {}'.format(account_name, begin_date, end_date))
-            client = self.client
-            db = client.weixin
-            msgTable = db.weixin_upstream_msg
             r = self.postRequest(url, postData)
             res = r.json()
-            if res.get('errcode'):
-                raise Exception(res.get('errmsg'))
-            for account in res['list']:
+            if not res:
+                return
+            if isinstance(res,list):
+                accounts = res
+            else:
+                if res.get('errcode'):
+                    raise Exception(res.get('errmsg'))
+                accounts = res['list']
+            for account in accounts:
                 account['updatedTime'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 account['account_name'] = account_name
-                result = msgTable.update({'account_name': account['account_name'],'ref_date':account['ref_date'],
+                msgTable.update({'account_name': account['account_name'],'ref_date':account['ref_date'],
                                           'user_source':account['user_source'],'msg_type':account['msg_type']},
                                           {'$set': account, '$setOnInsert': {
                                               'createdTime': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}},
