@@ -103,7 +103,7 @@ tqdm==4.30.0
 traitlets==4.3.2
 typing-extensions==3.7.2
 ujson==1.35
-urllib3==1.25.3
+urllib3==1.26.5
 uvloop==0.13.0
 uWSGI==2.0.18
 wcwidth==0.1.7
